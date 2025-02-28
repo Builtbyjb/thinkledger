@@ -1,0 +1,44 @@
+services:
+  server:
+    container_name: server
+    build:
+      dockerfile: Dockerfile.dev
+      context: server/
+    develop:
+      watch:
+        - action: sync
+          path: ./server
+          target: /app/server
+    ports:
+      - 3000:3000
+    env_file:
+      - ./server/.env
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://127.0.0.1:3000/ping"]
+      interval: 20s
+      timeout: 10s
+      retries: 5
+      start_period: 5s
+    command: air
+    depends_on:
+      db:
+        condition: service_started
+    # volumes:
+    #     - ./server:/app/server
+
+  db:
+    image: postgres:17
+    container_name: db
+    ports:
+      - 5432:5432
+    env_file:
+      - ./.env
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    restart: unless-stopped
+    # volumes:
+    #     - postgres_data:/var/lib/postgresql/data
+
+    # volumes: # postgres_data:
