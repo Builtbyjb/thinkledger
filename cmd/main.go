@@ -23,6 +23,13 @@ func main() {
 	// Get gemini api key
 	GEMINI_API_KEY := os.Getenv("GEMINI_DEV_API_KEY")
 
+	// Postgres credentials
+	POSTGRES_DB := os.Getenv("POSTGRES_DB")
+	POSTGRES_USER := os.Getenv("POSTGRES_USER")
+	POSTGRES_PASSWORD := os.Getenv("POSTGRES_PASSWORD")
+	POSTGRES_HOST := os.Getenv("POSTGRES_HOST")
+	POSTGRES_PORT := os.Getenv("POSTGRES_PORT")
+
 	app := fiber.New()
 
 	app.Use(
@@ -32,7 +39,14 @@ func main() {
 	)
 
 	// Connect to database and create database engine
-	db := database.DB()
+	db := database.DB(
+		POSTGRES_DB,
+		POSTGRES_USER,
+		POSTGRES_PASSWORD,
+		POSTGRES_HOST,
+		POSTGRES_PORT,
+	)
+
 	handler := &handlers.Handler{
 		DB:     db,
 		ApiKey: GEMINI_API_KEY,
@@ -45,14 +59,10 @@ func main() {
 		})
 	})
 
-	// Authentication routes
-	app.Post("/register", handlers.Register)
-	app.Post("/login", handlers.Login)
-
 	// Protected routes group
 	// api := app.Group("/api", middleware.AuthMiddleware())
 	api := app.Group("/api")
-	api.Post("/transaction", handler.HandleTransaction)
+	api.Post("/chat", handler.HandleChat)
 	api.Get("/journal", handler.HandleJournal)
 	api.Get("/t-accounts", handler.HandleTAccount)
 	api.Get("/trial-balance", handler.HandleTrialBalance)

@@ -6,7 +6,6 @@ import (
 	"log"
 	"strconv"
 
-	"server/agents/gemini"
 	"server/database"
 	"server/utils"
 
@@ -15,69 +14,69 @@ import (
 	"gorm.io/gorm"
 )
 
-type Transaction struct {
-	Transaction string `json:"transaction"`
+type Chat struct {
+	Chat string `json:"chat"`
 }
 
-func (h *Handler) HandleTransaction(c *fiber.Ctx) error {
+func (h *Handler) HandleChat(ctx *fiber.Ctx) error {
 
 	// Get transaction record from the client
-	var t Transaction
-	if err := c.BodyParser((&t)); err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+	var chat Chat
+	if err := ctx.BodyParser((&chat)); err != nil {
+		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"error": "Cannot parse JSON",
 		})
 	}
 
-	prompt, err := generatePrompt(t.Transaction)
-	if err != nil {
-		return c.Status(fiber.StatusOK).JSON(fiber.Map{
-			"error": "Invalid transaction",
-		})
-	}
+	// prompt, err := generatePrompt(t.Transaction)
+	// if err != nil {
+	// 	return ctx.Status(fiber.StatusOK).JSON(fiber.Map{
+	// 		"error": "Invalid transaction",
+	// 	})
+	// }
 
-	response, err := gemini.GeminiTransaction(prompt, h.ApiKey)
-	if err != nil {
-		log.Fatalf("AI response error: %v", err)
-	}
+	// response, err := gemini.GeminiTransaction(prompt, h.ApiKey)
+	// if err != nil {
+	// 	log.Fatalf("AI response error: %v", err)
+	// }
 
-	if response.ClarificationNeeded {
-		return c.Status(fiber.StatusOK).JSON(fiber.Map{
-			"error": "More information is needed to accurately record the transaction",
-			"info":  response.Questions,
-		})
-	}
+	// if response.ClarificationNeeded {
+	// 	return ctx.Status(fiber.StatusOK).JSON(fiber.Map{
+	// 		"error": "More information is needed to accurately record the transaction",
+	// 		"info":  response.Questions,
+	// 	})
+	// }
 
-	// Add response to database
-	db := h.DB
+	// // Add response to database
+	// db := h.DB
 
-	journal := database.JournalEntry{
-		Id:          uuid.New(),
-		Date:        response.JournalEntry.Date,
-		Description: response.JournalEntry.Description,
-	}
+	// journal := database.JournalEntry{
+	// 	Id:          uuid.New(),
+	// 	Date:        response.JournalEntry.Date,
+	// 	Description: response.JournalEntry.Description,
+	// }
 
-	// create journal entry
-	journalResult := db.Create(&journal)
-	if journalResult.Error != nil {
-		log.Fatalf("Error creating journal entry: %v", journalResult.Error)
-	}
+	// // create journal entry
+	// journalResult := db.Create(&journal)
+	// if journalResult.Error != nil {
+	// 	log.Fatalf("Error creating journal entry: %v", journalResult.Error)
+	// }
 
-	// INFO: Can use channels to run the functions concurrently
+	// // INFO: Can use channels to run the functions concurrently
 
-	// Add credit accounts
-	creditAccountErr := addAccounts(db, journal.Id, response.JournalEntry.Credits, "credit")
-	if creditAccountErr != nil {
-		log.Fatalf("Error creating credit accounts: %v", creditAccountErr)
-	}
+	// // Add credit accounts
+	// creditAccountErr := addAccounts(db, journal.Id, response.JournalEntry.Credits, "credit")
+	// if creditAccountErr != nil {
+	// 	log.Fatalf("Error creating credit accounts: %v", creditAccountErr)
+	// }
 
-	// Add debit accounts
-	debitAccountErr := addAccounts(db, journal.Id, response.JournalEntry.Debits, "debit")
-	if debitAccountErr != nil {
-		log.Fatalf("Error creating debit accounts: %v", debitAccountErr)
-	}
+	// // Add debit accounts
+	// debitAccountErr := addAccounts(db, journal.Id, response.JournalEntry.Debits, "debit")
+	// if debitAccountErr != nil {
+	// 	log.Fatalf("Error creating debit accounts: %v", debitAccountErr)
+	// }
 
-	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+	return ctx.Status(fiber.StatusOK).JSON(fiber.Map{
 		"success": "Transaction recorded successfully",
 	})
 }
