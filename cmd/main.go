@@ -27,12 +27,13 @@ func main() {
 
 	app.Use(
 		middleware.Cors(),
-		middleware.RequestTimer(),
 		middleware.RateLimiter(),
+		middleware.RequestTimer(),
 	)
 
 	// Connect to database and create database engine
 	db := database.DB()
+
 	handler := &handlers.Handler{
 		DB:     db,
 		ApiKey: GEMINI_API_KEY,
@@ -45,17 +46,11 @@ func main() {
 		})
 	})
 
-	// Authentication routes
-	app.Post("/register", handlers.Register)
-	app.Post("/login", handlers.Login)
-
-	// Protected routes group
-	// api := app.Group("/api", middleware.AuthMiddleware())
-	api := app.Group("/api")
-	api.Post("/Chat", handler.HandleChat)
-	api.Get("/journal", handler.HandleJournal)
-	api.Get("/t-accounts", handler.HandleTAccount)
-	api.Get("/trial-balance", handler.HandleTrialBalance)
+	api := app.Group("/api", middleware.AuthMiddleware())
+	api.Post("/chat", handler.HandleChat)
+	// api.Get("/journal", handler.HandleJournal)
+	// api.Get("/t-accounts", handler.HandleTAccount)
+	// api.Get("/trial-balance", handler.HandleTrialBalance)
 
 	log.Fatal(app.Listen("0.0.0.0:3000"))
 }

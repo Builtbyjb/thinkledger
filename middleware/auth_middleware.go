@@ -1,6 +1,10 @@
 package middleware
 
-func AuthMiddleware() string {
+import "github.com/gofiber/fiber/v2"
 
-	return "Testing"
+func AuthMiddleware() fiber.Handler {
+
+	return func(c *fiber.Ctx) error {
+		return c.Next()
+	}
 }
