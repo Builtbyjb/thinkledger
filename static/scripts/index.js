@@ -78,13 +78,10 @@ Wraping everything in a global function improves minification.
 
     async function addToWaitlist(formData) {
         try {
-            const response = await fetch(
-                "http://127.0.0.1:3000/join-waitlist",
-                {
-                    method: "POST",
-                    body: formData,
-                },
-            );
+            const response = await fetch("/join-waitlist", {
+                method: "POST",
+                body: formData,
+            });
 
             if (response.status === 200) {
                 alert(
