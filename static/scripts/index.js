@@ -79,7 +79,7 @@ Wraping everything in a global function improves minification.
     async function addToWaitlist(formData) {
         try {
             const response = await fetch(
-                "http://127.0.0.1:3000/join-waitlist",
+                "https://thinkledger.app/join-waitlist",
                 {
                     method: "POST",
                     body: formData,
