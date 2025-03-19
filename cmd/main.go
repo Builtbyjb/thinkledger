@@ -15,9 +15,6 @@ func main() {
 
 	// Load .env file
 	godotenv.Load()
-	// if err != nil {
-	// 	log.Fatalf("Error loading .env file")
-	// }
 
 	// Get gemini api key
 	GEMINI_API_KEY := os.Getenv("GEMINI_DEV_API_KEY")
