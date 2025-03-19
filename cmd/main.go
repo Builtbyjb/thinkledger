@@ -14,10 +14,10 @@ import (
 func main() {
 
 	// Load .env file
-	err := godotenv.Load()
-	if err != nil {
-		log.Fatalf("Error loading .env file")
-	}
+	godotenv.Load()
+	// if err != nil {
+	// 	log.Fatalf("Error loading .env file")
+	// }
 
 	// Get gemini api key
 	GEMINI_API_KEY := os.Getenv("GEMINI_DEV_API_KEY")
@@ -42,8 +42,10 @@ func main() {
 
 	// health check
 	app.Get("/ping", func(c *fiber.Ctx) error {
+		envCheck := os.Getenv("ENV_CHECK")
 		return c.Status(fiber.StatusOK).JSON(fiber.Map{
 			"ping": "pong!",
+			"env":  envCheck,
 		})
 	})
 
