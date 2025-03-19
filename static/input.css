@@ -1,0 +1,40 @@
+@import "tailwindcss";
+
+@layer base {
+    h1,
+    h2,
+    h3 {
+        font-family: "Outfit", sans-serif;
+    }
+
+    p,
+    a,
+    button,
+    ul,
+    li,
+    input,
+    textarea {
+        font-family: "Poppins", sans-serif;
+    }
+
+    .faq-answer {
+        max-height: 0;
+        overflow: hidden;
+        transition:
+            max-height 0.3s ease,
+            padding 0.3s ease;
+        padding-top: 0;
+        padding-bottom: 0;
+    }
+    .faq-item.active .faq-answer {
+        max-height: 500px;
+        padding-top: 0.5rem;
+        padding-bottom: 1rem;
+    }
+    .faq-icon {
+        transition: transform 0.3s ease;
+    }
+    .faq-item.active .faq-icon {
+        transform: rotate(180deg);
+    }
+}

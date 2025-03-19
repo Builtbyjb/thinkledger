@@ -4,9 +4,9 @@ import (
 	"errors"
 	"fmt"
 	"log"
-	"server/agents/gemini"
-	"server/database"
-	"server/utils"
+	"server/internal/agents/gemini"
+	"server/internal/database"
+	"server/internal/utils"
 
 	"github.com/gofiber/fiber/v2"
 	"gorm.io/gorm"
@@ -121,7 +121,7 @@ func generateTrialBalancePrompt(trialBalance []utils.TrialBalanceEntry) (string,
 		return "", errors.New("trial balance cannot be empty")
 	}
 
-	prompt := fmt.Sprintf(`Rearrange this trial balance entries "%v" in order of 
+	prompt := fmt.Sprintf(`Rearrange this trial balance entries "%v" in order of
 	liquidity, adhering by the following rules assets first, followed by liabilities,
 	shareholder's equity, revenue, and expenses. You response should be in this format "%v".`,
 		trialBalance, utils.TrialBalanceResponseFormat,

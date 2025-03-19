@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
-	"server/utils"
+	"server/internal/utils"
 
 	"github.com/google/generative-ai-go/genai"
 	"google.golang.org/api/option"
@@ -30,7 +30,7 @@ func GeminiTransaction(prompt string, apiKey string) (utils.TransactionResponse,
 	model.ResponseMIMEType = "text/plain"
 	model.SystemInstruction = &genai.Content{
 		Parts: []genai.Part{genai.Text(
-			fmt.Sprintf(`Your response should be in this format %s. 
+			fmt.Sprintf(`Your response should be in this format %s.
       Do not make any assumptions.
 	  If the accounts affected is not clear ask for clarification.
 	  If the payment method is not clear ask for clarification.

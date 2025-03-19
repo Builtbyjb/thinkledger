@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
-	"server/utils"
+	"server/internal/utils"
 
 	"github.com/google/generative-ai-go/genai"
 	"google.golang.org/api/option"

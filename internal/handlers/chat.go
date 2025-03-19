@@ -1,18 +1,10 @@
 package handlers
 
 import (
-	"context"
-	"encoding/json"
 	"fmt"
 	"log"
-	"os"
-	"strings"
 
 	"github.com/gofiber/fiber/v2"
-	"golang.org/x/oauth2"
-	"golang.org/x/oauth2/google"
-	"google.golang.org/api/chat/v1"
-	"google.golang.org/api/option"
 )
 
 type ChatEvent struct {
@@ -40,7 +32,6 @@ type ChatEvent struct {
 
 func (h *Handler) HandleChat(c *fiber.Ctx) error {
 
-	// Get transaction record from the client
 	var chatEvent ChatEvent
 	if err := c.BodyParser((&chatEvent)); err != nil {
 		return c.SendStatus(fiber.StatusBadRequest)
@@ -48,106 +39,115 @@ func (h *Handler) HandleChat(c *fiber.Ctx) error {
 
 	log.Printf("Chat event received: %+v", chatEvent)
 
+	// TODO: Make more reboust
+
 	if chatEvent.Type == "MESSAGE" && chatEvent.Message.Text != "" {
 		receivedMessage := chatEvent.Message.Text
 		senderName := chatEvent.Message.Sender.DisplayName
-		spaceName := chatEvent.Space.Name
-		threadName := chatEvent.Message.Thread.Name
+		// spaceName := chatEvent.Space.Name
+		// threadName := chatEvent.Message.Thread.Name
 
 		responseMessage := fmt.Sprintf("Hello %s, you said: %s", senderName, receivedMessage)
 
-		err := sendMessage(spaceName, threadName, responseMessage)
-		if err != nil {
-			log.Printf("Error sending message: %v", err)
-			return c.SendStatus(fiber.StatusInternalServerError) // Return 500 for server error
-		}
+		// err := sendMessage(spaceName, threadName, responseMessage)
+		// if err != nil {
+		// 	log.Printf("Error sending message: %v", err)
+		// 	return c.SendStatus(fiber.StatusInternalServerError) // Return 500 for server error
+
+		// }
+		return c.Status(fiber.StatusOK).JSON(fiber.Map{
+			"text": responseMessage,
+		})
 	} else {
 		log.Println("Ignoring non-MESSAGE event or empty message")
+
+		return c.Status(fiber.StatusOK).JSON(fiber.Map{
+			"text": "I am currently ignoring non-MESSAGE events or empty messages",
+		})
 	}
 
-	return c.SendStatus(fiber.StatusOK)
 }
 
-func sendMessage(spaceName, threadName, messageText string) error {
+// func sendMessage(spaceName, threadName, messageText string) error {
 
-	// Get access token
-	token, err := getAccessToken()
-	if err != nil {
-		return fmt.Errorf("authentication error: %v", err)
-	}
+// 	// Get access token
+// 	token, err := getAccessToken()
+// 	if err != nil {
+// 		return fmt.Errorf("authentication error: %v", err)
+// 	}
 
-	ctx := context.Background()
+// 	ctx := context.Background()
 
-	chatService, err := chat.NewService(ctx, option.WithTokenSource(
-		// oauth2.StaticTokenSource(&oauth2.Token{AccessToken: token}), // For testing certain tokens
-		token,
-	))
+// 	chatService, err := chat.NewService(ctx, option.WithTokenSource(
+// 		// oauth2.StaticTokenSource(&oauth2.Token{AccessToken: token}), // For testing certain tokens
+// 		token,
+// 	))
 
-	if err != nil {
-		return fmt.Errorf("failed to create chat service: %v", err)
-	}
+// 	if err != nil {
+// 		return fmt.Errorf("failed to create chat service: %v", err)
+// 	}
 
-	message := &chat.Message{
-		Text: messageText,
-	}
+// 	message := &chat.Message{
+// 		Text: messageText,
+// 	}
 
-	// Use thread key to ensure replies are in the same thread.
-	_, err = chatService.Spaces.Messages.Create(spaceName, message).ThreadKey(threadName).Do()
-	if err != nil {
-		return fmt.Errorf("failed to send message: %v", err)
-	}
+// 	// Use thread key to ensure replies are in the same thread.
+// 	_, err = chatService.Spaces.Messages.Create(spaceName, message).ThreadKey(threadName).Do()
+// 	if err != nil {
+// 		return fmt.Errorf("failed to send message: %v", err)
+// 	}
 
-	log.Println("Message sent successfully to Google Chat")
-	return nil
-}
+// 	log.Println("Message sent successfully to Google Chat")
+// 	return nil
+// }
 
-func getAccessToken() (oauth2.TokenSource, error) {
+// func getAccessToken() (oauth2.TokenSource, error) {
 
-	privateKey := strings.ReplaceAll(os.Getenv("GOOGLE_PRIVATE_KEY"), `\n`, "\n")
+// 	privateKey := strings.ReplaceAll(os.Getenv("GOOGLE_PRIVATE_KEY"), `\n`, "\n")
 
-	// Construct JSON credentials from environment variables
-	credentials := map[string]interface{}{
-		"type":                        os.Getenv("GOOGLE_TYPE"),
-		"project_id":                  os.Getenv("GOOGLE_PROJECT_ID"),
-		"private_key_id":              os.Getenv("GOOGLE_PRIVATE_KEY_ID"),
-		"private_key":                 privateKey,
-		"client_email":                os.Getenv("GOOGLE_CLIENT_EMAIL"),
-		"client_id":                   os.Getenv("GOOGLE_CLIENT_ID"),
-		"auth_uri":                    os.Getenv("GOOGLE_AUTH_URI"),
-		"token_uri":                   os.Getenv("GOOGLE_TOKEN_URI"),
-		"auth_provider_x509_cert_url": os.Getenv("GOOGLE_AUTH_PROVIDER_X509_CERT_URL"),
-		"client_x509_cert_url":        os.Getenv("GOOGLE_CLIENT_X509_CERT_URL"),
-		"universe_domain":             os.Getenv("GOOGLE_UNIVERSE_DOMAIN"),
-	}
+// 	// Construct JSON credentials from environment variables
+// 	credentials := map[string]interface{}{
+// 		"type":                        os.Getenv("GOOGLE_TYPE"),
+// 		"project_id":                  os.Getenv("GOOGLE_PROJECT_ID"),
+// 		"private_key_id":              os.Getenv("GOOGLE_PRIVATE_KEY_ID"),
+// 		"private_key":                 privateKey,
+// 		"client_email":                os.Getenv("GOOGLE_CLIENT_EMAIL"),
+// 		"client_id":                   os.Getenv("GOOGLE_CLIENT_ID"),
+// 		"auth_uri":                    os.Getenv("GOOGLE_AUTH_URI"),
+// 		"token_uri":                   os.Getenv("GOOGLE_TOKEN_URI"),
+// 		"auth_provider_x509_cert_url": os.Getenv("GOOGLE_AUTH_PROVIDER_X509_CERT_URL"),
+// 		"client_x509_cert_url":        os.Getenv("GOOGLE_CLIENT_X509_CERT_URL"),
+// 		"universe_domain":             os.Getenv("GOOGLE_UNIVERSE_DOMAIN"),
+// 	}
 
-	jsonBytes, err := json.Marshal(credentials)
-	if err != nil {
-		return nil, fmt.Errorf("failed to marshal JSON credentials: %v", err)
-	}
+// 	jsonBytes, err := json.Marshal(credentials)
+// 	if err != nil {
+// 		return nil, fmt.Errorf("failed to marshal JSON credentials: %v", err)
+// 	}
 
-	// Configure JWT claims
-	config, err := google.JWTConfigFromJSON(
-		jsonBytes,
-		os.Getenv("GOOGLE_SERVICE_SCOPE"), // scope
-	)
-	if err != nil {
-		return nil, fmt.Errorf("unable to create JWT config: %v", err)
-	}
+// 	// Configure JWT claims
+// 	config, err := google.JWTConfigFromJSON(
+// 		jsonBytes,
+// 		os.Getenv("GOOGLE_SERVICE_SCOPE"), // scope
+// 	)
+// 	if err != nil {
+// 		return nil, fmt.Errorf("unable to create JWT config: %v", err)
+// 	}
 
-	ctx := context.Background()
+// 	ctx := context.Background()
 
-	// Get token source
-	tokenSource := config.TokenSource(ctx)
+// 	// Get token source
+// 	tokenSource := config.TokenSource(ctx)
 
-	// token, err := tokenSource.Token() // Getting the actual access token
-	// if err != nil {
-	// 	return "", fmt.Errorf("unable to get token: %v", err)
-	// }
+// 	// token, err := tokenSource.Token() // Getting the actual access token
+// 	// if err != nil {
+// 	// 	return "", fmt.Errorf("unable to get token: %v", err)
+// 	// }
 
-	// return token.AccessToken, nil
+// 	// return token.AccessToken, nil
 
-	return tokenSource, nil
-}
+// 	return tokenSource, nil
+// }
 
 // Sanitize transaction prompt
 // func generatePrompt(transaction string) (string, error) {

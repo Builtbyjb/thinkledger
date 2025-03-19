@@ -4,9 +4,8 @@ import (
 	"log"
 	"os"
 
-	"server/database"
-	"server/handlers"
-	"server/middleware"
+	"server/internal/handlers"
+	"server/internal/middleware"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/joho/godotenv"
@@ -31,11 +30,13 @@ func main() {
 		middleware.RequestTimer(),
 	)
 
+	app.Static("/static", "./static")
+
 	// Connect to database and create database engine
-	db := database.DB()
+	// db := database.DB()
 
 	handler := &handlers.Handler{
-		DB:     db,
+		// DB:     db,
 		ApiKey: GEMINI_API_KEY,
 	}
 
@@ -46,8 +47,21 @@ func main() {
 		})
 	})
 
-	api := app.Group("/api", middleware.AuthMiddleware())
-	api.Post("/chat", handler.HandleChat)
+	// Web routes
+	app.Get("/", handler.Index)
+	app.Route("/support", func(route fiber.Router) {
+		route.Get("/", handler.Support)
+		route.Get("/bookkeeping", handler.SupportBookkeeping)
+		route.Get("/financial-reports", handler.SupportFinancialReports)
+		route.Get("/analytics-insights", handler.SupportAnalyticsInsights)
+	}, "support.")
+	app.Get("/privacy-policy", handler.PrivacyPolicy)
+	app.Get("/terms-of-service", handler.TermsOfService)
+
+	// Api routes
+	v1 := app.Group("/api/v1")
+	v1.Post("/chat", middleware.ChatAuth(), handler.HandleChat)
+
 	// api.Get("/journal", handler.HandleJournal)
 	// api.Get("/t-accounts", handler.HandleTAccount)
 	// api.Get("/trial-balance", handler.HandleTrialBalance)

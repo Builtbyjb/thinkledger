@@ -3,7 +3,7 @@ package handlers
 import (
 	"errors"
 	"fmt"
-	"server/database"
+	"server/internal/database"
 
 	"github.com/gofiber/fiber/v2"
 	"gorm.io/gorm"

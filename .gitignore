@@ -1,4 +1,7 @@
 .env
 .vscode
+.zed
 /tmp/
-Makefile
+*_templ.go
+tailwindcss
+node_modules
