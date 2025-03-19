@@ -6,5 +6,5 @@ air:
 
 push:
 	~/go/bin/templ generate \
-	./tailwindcss -i ./static/input.css -o ./static/style.css --minify \
-	npm run minify
+	&& ./tailwindcss -i ./static/input.css -o ./static/style.css --minify \
+	&& npm run minify
