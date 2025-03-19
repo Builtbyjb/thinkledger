@@ -2,6 +2,5 @@
 .vscode
 .zed
 /tmp/
-*_templ.go
 tailwindcss
 node_modules
