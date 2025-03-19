@@ -78,6 +78,7 @@ Wraping everything in a global function improves minification.
 
     async function addToWaitlist(formData) {
         try {
+            // Send fetch requests
             const response = await fetch(
                 "https://thinkledger.app/join-waitlist",
                 {
