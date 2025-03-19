@@ -1,0 +1,67 @@
+package components
+
+type Category struct {
+	Title       string
+	Description string
+	Icon        string
+	Link        string
+}
+
+var categories = []Category{
+	{
+		Title:       "Bookkeeping",
+		Description: "Learn how we handle your bookkeeping tasks",
+		Icon:        "fa-solid fa-book text-2xl",
+		Link:        "/support/bookkeeping",
+	},
+	{
+		Title:       "Financial Reports",
+		Description: "Generate and understand your financial reports",
+		Icon:        "fa-solid fa-file-lines text-2xl",
+		Link:        "/support/financial-reports",
+	},
+	{
+		Title:       "Analytics & Insights",
+		Description: "Get AI-powered insights about your finances",
+		Icon:        "fa-solid fa-chart-line text-2xl",
+		Link:        "/support/analytics-insights",
+	},
+	// {
+	// 	title: "Expense Tracking",
+	// 	description: "Track and categorize your business expenses",
+	// 	icon: Receipt,
+	// 	href: "/support/expense-tracking",
+	// },
+	// {
+	// 	title: "Billing & Payments",
+	// 	description: "Manage invoices and process payments",
+	// 	icon: CreditCard,
+	// 	href: "/support/billing-payments",
+	// },
+	// {
+	// 	title: "Account Settings",
+	// 	description: "Manage your account and preferences",
+	// 	icon: Settings,
+	// 	href: "/support/account-settings",
+	// },
+}
+
+templ SupportCategories() {
+	<div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+		for _, category := range categories {
+			<a href={ templ.SafeURL(category.Link) } class="">
+				<div class="p-4 border-2 rounded-lg border-gray-300 h-full">
+					<div class="mb-4 flex items-center">
+						<i class={ category.Icon }></i>
+						<h3 class="font-medium text-xl ms-4">
+							{ category.Title }
+						</h3>
+					</div>
+					<div>
+						<p>{ category.Description }</p>
+					</div>
+				</div>
+			</a>
+		}
+	</div>
+}

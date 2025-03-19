@@ -10,6 +10,5 @@ FROM golang:1.24.1-alpine3.21
 WORKDIR /app
 COPY --from=builder /app/static /app/static
 COPY --from=builder /app/bin /app/bin
-COPY --from=builder /app/.env /app/.env
 EXPOSE 3000
 CMD ["./bin/main.go"]

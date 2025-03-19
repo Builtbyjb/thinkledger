@@ -1,2 +1,6 @@
 .env
 .vscode
+.zed
+/tmp/
+tailwindcss
+node_modules
