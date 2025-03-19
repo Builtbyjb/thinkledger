@@ -56,6 +56,7 @@ func main() {
 	}, "support.")
 	app.Get("/privacy-policy", handler.PrivacyPolicy)
 	app.Get("/terms-of-service", handler.TermsOfService)
+	app.Post("/join-waitlist", handler.JoinWaitlist)
 
 	// Api routes
 	v1 := app.Group("/api/v1")

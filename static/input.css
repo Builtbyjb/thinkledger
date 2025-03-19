@@ -13,7 +13,8 @@
     ul,
     li,
     input,
-    textarea {
+    textarea,
+    label {
         font-family: "Poppins", sans-serif;
     }
 

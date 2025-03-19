@@ -78,7 +78,51 @@ func joinWaitlistForm() templ.Component {
 			templ_7745c5c3_Var4 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, "<div id=\"join-waitlist-form\" class=\"w-[100%] h-[100%] bg-[#0A0A0A] bg-opacity-50 fixed top-0 left-0 flex items-center justify-center hidden\"><div class=\"mx-auto w-[30rem] bg-primary p-8 text-left\"><div class=\"flex w-full justify-between mb-8 items-center\"><h3 class=\"text-white text-xl\">Join our waitlist</h3><button id=\"close-join-waitlist-form\" class=\"h-8 w-8\"><i class=\"fa-solid fa-xmark text-2xl\"></i> <span class=\"sr-only\">Close</span></button></div><p class=\"text-white mb-4\">Be the first to know when we launch. Get early access to our product.</p><form class=\"space-y-4\"><div><label for=\"firstname\">First name <span class=\"text-red-500 ms-2\">*</span></label> <input class=\"font-poppins text-gray-900\" placeholder=\"Enter your first name\" id=\"firstname\" name=\"firstname\" type=\"text\"><p class=\"text-sm text-red-500\"></p></div><div><label for=\"lastname\">Last name <span className=\"text-red-500 ms-2\">*</span></label> <input placeholder=\"Enter your last name\" name=\"lastname\" id=\"lastname\" type=\"text\" class=\"font-poppins text-gray-900\"><p class=\"text-sm text-red-500 clear-field\"></p></div><div><label for=\"email\">Email <span class=\"text-red-500 ms-2\">*</span></label> <input placeholder=\"Enter your email\" class=\"font-poppins text-gray-900\" type=\"email\" name=\"email\" id=\"email\"><p class=\"text-sm text-red-500 clear-field\"></p></div><p class=\"text-sm\">Your privacy matters to us, and we will never share or sell your information. Read our <a href=\"/privacy-policy#communication-preferences\" target=\"_blank\" class=\"\">privacy policy</a> for more information.</p><button type=\"submit\" class=\"\">Join waitlist</button></form></div></div>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, "<div id=\"join-waitlist-form\" class=\"w-[100%] h-[100%] bg-[#0A0A0A]/50 fixed top-0 left-0 flex items-center justify-center hidden p-4\"><div class=\"mx-auto w-[30rem] bg-[#0A0A0A] border-2 rounded-lg p-8 border-gray-300 text-left\"><div class=\"flex w-full justify-between mb-8 items-center\"><h3 class=\"text-xl\">Join our waitlist</h3><button id=\"close-join-waitlist-form\" class=\"h-8 w-8 hover:border-2 hover:border-gray-300 hover:scale-120 rounded-lg cursor-pointer\"><i class=\"fa-solid fa-xmark text-2xl\"></i> <span class=\"sr-only\">Close</span></button></div><p class=\"text-white mb-4\">Be the first to know when we launch. Get early access to our product.</p><form class=\"space-y-4\" id=\"join-waitlist-submit\"><div><label for=\"firstname\">First name <span class=\"text-red-500 ms-2\">*</span></label> <input required class=\"w-full text-gray-900 bg-gray-200 border-2 rounded-lg focus:border-accent h-[2rem] p-4\" id=\"firstname\" name=\"firstname\" type=\"text\"><p class=\"text-sm text-red-500\"></p></div><div><label for=\"lastname\">Last name <span class=\"text-red-500 ms-2\">*</span></label> <input required name=\"lastname\" id=\"lastname\" type=\"text\" class=\"w-full text-gray-900 bg-gray-200 border-2 rounded-lg focus:border-accent h-[2rem] p-4\"><p class=\"text-sm text-red-500 clear-field\"></p></div><div><label for=\"email\">Email <span class=\"text-red-500 ms-2\">*</span></label> <input required type=\"email\" name=\"email\" id=\"email\" class=\"w-full text-gray-900 bg-gray-200 border-2 rounded-lg focus:border-accent h-[2rem] p-4\"><p class=\"text-sm text-red-500 clear-field\"></p></div><p class=\"text-sm\">Your privacy matters to us, and we will never share or sell your information. Read our ")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		var templ_7745c5c3_Var5 = []any{styles.LinkTextStyle}
+		templ_7745c5c3_Err = templ.RenderCSSItems(ctx, templ_7745c5c3_Buffer, templ_7745c5c3_Var5...)
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 4, "<a href=\"/privacy-policy#communication-preferences\" target=\"_blank\" class=\"")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		var templ_7745c5c3_Var6 string
+		templ_7745c5c3_Var6, templ_7745c5c3_Err = templ.JoinStringErrs(templ.CSSClasses(templ_7745c5c3_Var5).String())
+		if templ_7745c5c3_Err != nil {
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/components/call_to_action.templ`, Line: 1, Col: 0}
+		}
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var6))
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 5, "\">privacy policy</a> for more information.</p>")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		var templ_7745c5c3_Var7 = []any{styles.BtnStyleFull}
+		templ_7745c5c3_Err = templ.RenderCSSItems(ctx, templ_7745c5c3_Buffer, templ_7745c5c3_Var7...)
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 6, "<button type=\"submit\" class=\"")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		var templ_7745c5c3_Var8 string
+		templ_7745c5c3_Var8, templ_7745c5c3_Err = templ.JoinStringErrs(templ.CSSClasses(templ_7745c5c3_Var7).String())
+		if templ_7745c5c3_Err != nil {
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/components/call_to_action.templ`, Line: 1, Col: 0}
+		}
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var8))
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 7, "\">Join waitlist</button></form></div></div>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -102,9 +146,9 @@ func CallToAction() templ.Component {
 			}()
 		}
 		ctx = templ.InitializeContext(ctx)
-		templ_7745c5c3_Var5 := templ.GetChildren(ctx)
-		if templ_7745c5c3_Var5 == nil {
-			templ_7745c5c3_Var5 = templ.NopComponent
+		templ_7745c5c3_Var9 := templ.GetChildren(ctx)
+		if templ_7745c5c3_Var9 == nil {
+			templ_7745c5c3_Var9 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
 		templ_7745c5c3_Err = joinWaitlistBtn().Render(ctx, templ_7745c5c3_Buffer)

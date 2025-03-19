@@ -23,26 +23,26 @@
     }),
         document
             .querySelector("#contact-form-submit")
-            .addEventListener("click", async () => {
-                const name = document.querySelector("#contact-form-name").value;
-                const email = document.querySelector(
-                    "#contact-form-email",
-                ).value;
-                const subject = document.querySelector(
-                    "#contact-form-subject",
-                ).value;
+            .addEventListener("submit", async (event) => {
+                event.preventDefault();
+
+                const name = document.querySelector("#contact-form-name");
+                const email = document.querySelector("#contact-form-email");
+                const subject = document.querySelector("#contact-form-subject");
                 const description = document.querySelector(
                     "#contact-form-description",
-                ).value;
+                );
                 const privacyPolicy = document.querySelector(
                     "#contact-form-privacy-policy",
                 );
+
                 if (privacyPolicy.checked) {
                     const formData = new FormData();
-                    formData.append("name", name),
-                        formData.append("email", email),
-                        formData.append("subject", subject),
-                        formData.append("description", description);
+                    formData.append("name", name.value),
+                        formData.append("email", email.value),
+                        formData.append("subject", subject.value),
+                        formData.append("description", description.value);
+
                     try {
                         const response = await emailjs.send(
                             emailJsServiceID,
@@ -53,6 +53,12 @@
                             alert(
                                 "Your email has been sent, we will get back to shortly",
                             );
+
+                            // Clear contact form
+                            name.value = "";
+                            subject.value = "";
+                            email.value = "";
+                            description.value = "";
                         } else {
                             alert(
                                 "An error occurred while sending your email, Please try again",
@@ -66,6 +72,6 @@
                 document.querySelector(
                     "#contact-form-privacy-policy-error",
                 ).innerText =
-                    "Before sending an emai, please review and agree to our privacy policy";
+                    "Before sending an email, please review and agree to our privacy policy";
             });
 })();
