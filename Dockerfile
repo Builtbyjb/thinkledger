@@ -1,21 +1,15 @@
-FROM golang:1.23.5
-
-# set working directory
-WORKDIR /app/server
-
-# Install air for hot reload
-RUN go install github.com/air-verse/air@latest
-
-# Copies local files to the docker container
+FROM golang:1.24.1-alpine3.21 AS builder
+WORKDIR /app
 COPY . .
-
 RUN go mod tidy
 
-# Ensure air binary is in the path
-ENV PATH="/go/bin:${PATH}"
+# Output path first
+RUN go build -o ./bin/main.go ./cmd/main.go
 
-RUN go build -o ./cmd/main ./cmd/main.go
-
+FROM golang:1.24.1-alpine3.21
+WORKDIR /app
+COPY --from=builder /app/static /app/static
+COPY --from=builder /app/bin /app/bin
+COPY --from=builder /app/.env /app/.env
 EXPOSE 3000
-
-CMD ["./cmd/main"]
+CMD ["./bin/main.go"]

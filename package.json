@@ -1,0 +1,8 @@
+{
+    "scripts": {
+        "minify": "babel-minify ./static/scripts/ -d ./static/dist"
+    },
+    "devDependencies": {
+        "babel-minify": "^0.5.2"
+    }
+}
