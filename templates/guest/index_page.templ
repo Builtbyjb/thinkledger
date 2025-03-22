@@ -1,4 +1,4 @@
-package templates
+package guest
 
 import "server/templates/components"
 
@@ -12,24 +12,25 @@ const indexScript string = "/static/dist/index.js"
 
 templ IndexPage() {
 	@GuestLayout(indexTitle, indexMetaDescription, indexScript) {
-		<main class="space-y-20">
+		<main class="space-y-16">
 			<section>
 				<div class="z-20">
-					<h1 class="text-5xl md:text-5xl lg:text-5xl font-medium mb-4 leading-[1.2]">
+					<h1 class="text-5xl font-medium mb-4 leading-[1.2]">
 						Keep track of your business's financial health.
 					</h1>
 					<p class="text-white mb-8 2xl:w-[70%] xl:w-[70%] l:w-[75%] md:w-[80%] sm:w-[100%] w-[100%]">
 						We help business owners like you to effortlessly track your
-						business’s financial health with automated, accurate bookkeeping and
+						business’s financial health with automated bookkeeping and
 						AI-driven financial analysis while keeping you in full control of
 						your financial data.
 					</p>
 					<p class="text-white mb-4">
-						Join the waitlist to get early access
+						Join the waitlist to get early access.
 					</p>
 					@components.CallToAction()
 				</div>
 			</section>
+			<img class="w-full" src="/static/assets/data_chart.png" alt="thinkledger data flow chart"/>
 			<section id="features">
 				@components.Features()
 			</section>
@@ -46,7 +47,7 @@ templ IndexPage() {
 				<h2 class="text-3xl font-medium mb-4">
 					Running a healthy business has never been easier.
 				</h2>
-				<p class="mb-4">Join the waitlist to get early access today!.</p>
+				<p class="mb-4">Join the waitlist to get early access today!</p>
 				@components.CallToAction()
 			</section>
 		</main>

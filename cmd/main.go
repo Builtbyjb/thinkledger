@@ -58,6 +58,9 @@ func main() {
 	app.Get("/terms-of-service", handler.TermsOfService)
 	app.Post("/join-waitlist", handler.JoinWaitlist)
 
+	// Not found (404) handler
+	app.Use(handler.NotFound)
+
 	// Api routes
 	v1 := app.Group("/api/v1")
 	v1.Post("/chat", middleware.ChatAuth(), handler.HandleChat)
