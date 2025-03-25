@@ -49,11 +49,11 @@ func SupportAnalyticsInsightsPage() templ.Component {
 				}()
 			}
 			ctx = templ.InitializeContext(ctx)
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<a href=\"/support\">")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<a href=\"/support\" class=\"flex items-center gap-2 mb-8\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			var templ_7745c5c3_Var3 = []any{fmt.Sprintf("fa-solid fa-arrow-left mb-8 text-3xl %v", styles.LinkIconStyle)}
+			var templ_7745c5c3_Var3 = []any{fmt.Sprintf("fa-solid fa-arrow-left text-3xl %v", styles.LinkIconStyle)}
 			templ_7745c5c3_Err = templ.RenderCSSItems(ctx, templ_7745c5c3_Buffer, templ_7745c5c3_Var3...)
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
@@ -71,7 +71,7 @@ func SupportAnalyticsInsightsPage() templ.Component {
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, "\"></i></a><div class=\"mb-4 flex items-center\"><i class=\"fa-solid fa-chart-line text-2xl mr-4\"></i><h3 class=\"font-medium text-xl\">Analytics Insights</h3></div><p class=\"leading-[1.5]\">Access financial analytics and insights directly through Google Chat. This user-friendly interface lets you interact with your data and our services seamlessly. You can request regular updates on your business's financial health, compare performance across different accounting periods, and much more.</p>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, "\"></i> <span>Back</span></a><div class=\"mb-4 flex items-center\"><i class=\"fa-solid fa-chart-line text-2xl mr-4\"></i><h3 class=\"font-medium text-xl\">Analytics Insights</h3></div><p class=\"leading-[1.5]\">Access financial analytics and insights directly through Google Chat. This user-friendly interface lets you interact with your data and our services seamlessly. You can request regular updates on your business's financial health, compare performance across different accounting periods, and much more.</p>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}

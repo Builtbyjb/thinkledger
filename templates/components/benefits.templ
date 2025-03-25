@@ -41,9 +41,9 @@ var benefits = []Benefit{
 templ Benefits() {
 	<div>
 		<div class="w-full text-center">
-		<h2 class="text-2xl mb-8 font-medium">
-			Why you will love ThinkLedger
-		</h2>
+			<h2 class="text-2xl mb-8 font-medium">
+				Why you will love ThinkLedger
+			</h2>
 		</div>
 		<div class="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-8">
 			for _, benefit := range benefits {
@@ -52,7 +52,7 @@ templ Benefits() {
 						<i class={ benefit.Icon }></i>
 						<h3 class="text-xl font-medium ms-4">{ benefit.Title }</h3>
 					</div>
-					<div class="font-[Poppins]">{ benefit.Description }</div>
+					<div class="font-share-tech-mono">{ benefit.Description }</div>
 				</div>
 			}
 		</div>

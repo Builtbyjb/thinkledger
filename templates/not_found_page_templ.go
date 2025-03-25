@@ -45,7 +45,7 @@ func NotFoundPage() templ.Component {
 				}()
 			}
 			ctx = templ.InitializeContext(ctx)
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div class=\"flex flex-col items-center justify-center min-h-screen\"><div class=\"text-center\"><h1 class=\"text-6xl font-bold text-gray-300 mb-4\">404</h1><h2 class=\"text-2xl font-semibold text-gray-400 mb-4\">Page Not Found</h2><p class=\"text-gray-400 mb-8\">Oops! The page you're looking for doesn't exist.</p><button class=\"bg-[#0065FA] hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition duration-200 ease-in-out transform hover:scale-120\"><a href=\"/\">Go to Homepage</a></button></div></div>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div class=\"flex flex-col items-center justify-center min-h-screen\"><div class=\"text-center z-20\"><h1 class=\"text-6xl font-bold text-gray-300 mb-4\">404</h1><h2 class=\"text-2xl font-semibold text-gray-400 mb-4\">Page Not Found</h2><p class=\"text-gray-400 mb-8\">Oops! The page you're looking for doesn't exist.</p><button class=\"bg-[#0065FA] hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition duration-200 ease-in-out transform hover:scale-120\"><a href=\"/\">Go to Homepage</a></button></div></div>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}

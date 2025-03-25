@@ -49,11 +49,11 @@ func SupportFinancialReportsPage() templ.Component {
 				}()
 			}
 			ctx = templ.InitializeContext(ctx)
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<a href=\"/support\">")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<a href=\"/support\" class=\"flex items-center mb-8 gap-2\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			var templ_7745c5c3_Var3 = []any{fmt.Sprintf("fa-solid fa-arrow-left mb-8 text-3xl %v", styles.LinkIconStyle)}
+			var templ_7745c5c3_Var3 = []any{fmt.Sprintf("fa-solid fa-arrow-left text-3xl %v", styles.LinkIconStyle)}
 			templ_7745c5c3_Err = templ.RenderCSSItems(ctx, templ_7745c5c3_Buffer, templ_7745c5c3_Var3...)
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
@@ -71,7 +71,7 @@ func SupportFinancialReportsPage() templ.Component {
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, "\"></i></a><div class=\"mb-4 flex items-center\"><i class=\"fa-solid fa-file-lines text-2xl mr-4\"></i><h3 class=\"font-medium text-xl\">Financial Reports</h3></div><div class=\"space-y-4\"><p class=\"leading-[1.5]\">Our software automatically generates the following financial statements for business users:</p><ul class=\"list-disc pl-6 space-y-2\"><li>Income statements (profit and loss statements).</li><li>Owner's equity statements.</li><li>Balance Sheets.</li><li>Cashflow statements</li></ul><p>These financial statements are updated automatically as new transactions are recorded.</p></div>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, "\"></i> <span>Back</span></a><div class=\"mb-4 flex items-center\"><i class=\"fa-solid fa-file-lines text-2xl mr-4\"></i><h3 class=\"font-medium text-xl\">Financial Reports</h3></div><div class=\"space-y-4\"><p class=\"leading-[1.5]\">Our software automatically generates the following financial statements for business users:</p><ul class=\"list-disc pl-6 space-y-2\"><li>Income statements (profit and loss statements).</li><li>Owner's equity statements.</li><li>Balance Sheets.</li><li>Cashflow statements</li></ul><p>These financial statements are updated automatically as new transactions are recorded.</p></div>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}

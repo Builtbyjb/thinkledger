@@ -14,8 +14,9 @@ templ SupportFinancialReportsPage() {
 		supportFinancialReportsMetaDescription,
 		"",
 	) {
-		<a href="/support">
-			<i class={ fmt.Sprintf("fa-solid fa-arrow-left mb-8 text-3xl %v", styles.LinkIconStyle) }></i>
+		<a href="/support" class="flex items-center mb-8 gap-2">
+			<i class={ fmt.Sprintf("fa-solid fa-arrow-left text-3xl %v", styles.LinkIconStyle) }></i>
+			<span>Back</span>
 		</a>
 		<div class="mb-4 flex items-center">
 			<i class="fa-solid fa-file-lines text-2xl mr-4"></i>

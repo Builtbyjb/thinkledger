@@ -15,6 +15,8 @@ templ Root(title, metaDescription, script string) {
 			<link rel="preconnect" href="https://fonts.googleapis.com" crossorigin="anonymous"/>
 			<link rel="preconnect" href="https://fonts.gstatic.com"/>
 			<link rel="stylesheet" href={ poppins }/>
+			<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet"/>
+			<link href="https://fonts.googleapis.com/css2?family=Electrolize&display=swap" rel="stylesheet"/>
 			<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap"/>
 			<link rel="apple-touch-icon" sizes="180x180" href="/static/assets/apple-touch-icon.png"/>
 			<link rel="icon" type="image/png" sizes="32x32" href="/static/assets/favicon-32x32.png"/>
@@ -27,7 +29,7 @@ templ Root(title, metaDescription, script string) {
 		</head>
 		<body class="bg-[#0A0A0A] text-white relative">
 			@components.BackgroundSVG()
-			<div class="z-10">
+			<div>
 				{ children... }
 			</div>
 			// Scripts

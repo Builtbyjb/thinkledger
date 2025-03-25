@@ -51,7 +51,7 @@ func IndexPage() templ.Component {
 				}()
 			}
 			ctx = templ.InitializeContext(ctx)
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<main class=\"space-y-16\"><section><div class=\"z-20 mb-4 w-[100%] sm:w-[90%] md:w-[90%] lg:w-[80%] 2xl:w-[70%] text-center mx-auto\"><h1 class=\"text-5xl font-medium mb-4 leading-[1.2]\">Keep Track of Your Business's Financial Health.</h1><p class=\"mb-8\">We make it easier and cheaper for eCommerce business owners like you to have better understanding of your business's financial health.</p><p class=\"text-white mb-4\">Join the waitlist to get early access.</p>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<main class=\"space-y-16\"><section><div class=\"z-20 mb-4 w-[100%] sm:w-[90%] md:w-[90%] lg:w-[80%] 2xl:w-[70%] text-center mx-auto\"><h1 class=\"text-4xl font-medium mb-4 leading-[1.2]\">Keep Track of Your Business's Financial Health.</h1><p class=\"mb-8\">We make it easier and cheaper for eCommerce business owners like you to have a better understanding of your business's financial health.</p><p class=\"text-white mb-4\">Join the waitlist to get early access.</p>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -59,7 +59,7 @@ func IndexPage() templ.Component {
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "</div><img class=\"md:h-[30rem] mx-auto\" src=\"/static/assets/data_chart.png\" alt=\"thinkledger data flow chart\"></section><section id=\"features\">")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "</div></section><section id=\"features\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}

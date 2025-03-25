@@ -1,87 +1,100 @@
 (function () {
-    // DOM Elements
-    const sidebar = document.getElementById("sidebar");
-    const toggleSidebar = document.getElementById("toggle-sidebar");
-    const mobileToggle = document.getElementById("mobile-toggle");
-    const mobileOverlay = document.getElementById("mobile-overlay");
+    const sidebar = document.querySelector("#sidebar");
+    const toggleSidebar = document.querySelector("#toggle-sidebar");
     const dropdownTriggers = document.querySelectorAll(".dropdown-trigger");
+    const toggleSidebarText = document.querySelector("#toggle-sidebar-text");
 
     // State
     let isSidebarCollapsed = false;
     let isMobileSidebarOpen = false;
 
+    const sidebarMax = "w-[17rem]";
+    const sidebarMin = "w-[4rem]";
+
     // Check if device is mobile
     const isMobile = () => window.innerWidth < 768;
 
-    // Toggle sidebar on desktop
+    // Initialize mobile view
+    if (isMobile()) {
+        toggleSidebarText.innerText = "Open";
+        sidebar.classList.add("hidden");
+    }
+
     toggleSidebar.addEventListener("click", () => {
-        console.log("clicked");
-        if (isMobile()) return;
+        // console.log("clicked");
 
-        isSidebarCollapsed = !isSidebarCollapsed;
+        if (isMobile()) {
+            isMobileSidebarOpen = !isMobileSidebarOpen;
 
-        if (isSidebarCollapsed) {
-            sidebar.classList.remove("w-64");
-            sidebar.classList.add("w-16");
-
-            // Hide text elements
-            document.querySelectorAll(".sidebar-text").forEach((el) => {
-                el.classList.add("hidden");
-            });
-
-            // Hide group labels
-            document.querySelectorAll(".sidebar-group-label").forEach((el) => {
-                el.classList.add("opacity-0");
-            });
-
-            // Hide search
-            document.querySelectorAll(".sidebar-search").forEach((el) => {
-                el.classList.add("hidden");
-            });
-
-            // Hide dropdown content
-            document.querySelectorAll(".dropdown-content").forEach((el) => {
-                el.classList.add("hidden");
-            });
-
-            // Add tooltip behavior for collapsed mode
-            document
-                .querySelectorAll(".dropdown-trigger")
-                .forEach((trigger) => {
-                    trigger.setAttribute("title", "Projects");
-                });
+            if (isMobileSidebarOpen) {
+                toggleSidebar.classList.add(
+                    "absolute",
+                    "z-[200]",
+                    "right-0",
+                    "top-0",
+                );
+                sidebar.classList.add("absolute", "z-[100]", "w-[65%]");
+                sidebar.classList.remove("hidden");
+                toggleSidebarText.innerText = "Close";
+            } else {
+                toggleSidebar.classList.remove(
+                    "absolute",
+                    "z-[200]",
+                    "right-0",
+                    "top-0",
+                );
+                sidebar.classList.remove("absolute", "z-[100]", "w-[65%]");
+                sidebar.classList.add("hidden");
+                toggleSidebarText.innerText = "Open";
+            }
         } else {
-            sidebar.classList.remove("w-16");
-            sidebar.classList.add("w-64");
+            isSidebarCollapsed = !isSidebarCollapsed;
 
-            // Show text elements
-            document.querySelectorAll(".sidebar-text").forEach((el) => {
-                el.classList.remove("hidden");
-            });
+            if (isSidebarCollapsed) {
+                sidebar.classList.remove(sidebarMax);
+                sidebar.classList.add(sidebarMin);
+                toggleSidebarText.innerText = "Open";
 
-            // Show group labels
-            document.querySelectorAll(".sidebar-group-label").forEach((el) => {
-                el.classList.remove("opacity-0");
-            });
+                // Hide text elements
+                document.querySelectorAll(".sidebar-text").forEach((el) => {
+                    el.classList.add("hidden");
+                });
 
-            // Show search
-            document.querySelectorAll(".sidebar-search").forEach((el) => {
-                el.classList.remove("hidden");
-            });
+                // Hide dropdown content
+                document.querySelectorAll(".dropdown-content").forEach((el) => {
+                    el.classList.add("hidden");
+                });
 
-            // Show dropdown content if it was open
-            document
-                .querySelectorAll(".dropdown-content.is-open")
-                .forEach((el) => {
+                // Add tooltip behavior for collapsed mode
+                // document
+                //     .querySelectorAll(".dropdown-trigger")
+                //     .forEach((trigger) => {
+                //         trigger.setAttribute("title", "Projects");
+                //     });
+            } else {
+                sidebar.classList.remove(sidebarMin);
+                sidebar.classList.add(sidebarMax);
+                toggleSidebarText.innerText = "Close";
+
+                // Show text elements
+                document.querySelectorAll(".sidebar-text").forEach((el) => {
                     el.classList.remove("hidden");
                 });
 
-            // Remove tooltips
-            document
-                .querySelectorAll(".dropdown-trigger")
-                .forEach((trigger) => {
-                    trigger.removeAttribute("title");
-                });
+                // Show dropdown content if it was open
+                document
+                    .querySelectorAll(".dropdown-content.is-open")
+                    .forEach((el) => {
+                        el.classList.remove("hidden");
+                    });
+
+                // Remove tooltips
+                // document
+                //     .querySelectorAll(".dropdown-trigger")
+                //     .forEach((trigger) => {
+                //         trigger.removeAttribute("title");
+                //     });
+            }
         }
     });
 
@@ -102,6 +115,8 @@
                 // If sidebar is collapsed, don't show dropdown
                 if (isSidebarCollapsed) {
                     content.classList.add("hidden");
+                } else {
+                    content.classList.remove("hidden");
                 }
             } else {
                 // Close dropdown
@@ -112,48 +127,32 @@
         });
     });
 
-    // Toggle sidebar on mobile
-    mobileToggle.addEventListener("click", () => {
-        isMobileSidebarOpen = !isMobileSidebarOpen;
-
-        if (isMobileSidebarOpen) {
-            sidebar.classList.add("translate-x-0");
-            sidebar.classList.remove("-translate-x-full");
-            mobileOverlay.classList.remove("hidden");
-        } else {
-            sidebar.classList.remove("translate-x-0");
-            sidebar.classList.add("-translate-x-full");
-            mobileOverlay.classList.add("hidden");
-        }
-    });
-
-    // Close sidebar when clicking overlay
-    mobileOverlay.addEventListener("click", () => {
-        isMobileSidebarOpen = false;
-        sidebar.classList.remove("translate-x-0");
-        sidebar.classList.add("-translate-x-full");
-        mobileOverlay.classList.add("hidden");
-    });
-
     // Handle resize events
     window.addEventListener("resize", () => {
         if (isMobile()) {
+            if (isMobileSidebarOpen) {
+                toggleSidebar.classList.add(
+                    "absolute",
+                    "z-[200]",
+                    "right-0",
+                    "top-0",
+                );
+                toggleSidebarText.innerText = "Close";
+            } else {
+                toggleSidebar.classList.remove(
+                    "absolute",
+                    "z-[200]",
+                    "right-0",
+                    "top-0",
+                );
+                toggleSidebarText.innerText = "Open";
+            }
             // Reset desktop styles
             if (isSidebarCollapsed) {
-                sidebar.classList.remove("w-16");
-                sidebar.classList.add("w-64");
+                sidebar.classList.remove("absolute", "z-[100]", "w-[65%]");
+                sidebar.classList.add(sidebarMax);
 
                 document.querySelectorAll(".sidebar-text").forEach((el) => {
-                    el.classList.remove("hidden");
-                });
-
-                document
-                    .querySelectorAll(".sidebar-group-label")
-                    .forEach((el) => {
-                        el.classList.remove("opacity-0");
-                    });
-
-                document.querySelectorAll(".sidebar-search").forEach((el) => {
                     el.classList.remove("hidden");
                 });
 
@@ -169,20 +168,32 @@
 
             // Apply mobile styles
             if (!isMobileSidebarOpen) {
-                sidebar.classList.add("-translate-x-full");
-                sidebar.classList.remove("translate-x-0");
+                sidebar.classList.add("hidden");
+                sidebar.classList.remove("absolute", "z-[100]", "w-[65%]");
             }
         } else {
+            if (isSidebarCollapsed) {
+                toggleSidebarText.innerText = "Open";
+            } else {
+                toggleSidebarText.innerText = "Close";
+            }
+
+            toggleSidebar.classList.remove(
+                "absolute",
+                "z-[200]",
+                "right-0",
+                "top-0",
+            );
+
             // Reset mobile styles
-            sidebar.classList.remove("-translate-x-full");
-            sidebar.classList.add("translate-x-0");
-            mobileOverlay.classList.add("hidden");
+            sidebar.classList.remove(
+                "hidden",
+                "absolute",
+                "z-[100]",
+                "w-[65%]",
+            );
+            sidebar.classList.add(sidebarMax);
             isMobileSidebarOpen = false;
         }
     });
-
-    // Initialize mobile view
-    if (isMobile()) {
-        sidebar.classList.add("-translate-x-full");
-    }
 })();

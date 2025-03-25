@@ -6,4 +6,4 @@ const LinkTextStyle string = "underline transition delay-150 duration-500 ease-i
 
 const LinkIconStyle string = "transition delay-150 duration-300 ease-in-out hover:-translate-y-1 hover:scale-120"
 
-const BtnStyleOutline string = "border-2 rounded-lg border-[#0065FA] text-white font-medium transition duration-200 ease-in-out transform hover:scale-110 hover:bg-[#0065FA] cursor-pointer py-6 px-8"
+const BtnStyleOutline string = "border-2 rounded-lg border-[#0065FA] text-white font-medium transition duration-200 ease-in-out transform hover:scale-110 hover:bg-[#0065FA]/30 cursor-pointer py-6 px-8"

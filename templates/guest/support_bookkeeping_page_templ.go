@@ -49,11 +49,11 @@ func SupportBookkeepingPage() templ.Component {
 				}()
 			}
 			ctx = templ.InitializeContext(ctx)
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<a href=\"/support\">")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<a href=\"/support\" class=\"flex items-center gap-2 mb-8\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			var templ_7745c5c3_Var3 = []any{fmt.Sprintf("fa-solid fa-arrow-left mb-8 text-3xl %v", styles.LinkIconStyle)}
+			var templ_7745c5c3_Var3 = []any{fmt.Sprintf("fa-solid fa-arrow-left text-3xl %v", styles.LinkIconStyle)}
 			templ_7745c5c3_Err = templ.RenderCSSItems(ctx, templ_7745c5c3_Buffer, templ_7745c5c3_Var3...)
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
@@ -71,7 +71,7 @@ func SupportBookkeepingPage() templ.Component {
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, "\"></i></a><div class=\"mb-4 flex items-center\"><i class=\"fa-solid fa-book text-2xl mr-4\"></i><h3 class=\"font-medium text-xl\">Bookkeeping</h3></div><p class=\"leading-[1.5]\">Our software automatically retrieves your business transaction data from your connected banking services. Using generative AI, we convert this data into journal entries in your Google Sheets. For business users, the entries follow a double-entry format that clearly shows the accounts being credited and debited. The Google Sheets file is then stored in a folder we automatically generate in the Google Drive account linked to the email address you used to create your account.</p>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, "\"></i> <span>Back</span></a><div class=\"mb-4 flex items-center\"><i class=\"fa-solid fa-book text-2xl mr-4\"></i><h3 class=\"font-medium text-xl\">Bookkeeping</h3></div><p class=\"leading-[1.5]\">Our software automatically retrieves your business transaction data from your connected banking services. Using generative AI, we convert this data into journal entries in your Google Sheets. For business users, the entries follow a double-entry format that clearly shows the accounts being credited and debited. The Google Sheets file is then stored in a folder we automatically generate in the Google Drive account linked to the email address you used to create your account.</p>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
