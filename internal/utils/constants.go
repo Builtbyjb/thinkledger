@@ -1,5 +1,20 @@
 package utils
 
+import "golang.org/x/oauth2"
+
+type TokenStore interface {
+	GetToken(userID string) (*oauth2.Token, error)
+	SaveToken(userID string, token *oauth2.Token) error
+}
+
+// Config for the OAuth middleware
+type AuthConfig struct {
+	OAuth2Config *oauth2.Config
+	TokenStore   TokenStore
+	LoginPath    string // Path to redirect if token is invalid or missing
+}
+
+
 type AccountDetail struct {
 	AccountName   string `json:"accountName"`
 	Amount        string `json:"amount"`
@@ -30,7 +45,7 @@ var TransactionResponseFormat = `
 		"credits": [ // For all the accounts credited
 			{
   		  		"accountName": "", // Account name
-  		  		"amount": "", // Amount 
+  		  		"amount": "", // Amount
 				"accountType": "" // Account type
 				"normalBalance": ""// The accounts normal balance, debit or credit
   		  	},
@@ -38,7 +53,7 @@ var TransactionResponseFormat = `
 		"debits": [ // For all the accounts debited
 			{
   		  		"accountName": "", // Account name
-  		  		"amount": "", // Amount 
+  		  		"amount": "", // Amount
 				"accountType": "" // Account type
 				"normalBalance": ""// The accounts normal balance, debit or credit
   		  	},

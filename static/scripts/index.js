@@ -81,6 +81,9 @@ Wraping everything in a global function improves minification.
         try {
             // Send fetch requests
             const response = await fetch("/join-waitlist", {
+                headers: {
+                    ContentType: "application/json",
+                },
                 method: "POST",
                 body: formData,
             });

@@ -39,3 +39,13 @@
         transform: rotate(180deg);
     }
 }
+
+.sidebar-transition {
+    transition: width 0.2s ease-in-out;
+}
+
+.dropdown-transition {
+    transition:
+        max-height 0.2s ease-in-out,
+        opacity 0.2s ease-in-out;
+}

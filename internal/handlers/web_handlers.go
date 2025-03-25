@@ -1,40 +1,50 @@
 package handlers
 
 import (
+	"net/http"
 	"server/templates"
+	"server/templates/auth"
 	"server/templates/guest"
 
-	"github.com/gofiber/fiber/v2"
+	"github.com/labstack/echo/v4"
 )
 
-func (h *Handler) Index(c *fiber.Ctx) error {
-	return Render(c, guest.IndexPage())
+func (h *Handler) Index(c echo.Context) error {
+	return Render(c, http.StatusOK, guest.IndexPage())
 }
 
-func (h *Handler) Support(c *fiber.Ctx) error {
-	return Render(c, guest.SupportPage())
+func (h *Handler) Support(c echo.Context) error {
+	return Render(c, http.StatusOK, guest.SupportPage())
 }
 
-func (h *Handler) SupportBookkeeping(c *fiber.Ctx) error {
-	return Render(c, guest.SupportBookkeepingPage())
+func (h *Handler) SupportBookkeeping(c echo.Context) error {
+	return Render(c, http.StatusOK, guest.SupportBookkeepingPage())
 }
 
-func (h *Handler) SupportFinancialReports(c *fiber.Ctx) error {
-	return Render(c, guest.SupportFinancialReportsPage())
+func (h *Handler) SupportFinancialReports(c echo.Context) error {
+	return Render(c, http.StatusOK, guest.SupportFinancialReportsPage())
 }
 
-func (h *Handler) SupportAnalyticsInsights(c *fiber.Ctx) error {
-	return Render(c, guest.SupportAnalyticsInsightsPage())
+func (h *Handler) SupportAnalyticsInsights(c echo.Context) error {
+	return Render(c, http.StatusOK, guest.SupportAnalyticsInsightsPage())
 }
 
-func (h *Handler) PrivacyPolicy(c *fiber.Ctx) error {
-	return Render(c, guest.PrivacyPolicyPage())
+func (h *Handler) PrivacyPolicy(c echo.Context) error {
+	return Render(c, http.StatusOK, guest.PrivacyPolicyPage())
 }
 
-func (h *Handler) TermsOfService(c *fiber.Ctx) error {
-	return Render(c, guest.TermsOfServicePage())
+func (h *Handler) TermsOfService(c echo.Context) error {
+	return Render(c, http.StatusOK, guest.TermsOfServicePage())
 }
 
-func (h *Handler) NotFound(c *fiber.Ctx) error {
-	return Render(c, templates.NotFoundPage())
+func (h *Handler) NotFound(c echo.Context) error {
+	return Render(c, http.StatusOK, templates.NotFoundPage())
+}
+
+func (h *Handler) SignIn(c echo.Context) error {
+	return Render(c, http.StatusOK, templates.SignInPage())
+}
+
+func (h *Handler) Home(c echo.Context) error {
+	return Render(c, http.StatusOK, auth.HomePage())
 }
