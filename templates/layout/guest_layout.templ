@@ -1,0 +1,82 @@
+package layout
+
+import (
+	"server/lib/styles"
+	"server/templates"
+	"server/templates/components"
+)
+
+templ guestNavbar() {
+	<nav>
+		<div class="flex items-center justify-between">
+			<div class="flex">
+				<a href="/">
+					@components.Logo()
+				</a>
+				// Large screen
+				//  <div className="hidden sm:ml-6 sm:flex sm:space-x-8">
+				//   {navItems.map((item) => (
+				//     <a
+				//       key={item.name}
+				//       href={item.href}
+				//       className={`inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium ${
+				//         currentPath === item.href
+				//           ? "border-indigo-500 text-gray-300"
+				//           : "border-transparent text-gray-300 hover:border-gray-300 hover:text-gray-700"
+				//       }`}
+				//     >
+				//       {item.name}
+				//     </a>
+				//   ))}
+				// </div>
+			</div>
+			// <div class="hidden sm:ml-6 sm:flex sm:items-center sm:space-x-4">
+			<a href="/sign-in" class={ styles.BtnStyleFull }>
+				Sign in
+			</a>
+			// </div>
+			// Small screen
+			// <div class="flex items-center sm:hidden">
+			// 	<button
+			// 		class="inline-flex items-center justify-center p-2 rounded-md text-gray-400  focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500"
+			// 	>
+			// 		<span class="sr-only">Open main menu</span>
+			// 		// <Menu className="h-6 w-6" aria-hidden="true" />
+			// 	</button>
+			// <div className="pt-2 pb-3 space-y-1">
+			//   {navItems.map((item) => (
+			//     <a
+			//       key={item.name}
+			//       href={item.href}
+			//       className={`block pl-3 pr-4 py-2 border-l-4 text-base font-medium ${
+			//         currentPath === item.href
+			//           ? "bg-indigo-50 border-indigo-500 text-indigo-700"
+			//           : "border-transparent text-gray-500"
+			//       }`}
+			//       onClick={() => setIsOpen(false)}
+			//     >
+			//       {item.name}
+			//     </a>
+			//   ))}
+			// </div>
+			// <div class="pt-8">
+			// 	<a href="/sign-in" class="">
+			// 		Sign in
+			// 	</a>
+			// </div>
+			// </div>
+		</div>
+	</nav>
+}
+
+templ GuestLayout(title, metaDescription, script string) {
+	@templates.Root(title, metaDescription, script) {
+		<div class="w-[90%] py-8 mx-auto sm:w-[90%] md:w-[80%] lg:w-[70%] xl:w-[60%] 2xl:w-[55%] relative z-2">
+			@guestNavbar()
+			<div class="mt-16 mb-8 min-h-[45vh]">
+				{ children... }
+			</div>
+			@components.Footer()
+		</div>
+	}
+}

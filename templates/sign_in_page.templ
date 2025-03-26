@@ -1,0 +1,33 @@
+package templates
+
+import (
+	"fmt"
+	"server/lib/styles"
+	"server/templates/components"
+)
+
+const signInTitle string = "Sign In"
+const signInMetaDescription string = "Sign in with Google"
+const signInScript string = ""
+
+templ SignInPage() {
+	@Root(signInTitle, signInMetaDescription, signInScript) {
+		<div class="flex flex-col items-center justify-center min-h-screen">
+			<div class="border-2 rounded-lg border-gray-300 p-8 bg-[#0A0A0A] z-20">
+				<div class="mb-8">
+					<a href="/" class="flex items-center gap-2">
+						<i class={ fmt.Sprintf("fa-solid fa-arrow-left text-3xl %v", styles.LinkIconStyle) }></i>
+						<span>Back</span>
+					</a>
+				</div>
+				<div class="mb-8">
+					@components.Logo()
+				</div>
+				<a href="/auth-sign-in" class={ fmt.Sprintf("%v flex items-center h-[2rem]", styles.BtnStyleOutline) }>
+					<img class="h-[2rem] me-4" src="/static/assets/google-logo.png"/>
+					Sign in with Google
+				</a>
+			</div>
+		</div>
+	}
+}

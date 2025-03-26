@@ -3,7 +3,7 @@ package handlers
 import (
 	"errors"
 	"fmt"
-	"server/internal/database"
+	"server/internal/database/postgres"
 	"server/internal/utils"
 
 	"github.com/gofiber/fiber/v2"
@@ -67,7 +67,7 @@ func (h *Handler) HandleTAccount(c *fiber.Ctx) error {
 
 // Get account names
 func getAccountNames(db *gorm.DB) ([]string, error) {
-	var accounts []database.Account
+	var accounts []postgres.Account
 	result := db.Find(&accounts)
 	if result.Error != nil {
 		return nil, fmt.Errorf("database error: %w", result.Error)
@@ -93,8 +93,8 @@ func getAccountEntries(
 	ref string,
 ) (accountEntries, error) {
 
-	var creditAcc []database.Credit
-	var debitAcc []database.Debit
+	var creditAcc []postgres.Credit
+	var debitAcc []postgres.Debit
 	var accountName string
 	var accountRef string
 

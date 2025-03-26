@@ -22,7 +22,7 @@ func ChatAuth() fiber.Handler {
 		token := strings.TrimPrefix(authHeader, "Bearer ")
 		// log.Println(token)
 
-		tokenAudience := os.Getenv("GOOGLE_CHAT_AUDIENCE")
+		tokenAudience := os.Getenv("GOOGLE_AUDIENCE")
 
 		// Validate token
 		payload, err := idtoken.Validate(context.Background(), token, tokenAudience)

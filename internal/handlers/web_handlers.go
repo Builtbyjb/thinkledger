@@ -1,35 +1,86 @@
 package handlers
 
 import (
-	templates "server/templates/guest"
+	"net/http"
+	"server/templates"
+	"server/templates/auth"
+	"server/templates/guest"
 
-	"github.com/gofiber/fiber/v2"
+	"github.com/labstack/echo/v4"
 )
 
-func (h *Handler) Index(c *fiber.Ctx) error {
-	return Render(c, templates.IndexPage())
+func checkAuth(c echo.Context) bool {
+	cookie, err := c.Request().Cookie("authId")
+	if err != nil {
+		return false
+	}
+
+	if cookie.Value == "" {
+		return false
+	}
+
+	return true
 }
 
-func (h *Handler) Support(c *fiber.Ctx) error {
-	return Render(c, templates.SupportPage())
+func (h *Handler) Index(c echo.Context) error {
+
+	// Redirect users to the home page if they authenicated
+	cookie, err := c.Request().Cookie("authId")
+	if err == nil {
+
+		if cookie.Value != "" {
+			c.Redirect(307, "/home")
+		}
+	}
+
+	return Render(c, http.StatusOK, guest.IndexPage())
 }
 
-func (h *Handler) SupportBookkeeping(c *fiber.Ctx) error {
-	return Render(c, templates.SupportBookkeepingPage())
+func (h *Handler) Support(c echo.Context) error {
+	username := c.Get("username").(string)
+	isAuth := checkAuth(c)
+	return Render(c, http.StatusOK, guest.SupportPage(isAuth, username))
 }
 
-func (h *Handler) SupportFinancialReports(c *fiber.Ctx) error {
-	return Render(c, templates.SupportFinancialReportsPage())
+func (h *Handler) SupportBookkeeping(c echo.Context) error {
+	username := c.Get("username").(string)
+	isAuth := checkAuth(c)
+	return Render(c, http.StatusOK, guest.SupportBookkeepingPage(isAuth, username))
 }
 
-func (h *Handler) SupportAnalyticsInsights(c *fiber.Ctx) error {
-	return Render(c, templates.SupportAnalyticsInsightsPage())
+func (h *Handler) SupportFinancialReports(c echo.Context) error {
+	username := c.Get("username").(string)
+	isAuth := checkAuth(c)
+	return Render(c, http.StatusOK, guest.SupportFinancialReportsPage(isAuth, username))
 }
 
-func (h *Handler) PrivacyPolicy(c *fiber.Ctx) error {
-	return Render(c, templates.PrivacyPolicyPage())
+func (h *Handler) SupportAnalyticsInsights(c echo.Context) error {
+	username := c.Get("username").(string)
+	isAuth := checkAuth(c)
+	return Render(c, http.StatusOK, guest.SupportAnalyticsInsightsPage(isAuth, username))
 }
 
-func (h *Handler) TermsOfService(c *fiber.Ctx) error {
-	return Render(c, templates.TermsOfServicePage())
+func (h *Handler) PrivacyPolicy(c echo.Context) error {
+	username := c.Get("username").(string)
+	isAuth := checkAuth(c)
+	return Render(c, http.StatusOK, guest.PrivacyPolicyPage(isAuth, username))
+}
+
+func (h *Handler) TermsOfService(c echo.Context) error {
+	username := c.Get("username").(string)
+	isAuth := checkAuth(c)
+	return Render(c, http.StatusOK, guest.TermsOfServicePage(isAuth, username))
+}
+
+func (h *Handler) NotFound(c echo.Context) error {
+	return Render(c, http.StatusOK, templates.NotFoundPage())
+}
+
+func (h *Handler) SignIn(c echo.Context) error {
+	return Render(c, http.StatusOK, templates.SignInPage())
+}
+
+func (h *Handler) Home(c echo.Context) error {
+	username := c.Get("username").(string)
+	return Render(c, http.StatusOK, auth.HomePage(username))
 }

@@ -4,7 +4,8 @@
     h1,
     h2,
     h3 {
-        font-family: "Outfit", sans-serif;
+        /* font-family: "Outfit", sans-serif; */
+        font-family: "Electrolize", sans-serif;
     }
 
     p,
@@ -15,7 +16,16 @@
     input,
     textarea,
     label {
+        /* font-family: "Poppins", sans-serif; */
+        font-family: "Share Tech Mono", monospace;
+    }
+
+    .font-poppins {
         font-family: "Poppins", sans-serif;
+    }
+
+    .font-share-tech-mono {
+        font-family: "Share Tech Mono", monospace;
     }
 
     .faq-answer {
@@ -38,4 +48,14 @@
     .faq-item.active .faq-icon {
         transform: rotate(180deg);
     }
+}
+
+.sidebar-transition {
+    transition: width 0.2s ease-in-out;
+}
+
+.dropdown-transition {
+    transition:
+        max-height 0.2s ease-in-out,
+        opacity 0.2s ease-in-out;
 }

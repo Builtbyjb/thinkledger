@@ -27,7 +27,7 @@ Wraping everything in a global function improves minification.
         });
     });
 
-    // Send joinwaitlist email
+    // Send join waitlist email
     document.addEventListener("submit", async (event) => {
         event.preventDefault();
         const elementId = event.target.id;
@@ -76,16 +76,17 @@ Wraping everything in a global function improves minification.
         });
     }
 
+    // Adds contacts to waitlist
     async function addToWaitlist(formData) {
         try {
             // Send fetch requests
-            const response = await fetch(
-                "https://thinkledger.app/join-waitlist",
-                {
-                    method: "POST",
-                    body: formData,
+            const response = await fetch("/join-waitlist", {
+                headers: {
+                    ContentType: "application/json",
                 },
-            );
+                method: "POST",
+                body: formData,
+            });
 
             if (response.status === 200) {
                 alert(

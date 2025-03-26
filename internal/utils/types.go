@@ -1,5 +1,26 @@
 package utils
 
+import (
+	"github.com/redis/go-redis/v9"
+	"golang.org/x/oauth2"
+)
+
+type TokenStore interface {
+	GetToken(userID string) (*oauth2.Token, error)
+	SaveToken(userID string, token *oauth2.Token) error
+}
+
+// Config for the OAuth middleware
+type AuthConfig struct {
+	OAuth2Config *oauth2.Config
+	RedisClient  *redis.Client
+}
+
+type UserInfo struct {
+	Email string `json:"email"`
+	Name  string `json:"name"`
+}
+
 type AccountDetail struct {
 	AccountName   string `json:"accountName"`
 	Amount        string `json:"amount"`
@@ -30,7 +51,7 @@ var TransactionResponseFormat = `
 		"credits": [ // For all the accounts credited
 			{
   		  		"accountName": "", // Account name
-  		  		"amount": "", // Amount 
+  		  		"amount": "", // Amount
 				"accountType": "" // Account type
 				"normalBalance": ""// The accounts normal balance, debit or credit
   		  	},
@@ -38,7 +59,7 @@ var TransactionResponseFormat = `
 		"debits": [ // For all the accounts debited
 			{
   		  		"accountName": "", // Account name
-  		  		"amount": "", // Amount 
+  		  		"amount": "", // Amount
 				"accountType": "" // Account type
 				"normalBalance": ""// The accounts normal balance, debit or credit
   		  	},

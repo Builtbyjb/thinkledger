@@ -1,12 +1,5 @@
 package handlers
 
-import (
-	"fmt"
-	"log"
-
-	"github.com/gofiber/fiber/v2"
-)
-
 type ChatEvent struct {
 	Type      string `json:"type"`
 	EventTime string `json:"eventTime"`
@@ -30,43 +23,43 @@ type ChatEvent struct {
 	} `json:"message,omitempty"` // message is present for MESSAGE events
 }
 
-func (h *Handler) HandleChat(c *fiber.Ctx) error {
+// func (h *Handler) HandleChat(c echo.Context) error {
 
-	var chatEvent ChatEvent
-	if err := c.BodyParser((&chatEvent)); err != nil {
-		return c.SendStatus(fiber.StatusBadRequest)
-	}
+// 	var chatEvent ChatEvent
+// 	if err := c.BodyParser((&chatEvent)); err != nil {
+// 		return c.SendStatus(fiber.StatusBadRequest)
+// 	}
 
-	log.Printf("Chat event received: %+v", chatEvent)
+// 	log.Printf("Chat event received: %+v", chatEvent)
 
-	// TODO: Make more reboust
+// 	// TODO: Make more reboust
 
-	if chatEvent.Type == "MESSAGE" && chatEvent.Message.Text != "" {
-		receivedMessage := chatEvent.Message.Text
-		senderName := chatEvent.Message.Sender.DisplayName
-		// spaceName := chatEvent.Space.Name
-		// threadName := chatEvent.Message.Thread.Name
+// 	if chatEvent.Type == "MESSAGE" && chatEvent.Message.Text != "" {
+// 		receivedMessage := chatEvent.Message.Text
+// 		senderName := chatEvent.Message.Sender.DisplayName
+// 		// spaceName := chatEvent.Space.Name
+// 		// threadName := chatEvent.Message.Thread.Name
 
-		responseMessage := fmt.Sprintf("Hello %s, you said: %s", senderName, receivedMessage)
+// 		responseMessage := fmt.Sprintf("Hello %s, you said: %s", senderName, receivedMessage)
 
-		// err := sendMessage(spaceName, threadName, responseMessage)
-		// if err != nil {
-		// 	log.Printf("Error sending message: %v", err)
-		// 	return c.SendStatus(fiber.StatusInternalServerError) // Return 500 for server error
+// 		// err := sendMessage(spaceName, threadName, responseMessage)
+// 		// if err != nil {
+// 		// 	log.Printf("Error sending message: %v", err)
+// 		// 	return c.SendStatus(fiber.StatusInternalServerError) // Return 500 for server error
 
-		// }
-		return c.Status(fiber.StatusOK).JSON(fiber.Map{
-			"text": responseMessage,
-		})
-	} else {
-		log.Println("Ignoring non-MESSAGE event or empty message")
+// 		// }
+// 		return c.Status(fiber.StatusOK).JSON(fiber.Map{
+// 			"text": responseMessage,
+// 		})
+// 	} else {
+// 		log.Println("Ignoring non-MESSAGE event or empty message")
 
-		return c.Status(fiber.StatusOK).JSON(fiber.Map{
-			"text": "I am currently ignoring non-MESSAGE events or empty messages",
-		})
-	}
+// 		return c.Status(fiber.StatusOK).JSON(fiber.Map{
+// 			"text": "I am currently ignoring non-MESSAGE events or empty messages",
+// 		})
+// 	}
 
-}
+// }
 
 // func sendMessage(spaceName, threadName, messageText string) error {
 

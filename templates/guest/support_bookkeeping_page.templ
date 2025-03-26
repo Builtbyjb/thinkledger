@@ -1,31 +1,53 @@
-package templates
+package guest
 
 import (
 	"fmt"
 	"server/lib/styles"
+	"server/templates/layout"
 )
 
 const supportBookkeepingTitle string = "ThinkLeger | Support - Bookkeeping"
 const supportBookkeepingMetaDescription string = `Learn how we handle your bookkeeping tasks`
+const supportBookkeepingScript string = "/static/dist/default.min.js"
 
-templ SupportBookkeepingPage() {
-	@GuestLayout(supportBookkeepingTitle, supportBookkeepingMetaDescription, "") {
-		<a href="/support">
-			<i class={ fmt.Sprintf("fa-solid fa-arrow-left mb-8 text-3xl %v", styles.LinkIconStyle) }></i>
-		</a>
-		<div class="mb-4 flex items-center">
-			<i class="fa-solid fa-book text-2xl mr-4"></i>
-			<h3 class="font-medium text-xl">Bookkeeping</h3>
-		</div>
-		<p class="leading-[1.5]">
-			Our software automatically retrieves your business transaction
-			data from your connected banking services. Using generative AI,
-			we convert this data into journal entries in your Google Sheets.
-			For business users, the entries follow a double-entry format
-			that clearly shows the accounts being credited and debited. The
-			Google Sheets file is then stored in a folder we automatically
-			generate in the Google Drive account linked to the email address
-			you used to create your account.
-		</p>
+templ supportBookkeepingLayout() {
+	<a href="/support" class="flex items-center gap-2 mb-8">
+		<i class={ fmt.Sprintf("fa-solid fa-arrow-left text-3xl %v", styles.LinkIconStyle) }></i>
+		<span>Back</span>
+	</a>
+	<div class="mb-4 flex items-center">
+		<i class="fa-solid fa-book text-2xl mr-4"></i>
+		<h3 class="font-medium text-xl">Bookkeeping</h3>
+	</div>
+	<p class="leading-[1.5]">
+		Our software automatically retrieves your business transaction
+		data from your connected banking services. Using generative AI,
+		we convert this data into journal entries in your Google Sheets.
+		For business users, the entries follow a double-entry format
+		that clearly shows the accounts being credited and debited. The
+		Google Sheets file is then stored in a folder we automatically
+		generate in the Google Drive account linked to the email address
+		you used to create your account.
+	</p>
+}
+
+templ SupportBookkeepingPage(isAuth bool, username string) {
+	if isAuth {
+		@layout.AuthLayout(
+			supportBookkeepingTitle,
+			supportBookkeepingMetaDescription,
+			supportBookkeepingScript,
+			username,
+		) {
+			@supportBookkeepingLayout()
+		}
+	} else {
+		@layout.GuestLayout(
+			supportBookkeepingTitle,
+			supportBookkeepingMetaDescription,
+			"",
+		) {
+			@supportBookkeepingLayout()
+		}
 	}
 }

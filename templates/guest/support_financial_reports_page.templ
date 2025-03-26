@@ -1,41 +1,59 @@
-package templates
+package guest
 
 import (
 	"fmt"
 	"server/lib/styles"
+	"server/templates/layout"
 )
 
 const supportFinancialReportsTitle string = "ThinkLedger | Support - Financial Reports"
 const supportFinancialReportsMetaDescription string = `Generate and understand your financial reports`
+const supportFinancialReportScript string = "/static/dist/default.min.js"
 
-templ SupportFinancialReportsPage() {
-	@GuestLayout(
-		supportFinancialReportsTitle,
-		supportFinancialReportsMetaDescription,
-		"",
-	) {
-		<a href="/support">
-			<i class={ fmt.Sprintf("fa-solid fa-arrow-left mb-8 text-3xl %v", styles.LinkIconStyle) }></i>
-		</a>
-		<div class="mb-4 flex items-center">
-			<i class="fa-solid fa-file-lines text-2xl mr-4"></i>
-			<h3 class="font-medium text-xl">Financial Reports</h3>
-		</div>
-		<div class="space-y-4">
-			<p class="leading-[1.5]">
-				Our software automatically generates the following financial
-				statements for business users:
-			</p>
-			<ul class="list-disc pl-6 space-y-2">
-				<li>Income statements (profit and loss statements).</li>
-				<li>Owner's equity statements.</li>
-				<li>Balance Sheets.</li>
-				<li>Cashflow statements</li>
-			</ul>
-			<p>
-				These financial statements are updated automatically as new
-				transactions are recorded.
-			</p>
-		</div>
+templ supportFinancialReportsLayout() {
+	<a href="/support" class="flex items-center mb-8 gap-2">
+		<i class={ fmt.Sprintf("fa-solid fa-arrow-left text-3xl %v", styles.LinkIconStyle) }></i>
+		<span>Back</span>
+	</a>
+	<div class="mb-4 flex items-center">
+		<i class="fa-solid fa-file-lines text-2xl mr-4"></i>
+		<h3 class="font-medium text-xl">Financial Reports</h3>
+	</div>
+	<div class="space-y-4">
+		<p class="leading-[1.5]">
+			Our software automatically generates the following financial
+			statements for business users:
+		</p>
+		<ul class="list-disc pl-6 space-y-2">
+			<li>Income statements (profit and loss statements).</li>
+			<li>Owner's equity statements.</li>
+			<li>Balance Sheets.</li>
+			<li>Cashflow statements</li>
+		</ul>
+		<p>
+			These financial statements are updated automatically as new
+			transactions are recorded.
+		</p>
+	</div>
+}
+
+templ SupportFinancialReportsPage(isAuth bool, username string) {
+	if isAuth {
+		@layout.AuthLayout(
+			supportFinancialReportsTitle,
+			supportFinancialReportsMetaDescription,
+			supportFinancialReportScript,
+			username,
+		) {
+			@supportFinancialReportsLayout()
+		}
+	} else {
+		@layout.GuestLayout(
+			supportFinancialReportsTitle,
+			supportFinancialReportsMetaDescription,
+			"",
+		) {
+			@supportFinancialReportsLayout()
+		}
 	}
 }

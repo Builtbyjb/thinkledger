@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"log"
 	"server/internal/agents/gemini"
-	"server/internal/database"
+	"server/internal/database/postgres"
 	"server/internal/utils"
 
 	"github.com/gofiber/fiber/v2"
@@ -44,7 +44,7 @@ func (h *Handler) HandleTrialBalance(c *fiber.Ctx) error {
 }
 
 func generateTrialBalance(db *gorm.DB) ([]utils.TrialBalanceEntry, error) {
-	var accounts []database.Account
+	var accounts []postgres.Account
 	accountResult := db.Find(&accounts)
 	if accountResult.Error != nil {
 		return nil, fmt.Errorf("database error: %w", accountResult.Error)
@@ -59,8 +59,8 @@ func generateTrialBalance(db *gorm.DB) ([]utils.TrialBalanceEntry, error) {
 	for i := range accounts {
 		aName := accounts[i].AccountName
 
-		var cAccounts []database.Credit
-		var dAccounts []database.Debit
+		var cAccounts []postgres.Credit
+		var dAccounts []postgres.Debit
 
 		cResult := db.Where("account_name = ?", aName).Find(&cAccounts)
 		if cResult.Error != nil {

@@ -1,329 +1,348 @@
-package templates
+package guest
+
+import "server/templates/layout"
 
 const privacyPolicyTitle string = "ThinkLedger | Privacy Policy"
 const privacyPolicyMetaDescription string = `ThinkLedger is committed to protecting
   		your privacy and ensuring the security of your personal and
   		business data.`
 
+const privacyPolicyScript = "/static/dist/default.min.js"
+
 const privacyPolicyLastUpdated = "March 8, 2025"
 
-templ PrivacyPolicyPage() {
-	@GuestLayout(privacyPolicyTitle, privacyPolicyMetaDescription, "") {
-		<h1 class="text-3xl font-bold mb-4">Privacy Policy</h1>
-		<div class="mb-4">
-			<div class="flex items-center gap-3 mb-4">
-				<i class="fa-solid fa-shield-halved text-2xl"></i>
-				<p class="text-sm">Last updated: { privacyPolicyLastUpdated }</p>
+templ privacyPolicyLayout() {
+	<h1 class="text-3xl font-bold mb-4">Privacy Policy</h1>
+	<div class="mb-4">
+		<div class="flex items-center gap-3 mb-4">
+			<i class="fa-solid fa-shield-halved text-2xl"></i>
+			<p class="text-sm">Last updated: { privacyPolicyLastUpdated }</p>
+		</div>
+		<p class="mb-4">
+			ThinkLedger ("we," "our," or "us") is committed to
+			protecting your privacy and ensuring the security of your
+			personal and business data. This Privacy Policy outlines how
+			we collect, use, store, and protect your information when
+			you use our services.
+			// which requires access to your Google Workspace account.
+		</p>
+		// <p>
+		//        By using our services, you consent to the data practices described in
+		//        this Privacy Policy.
+		//      </p>
+	</div>
+	<div class="w-full space-y-4">
+		// <AccordionItem
+		//         value="information-collection"
+		//         className="border rounded-lg px-6"
+		//       >
+		//         <AccordionTrigger className="text-lg font-medium py-4">
+		//           Information we collect
+		//         </AccordionTrigger>
+		//         <AccordionContent className="pb-4 pt-2 text-muted-foreground space-y-4">
+		//           <p>We collect and process the following types of information:</p>
+		//           <ul className="list-disc pl-6 space-y-2 font-poppins">
+		//             <li>
+		//               <strong>Google workspace data:</strong> With your explicit
+		//               permission, we access your Google Workspace account to retrieve
+		//               necessary financial and accounting data, including emails,
+		//               documents, and spreadsheets related to financial transactions.
+		//             </li>
+		//             <li>
+		//               <strong>Account Information:</strong> When you register, we
+		//               collect your name, email address, company name, and other
+		//               relevant business details.
+		//             </li>
+		//             <li>
+		//               <strong>Payment Information:</strong> We collect billing details
+		//               when you subscribe to our services. Payment processing is
+		//               handled by third-party providers and is not stored on our
+		//               servers.
+		//             </li>
+		//             <li>
+		//               <strong>Usage Data:</strong> We collect information about your
+		//               interactions with our platform, such as login activity, features
+		//               used, and technical logs.
+		//             </li>
+		//           </ul>
+		//         </AccordionContent>
+		//       </AccordionItem>
+		// <AccordionItem value="usage-data" className="border rounded-lg px-6">
+		//         <AccordionTrigger className="text-lg font-medium py-4">
+		//           How we use your information
+		//         </AccordionTrigger>
+		//         <AccordionContent className="pb-4 pt-2 text-muted-foreground space-y-4">
+		//           <p>Your data is used for the following purposes:</p>
+		//           <ul className="list-disc pl-6 space-y-2 font-poppins">
+		//             <li>
+		//               To provide and improve our AI-powered accounting services.
+		//             </li>
+		//             <li>
+		//               To analyze and categorize financial data to automate accounting
+		//               processes.
+		//             </li>
+		//             <li>To secure and optimize our platform’s performance.</li>
+		//             <li>To comply with legal and regulatory obligations.</li>
+		//             <li>
+		//               To communicate updates, support messages, and service-related
+		//               notifications.
+		//             </li>
+		//           </ul>
+		//         </AccordionContent>
+		//       </AccordionItem>
+		<section id="communication-preferences">
+			<h2 class="font-medium py-4 text-2xl">
+				Communications & Email Preferences
+			</h2>
+			<div class="pb-4 space-y-4">
+				<p>
+					When you sign up for our product waitlist or
+					subscribe to our updates, we will only send you
+					relevant communications related to our product,
+					including launch updates, early access
+					opportunities, and exclusive announcements. We do
+					not send spam, and you can unsubscribe at any time
+					by clicking the unsubscribe link in our emails.
+				</p>
+				<p>
+					We respect your privacy and will never sell, rent,
+					or share your email address with third parties.
+				</p>
 			</div>
-			<p class="mb-4">
-				ThinkLedger ("we," "our," or "us") is committed to
-				protecting your privacy and ensuring the security of your
-				personal and business data. This Privacy Policy outlines how
-				we collect, use, store, and protect your information when
-				you use our services.
-				// which requires access to your Google Workspace account.
-			</p>
-			// <p>
-			//        By using our services, you consent to the data practices described in
-			//        this Privacy Policy.
-			//      </p>
-		</div>
-		<div class="w-full space-y-4">
-			// <AccordionItem
-			//         value="information-collection"
-			//         className="border rounded-lg px-6"
-			//       >
-			//         <AccordionTrigger className="text-lg font-medium py-4">
-			//           Information we collect
-			//         </AccordionTrigger>
-			//         <AccordionContent className="pb-4 pt-2 text-muted-foreground space-y-4">
-			//           <p>We collect and process the following types of information:</p>
-			//           <ul className="list-disc pl-6 space-y-2 font-poppins">
-			//             <li>
-			//               <strong>Google workspace data:</strong> With your explicit
-			//               permission, we access your Google Workspace account to retrieve
-			//               necessary financial and accounting data, including emails,
-			//               documents, and spreadsheets related to financial transactions.
-			//             </li>
-			//             <li>
-			//               <strong>Account Information:</strong> When you register, we
-			//               collect your name, email address, company name, and other
-			//               relevant business details.
-			//             </li>
-			//             <li>
-			//               <strong>Payment Information:</strong> We collect billing details
-			//               when you subscribe to our services. Payment processing is
-			//               handled by third-party providers and is not stored on our
-			//               servers.
-			//             </li>
-			//             <li>
-			//               <strong>Usage Data:</strong> We collect information about your
-			//               interactions with our platform, such as login activity, features
-			//               used, and technical logs.
-			//             </li>
-			//           </ul>
-			//         </AccordionContent>
-			//       </AccordionItem>
-			// <AccordionItem value="usage-data" className="border rounded-lg px-6">
-			//         <AccordionTrigger className="text-lg font-medium py-4">
-			//           How we use your information
-			//         </AccordionTrigger>
-			//         <AccordionContent className="pb-4 pt-2 text-muted-foreground space-y-4">
-			//           <p>Your data is used for the following purposes:</p>
-			//           <ul className="list-disc pl-6 space-y-2 font-poppins">
-			//             <li>
-			//               To provide and improve our AI-powered accounting services.
-			//             </li>
-			//             <li>
-			//               To analyze and categorize financial data to automate accounting
-			//               processes.
-			//             </li>
-			//             <li>To secure and optimize our platform’s performance.</li>
-			//             <li>To comply with legal and regulatory obligations.</li>
-			//             <li>
-			//               To communicate updates, support messages, and service-related
-			//               notifications.
-			//             </li>
-			//           </ul>
-			//         </AccordionContent>
-			//       </AccordionItem>
-			<section id="communication-preferences">
-				<h2 class="font-medium py-4 text-2xl">
-					Communications & Email Preferences
-				</h2>
-				<div class="pb-4 space-y-4">
-					<p>
-						When you sign up for our product waitlist or
-						subscribe to our updates, we will only send you
-						relevant communications related to our product,
-						including launch updates, early access
-						opportunities, and exclusive announcements. We do
-						not send spam, and you can unsubscribe at any time
-						by clicking the unsubscribe link in our emails.
-					</p>
-					<p>
-						We respect your privacy and will never sell, rent,
-						or share your email address with third parties.
-					</p>
-				</div>
-			</section>
-			<section id="data-security">
-				<h2 class="font-medium py-4 text-2xl">
-					Data security measures
-				</h2>
-				<div class="pb-4 pt-2 text-muted-foreground space-y-4">
-					<p>
-						We implement industry-leading security measures to
-						protect your information, including:
-					</p>
-					<ul class="list-disc pl-6 space-y-2">
-						<li>
-							<strong>Encryption:</strong> Data is encrypted
-							in transit and at rest using industry-standard
-							protocols (TLS, AES-256).
-						</li>
-						<li>
-							<strong>Access Controls:</strong> Restricted
-							access based on least privilege principles and
-							multi-factor authentication.
-						</li>
-						<li>
-							<strong>Regular Audits:</strong> Routine
-							security assessments and penetration testing to
-							identify vulnerabilities.
-						</li>
-						<li>
-							<strong>Data Minimization:</strong> We only
-							store necessary data and purge outdated
-							information as per retention policies.
-						</li>
-						<li>
-							<strong>Compliance Standards:</strong> Adherence
-							to PIPEDA and other relevant data protection
-							laws.
-						</li>
-					</ul>
-				</div>
-			</section>
-			<section id="cookie-policy">
-				<h2 class="font-medium py-4 text-2xl">
-					Tracking & cookies data
-				</h2>
-				<div class="pb-4 space-y-4">
-					<p>
-						We use cookies and similar tracking technologies to
-						track the activity on our service and hold certain
-						information.
-					</p>
-					<p>
-						Cookies are files with a small amount of data which
-						may include an anonymous unique identifier. Cookies
-						are sent to your browser from a website and stored
-						on your device. Tracking technologies also used are
-						beacons, tags, and scripts to collect and track
-						information and to improve and analyze our service.
-					</p>
-					<p>
-						You can instruct your browser to refuse all cookies
-						or to indicate when a cookie is being sent. You can
-						also edit your cookie settings by clicking on the
-						Cookie Preferences button at the bottom of the page.
-						// However, if you do not accept
-						//         cookies, you may not be able to use some portions of our service.
-					</p>
-					<p>Examples of Cookies we use:</p>
-					<ul class="list-disc pl-6 space-y-2">
-						// <li>
-						//           <strong>Session Cookies:</strong> We use Session Cookies to
-						//           operate our service.
-						//         </li>
-						//         <li>
-						//           <strong>Preference Cookies:</strong> We use Preference Cookies
-						//           to remember your preferences and various settings.
-						//         </li>
-						<li>
-							<strong>Analytics cookies:</strong> These
-							cookies help us understand how visitors interact
-							with the website, helping us improve our
-							services.
-						</li>
-					</ul>
-					// <div class="mt-2">
-					// 	<a
-					// 		href="#cookie-preferences"
-					// 		class="underline hover:text-gray-300 hover:cursor-pointer"
-					// 	>
-					// 		Update your cookie preferences
-					// 	</a>
-					// </div>
-				</div>
-			</section>
-			// <AccordionItem value="data-use" className="border rounded-lg px-6">
-			//        <AccordionTrigger className="text-lg font-medium py-4">
-			//          Use of data
-			//        </AccordionTrigger>
-			//        <AccordionContent className="pb-4 pt-2 text-muted-foreground space-y-4">
-			//          <p>We use the collected data for various purposes:</p>
-			//          <ul className="list-disc pl-6 space-y-2">
-			//            <li>To provide and maintain our service</li>
-			//            <li>To notify you about changes to our service</li>
-			//            <li>
-			//              To allow you to participate in interactive features of our
-			//              service when you choose to do so
-			//            </li>
-			//            <li>To provide customer support</li>
-			//            <li>
-			//              To gather analysis or valuable information so that we can
-			//              improve our service
-			//            </li>
-			//            <li>To monitor the usage of our service</li>
-			//            <li>To detect, prevent and address technical issues</li>
-			//          </ul>
-			//        </AccordionContent>
-			//      </AccordionItem>
-			// <AccordionItem value="data-sharing" className="border rounded-lg px-6">
-			//        <AccordionTrigger className="text-lg font-medium py-4">
-			//          Data sharing and disclosure
-			//        </AccordionTrigger>
-			//        <AccordionContent className="pb-4 pt-2 text-muted-foreground space-y-4">
-			//          <p>
-			//            We do not sell, rent, or trade user data. However, we may share
-			//            data under the following circumstances:
-			//          </p>
-			//          <ul className="list-disc pl-6 space-y-2">
-			//            <li>
-			//              <strong>Third-Party Service Providers:</strong> Trusted partners
-			//              that assist with cloud hosting, security, and payment
-			//              processing. These providers are contractually obligated to
-			//              maintain confidentiality and security standards.
-			//            </li>
-			//            <li>
-			//              <strong>Legal Compliance:</strong> If required by law, court
-			//              order, or regulatory request.
-			//            </li>
-			//            <li>
-			//              <strong>Business Transfers:</strong> In case of a merger,
-			//              acquisition, or sale of assets, user data may be transferred
-			//              under confidentiality obligations.
-			//            </li>
-			//          </ul>
-			//        </AccordionContent>
-			//      </AccordionItem>
-			// <AccordionItem value="use-control" className="border rounded-lg px-6">
-			//        <AccordionTrigger className="text-lg font-medium py-4">
-			//          User control and consent
-			//        </AccordionTrigger>
-			//        <AccordionContent className="pb-4 pt-2 text-muted-foreground space-y-4">
-			//          <p>You have control over your data:</p>
-			//          <ul className="list-disc pl-6 space-y-2">
-			//            <li>
-			//              <strong>Google Workspace Permissions:</strong> You can grant or
-			//              revoke access at any time through Google’s security settings.
-			//            </li>
-			//            <li>
-			//              <strong>Account Deletion:</strong> You may request deletion of
-			//              your account and associated data by contacting our support team.
-			//            </li>
-			//            <li>
-			//              <strong>Opt-Out:</strong> You may opt out of marketing
-			//              communications, though essential service notifications will
-			//              still be sent.
-			//            </li>
-			//          </ul>
-			//        </AccordionContent>
-			//      </AccordionItem>
-			// <AccordionItem
-			//        value="data-retention"
-			//        className="border rounded-lg px-6"
-			//      >
-			//        <AccordionTrigger className="text-lg font-medium py-4">
-			//          Data retention
-			//        </AccordionTrigger>
-			//        <AccordionContent className="pb-4 pt-2 text-muted-foreground space-y-4">
-			//          <p>
-			//            We retain your data only for as long as necessary to fulfill our
-			//            service obligations and legal requirements. Upon termination of
-			//            your account, we follow secure deletion protocols.
-			//          </p>
-			//        </AccordionContent>
-			//      </AccordionItem>
-			//      <AccordionItem value="changes" className="border rounded-lg px-6">
-			//        <AccordionTrigger className="text-lg font-medium py-4">
-			//          Changes to this privacy policy
-			//        </AccordionTrigger>
-			//        <AccordionContent className="pb-4 pt-2 text-muted-foreground space-y-4">
-			//          <p>
-			//            We may update our Privacy Policy from time to time. We will notify
-			//            you of any changes by posting the new Privacy Policy on this page.
-			//          </p>
-			//          <p>
-			//            We will let you know via email and/or a prominent notice on our
-			//            service, prior to the change becoming effective and update the
-			//            "last updated" date at the top of this Privacy Policy.
-			//          </p>
-			//          <p>
-			//            You are advised to review this Privacy Policy periodically for any
-			//            changes. Changes to this Privacy Policy are effective when they
-			//            are posted on this page.
-			//          </p>
-			//        </AccordionContent>
-			//      </AccordionItem>
-			<section id="contact">
-				<h2 class="font-medium py-4 text-2xl">Contact us</h2>
-				<div class="pb-4 space-y-4">
-					<p>
-						If you have any questions about this Privacy Policy,
-						please contact us:
-					</p>
-					<ul class="list-disc pl-6 space-y-2">
-						<li>By email: support@thinkledger.app</li>
-						<li>
-							By visiting the contact section at the bottom of
-							the page.
-						</li>
-					</ul>
-				</div>
-			</section>
-		</div>
+		</section>
+		<section id="data-security">
+			<h2 class="font-medium py-4 text-2xl">
+				Data security measures
+			</h2>
+			<div class="pb-4 pt-2 text-muted-foreground space-y-4">
+				<p>
+					We implement industry-leading security measures to
+					protect your information, including:
+				</p>
+				<ul class="list-disc pl-6 space-y-2">
+					<li>
+						<strong>Encryption:</strong> Data is encrypted
+						in transit and at rest using industry-standard
+						protocols (TLS, AES-256).
+					</li>
+					<li>
+						<strong>Access Controls:</strong> Restricted
+						access based on least privilege principles and
+						multi-factor authentication.
+					</li>
+					<li>
+						<strong>Regular Audits:</strong> Routine
+						security assessments and penetration testing to
+						identify vulnerabilities.
+					</li>
+					<li>
+						<strong>Data Minimization:</strong> We only
+						store necessary data and purge outdated
+						information as per retention policies.
+					</li>
+					<li>
+						<strong>Compliance Standards:</strong> Adherence
+						to PIPEDA and other relevant data protection
+						laws.
+					</li>
+				</ul>
+			</div>
+		</section>
+		<section id="cookie-policy">
+			<h2 class="font-medium py-4 text-2xl">
+				Tracking & cookies data
+			</h2>
+			<div class="pb-4 space-y-4">
+				<p>
+					We use cookies and similar tracking technologies to
+					track the activity on our service and hold certain
+					information.
+				</p>
+				<p>
+					Cookies are files with a small amount of data which
+					may include an anonymous unique identifier. Cookies
+					are sent to your browser from a website and stored
+					on your device. Tracking technologies also used are
+					beacons, tags, and scripts to collect and track
+					information and to improve and analyze our service.
+				</p>
+				<p>
+					You can instruct your browser to refuse all cookies
+					or to indicate when a cookie is being sent. You can
+					also edit your cookie settings by clicking on the
+					Cookie Preferences button at the bottom of the page.
+					// However, if you do not accept
+					//         cookies, you may not be able to use some portions of our service.
+				</p>
+				<p>Examples of Cookies we use:</p>
+				<ul class="list-disc pl-6 space-y-2">
+					// <li>
+					//           <strong>Session Cookies:</strong> We use Session Cookies to
+					//           operate our service.
+					//         </li>
+					//         <li>
+					//           <strong>Preference Cookies:</strong> We use Preference Cookies
+					//           to remember your preferences and various settings.
+					//         </li>
+					<li>
+						<strong>Analytics cookies:</strong> These
+						cookies help us understand how visitors interact
+						with the website, helping us improve our
+						services.
+					</li>
+				</ul>
+				// <div class="mt-2">
+				// 	<a
+				// 		href="#cookie-preferences"
+				// 		class="underline hover:text-gray-300 hover:cursor-pointer"
+				// 	>
+				// 		Update your cookie preferences
+				// 	</a>
+				// </div>
+			</div>
+		</section>
+		// <AccordionItem value="data-use" className="border rounded-lg px-6">
+		//        <AccordionTrigger className="text-lg font-medium py-4">
+		//          Use of data
+		//        </AccordionTrigger>
+		//        <AccordionContent className="pb-4 pt-2 text-muted-foreground space-y-4">
+		//          <p>We use the collected data for various purposes:</p>
+		//          <ul className="list-disc pl-6 space-y-2">
+		//            <li>To provide and maintain our service</li>
+		//            <li>To notify you about changes to our service</li>
+		//            <li>
+		//              To allow you to participate in interactive features of our
+		//              service when you choose to do so
+		//            </li>
+		//            <li>To provide customer support</li>
+		//            <li>
+		//              To gather analysis or valuable information so that we can
+		//              improve our service
+		//            </li>
+		//            <li>To monitor the usage of our service</li>
+		//            <li>To detect, prevent and address technical issues</li>
+		//          </ul>
+		//        </AccordionContent>
+		//      </AccordionItem>
+		// <AccordionItem value="data-sharing" className="border rounded-lg px-6">
+		//        <AccordionTrigger className="text-lg font-medium py-4">
+		//          Data sharing and disclosure
+		//        </AccordionTrigger>
+		//        <AccordionContent className="pb-4 pt-2 text-muted-foreground space-y-4">
+		//          <p>
+		//            We do not sell, rent, or trade user data. However, we may share
+		//            data under the following circumstances:
+		//          </p>
+		//          <ul className="list-disc pl-6 space-y-2">
+		//            <li>
+		//              <strong>Third-Party Service Providers:</strong> Trusted partners
+		//              that assist with cloud hosting, security, and payment
+		//              processing. These providers are contractually obligated to
+		//              maintain confidentiality and security standards.
+		//            </li>
+		//            <li>
+		//              <strong>Legal Compliance:</strong> If required by law, court
+		//              order, or regulatory request.
+		//            </li>
+		//            <li>
+		//              <strong>Business Transfers:</strong> In case of a merger,
+		//              acquisition, or sale of assets, user data may be transferred
+		//              under confidentiality obligations.
+		//            </li>
+		//          </ul>
+		//        </AccordionContent>
+		//      </AccordionItem>
+		// <AccordionItem value="use-control" className="border rounded-lg px-6">
+		//        <AccordionTrigger className="text-lg font-medium py-4">
+		//          User control and consent
+		//        </AccordionTrigger>
+		//        <AccordionContent className="pb-4 pt-2 text-muted-foreground space-y-4">
+		//          <p>You have control over your data:</p>
+		//          <ul className="list-disc pl-6 space-y-2">
+		//            <li>
+		//              <strong>Google Workspace Permissions:</strong> You can grant or
+		//              revoke access at any time through Google’s security settings.
+		//            </li>
+		//            <li>
+		//              <strong>Account Deletion:</strong> You may request deletion of
+		//              your account and associated data by contacting our support team.
+		//            </li>
+		//            <li>
+		//              <strong>Opt-Out:</strong> You may opt out of marketing
+		//              communications, though essential service notifications will
+		//              still be sent.
+		//            </li>
+		//          </ul>
+		//        </AccordionContent>
+		//      </AccordionItem>
+		// <AccordionItem
+		//        value="data-retention"
+		//        className="border rounded-lg px-6"
+		//      >
+		//        <AccordionTrigger className="text-lg font-medium py-4">
+		//          Data retention
+		//        </AccordionTrigger>
+		//        <AccordionContent className="pb-4 pt-2 text-muted-foreground space-y-4">
+		//          <p>
+		//            We retain your data only for as long as necessary to fulfill our
+		//            service obligations and legal requirements. Upon termination of
+		//            your account, we follow secure deletion protocols.
+		//          </p>
+		//        </AccordionContent>
+		//      </AccordionItem>
+		//      <AccordionItem value="changes" className="border rounded-lg px-6">
+		//        <AccordionTrigger className="text-lg font-medium py-4">
+		//          Changes to this privacy policy
+		//        </AccordionTrigger>
+		//        <AccordionContent className="pb-4 pt-2 text-muted-foreground space-y-4">
+		//          <p>
+		//            We may update our Privacy Policy from time to time. We will notify
+		//            you of any changes by posting the new Privacy Policy on this page.
+		//          </p>
+		//          <p>
+		//            We will let you know via email and/or a prominent notice on our
+		//            service, prior to the change becoming effective and update the
+		//            "last updated" date at the top of this Privacy Policy.
+		//          </p>
+		//          <p>
+		//            You are advised to review this Privacy Policy periodically for any
+		//            changes. Changes to this Privacy Policy are effective when they
+		//            are posted on this page.
+		//          </p>
+		//        </AccordionContent>
+		//      </AccordionItem>
+		<section id="contact">
+			<h2 class="font-medium py-4 text-2xl">Contact us</h2>
+			<div class="pb-4 space-y-4">
+				<p>
+					If you have any questions about this Privacy Policy,
+					please contact us:
+				</p>
+				<ul class="list-disc pl-6 space-y-2">
+					<li>By email: support@thinkledger.app</li>
+					<li>
+						By visiting the contact section at the bottom of
+						the page.
+					</li>
+				</ul>
+			</div>
+		</section>
+	</div>
+}
+
+templ PrivacyPolicyPage(isAuth bool, username string) {
+	if isAuth {
+		@layout.AuthLayout(
+			privacyPolicyTitle,
+			privacyPolicyMetaDescription,
+			privacyPolicyScript,
+			username,
+		) {
+			@privacyPolicyLayout()
+		}
+	} else {
+		@layout.GuestLayout(privacyPolicyTitle, privacyPolicyMetaDescription, "") {
+			@privacyPolicyLayout()
+		}
 	}
 }

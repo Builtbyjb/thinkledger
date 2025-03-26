@@ -10,8 +10,11 @@ var features = []Feature{
 	{
 		Title: "Full control of financial data",
 		Icon:  "fa-solid fa-database text-2xl",
-		Description: `No risk of losing access to critical data if you decide to
-    	switch software providers or hire an in-house accounting team.`,
+		Description: `You’ll never risk losing access to critical financial data—it’s
+		securely stored in your own Google Drive, linked to the email address you
+		signed up with. This means you have full control over your records,
+		easy access from any device, and seamless file sharing with your accountant
+		or team whenever needed.`,
 	},
 	{
 		Title: "Automated bookkeeping",
@@ -31,7 +34,9 @@ var features = []Feature{
 
 templ Features() {
 	<div>
-		<h2 class="text-2xl font-medium mb-8">More on what we offer</h2>
+		<div class="text-center w-full">
+			<h2 class="text-2xl font-medium mb-8">More on what we offer</h2>
+		</div>
 		<div class="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-8">
 			for _, feature := range features {
 				<div class="p-4 border-2 border-gray-300 rounded-lg">
@@ -39,7 +44,7 @@ templ Features() {
 						<i class={ feature.Icon }></i>
 						<h3 class="text-xl font-medium ms-4">{ feature.Title }</h3>
 					</div>
-					<div class="font-[Poppins]">{ feature.Description }</div>
+					<div class="font-share-tech-mono">{ feature.Description }</div>
 				</div>
 			}
 		</div>

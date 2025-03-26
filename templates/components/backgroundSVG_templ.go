@@ -31,33 +31,7 @@ func BackgroundSVG() templ.Component {
 			templ_7745c5c3_Var1 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<svg class=\"absolute inset-0 size-full stroke-[#262626] z-1\"><defs><pattern id=\"grid-pattern\" height=\"")
-		if templ_7745c5c3_Err != nil {
-			return templ_7745c5c3_Err
-		}
-		var templ_7745c5c3_Var2 string
-		templ_7745c5c3_Var2, templ_7745c5c3_Err = templ.JoinStringErrs(spacing)
-		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/components/backgroundSVG.templ`, Line: 10, Col: 20}
-		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var2))
-		if templ_7745c5c3_Err != nil {
-			return templ_7745c5c3_Err
-		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "\" width=\"")
-		if templ_7745c5c3_Err != nil {
-			return templ_7745c5c3_Err
-		}
-		var templ_7745c5c3_Var3 string
-		templ_7745c5c3_Var3, templ_7745c5c3_Err = templ.JoinStringErrs(spacing)
-		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/components/backgroundSVG.templ`, Line: 11, Col: 19}
-		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var3))
-		if templ_7745c5c3_Err != nil {
-			return templ_7745c5c3_Err
-		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, "\" x=\"0\" y=\"0\" patternUnits=\"userSpaceOnUse\"><path d=\"M -1 50 L 101 50\" fill=\"#262626\" fill-opacity=\"0.5\"></path> <path d=\"M 50 -1 L 50 101\" fill=\"#262626\" fill-opacity=\"0.5\"></path></pattern></defs> <rect width=\"100%\" height=\"100%\" fill=\"url(#grid-pattern)\"></rect></svg>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<svg class=\"absolute inset-0 size-full stroke-[#262626]\"><defs><pattern id=\"grid-pattern\" height=\"150\" width=\"150\" x=\"0\" y=\"0\" patternUnits=\"userSpaceOnUse\"><path d=\"M -1 50 L 101 50\" fill=\"#262626\" fill-opacity=\"0.5\"></path> <path d=\"M 50 -1 L 50 101\" fill=\"#262626\" fill-opacity=\"0.5\"></path></pattern></defs> <rect width=\"100%\" height=\"100%\" fill=\"url(#grid-pattern)\"></rect></svg>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

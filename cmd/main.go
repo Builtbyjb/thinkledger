@@ -1,70 +1,119 @@
 package main
 
 import (
-	"log"
+	"net/http"
 	"os"
 
+	"server/internal/database/redis"
 	"server/internal/handlers"
 	"server/internal/middleware"
+	"server/internal/utils"
 
-	"github.com/gofiber/fiber/v2"
 	"github.com/joho/godotenv"
+	"github.com/labstack/echo/v4"
+	"golang.org/x/oauth2"
+	"golang.org/x/oauth2/google"
 )
 
-func main() {
-
+func init() {
 	// Load .env file
 	godotenv.Load()
+}
+
+type healthRes struct {
+	Ping string `json:"ping"`
+	Env  string `json:"env"`
+}
+
+func main() {
 
 	// Get gemini api key
 	GEMINI_API_KEY := os.Getenv("GEMINI_DEV_API_KEY")
 
-	app := fiber.New()
+	app := echo.New()
 
-	app.Use(
-		middleware.Cors(),
-		middleware.RateLimiter(),
-		middleware.RequestTimer(),
-	)
+	app.Use(middleware.Cors())
+	app.Use(middleware.RequestTimer())
+	app.Use(middleware.RateLimiter())
+	app.Use(middleware.Recover())
 
 	app.Static("/static", "./static")
 
-	// Connect to database and create database engine
-	// db := database.DB()
+	// Create redis client
+	redisClient := redis.GetRedisClient()
 
+	// OAuth2 configuration
+	var oAuthConfig = &oauth2.Config{
+		ClientID:     os.Getenv("GOOGLE_CLIENT_ID"),
+		ClientSecret: os.Getenv("GOOGLE_CLIENT_SECRET"),
+		RedirectURL:  os.Getenv("GOOGLE_REDIRECT_URL"),
+		Scopes: []string{
+			"https://www.googleapis.com/auth/userinfo.email",
+			"https://www.googleapis.com/auth/userinfo.profile",
+		},
+		Endpoint: google.Endpoint,
+	}
+
+	// For authentication middleware
+	authConfig := utils.AuthConfig{
+		OAuth2Config: oAuthConfig,
+		RedisClient:  redisClient,
+	}
+
+	// Dependency injection between routes
 	handler := &handlers.Handler{
 		// DB:     db,
-		ApiKey: GEMINI_API_KEY,
+		OAuthConfig: oAuthConfig,
+		ApiKey:      GEMINI_API_KEY,
+		RedisClient: redisClient,
 	}
 
 	// health check
-	app.Get("/ping", func(c *fiber.Ctx) error {
+	app.GET("/ping", func(c echo.Context) error {
 		envCheck := os.Getenv("ENV_CHECK")
-		return c.Status(fiber.StatusOK).JSON(fiber.Map{
-			"ping": "pong!",
-			"env":  envCheck,
-		})
+
+		healthCheck := &healthRes{
+			Ping: "Pong!!",
+			Env:  envCheck,
+		}
+		return c.JSON(http.StatusOK, healthCheck)
 	})
 
 	// Web routes
-	app.Get("/", handler.Index)
-	app.Route("/support", func(route fiber.Router) {
-		route.Get("/", handler.Support)
-		route.Get("/bookkeeping", handler.SupportBookkeeping)
-		route.Get("/financial-reports", handler.SupportFinancialReports)
-		route.Get("/analytics-insights", handler.SupportAnalyticsInsights)
-	}, "support.")
-	app.Get("/privacy-policy", handler.PrivacyPolicy)
-	app.Get("/terms-of-service", handler.TermsOfService)
-	app.Post("/join-waitlist", handler.JoinWaitlist)
+	app.GET("/", handler.Index)
+
+	// Routes that appear when when a user is authenticated and unauthenticated
+	dynamic := app.Group("", middleware.SetUserInfo(redisClient))
+	dynamic.GET("/support", handler.Support)
+	dynamic.GET("/support/bookkeeping", handler.SupportBookkeeping)
+	dynamic.GET("/support/financial-reports", handler.SupportFinancialReports)
+	dynamic.GET("/support/analytics-insights", handler.SupportAnalyticsInsights)
+	dynamic.GET("/privacy-policy", handler.PrivacyPolicy)
+	dynamic.GET("/terms-of-service", handler.TermsOfService)
+
+	app.POST("/join-waitlist", handler.JoinWaitlist)
+
+	app.GET("/sign-in", handler.SignIn)
+	app.GET("/log-out", handler.HandleLogout)
+
+	// Authentication routes
+	app.GET("/auth-sign-in", handler.HandleSignInAuth)
+	app.GET("/auth/google/callback", handler.HandleCallbackAuth)
+
+	// Protected web routes
+	protected := app.Group("", middleware.AuthRoutes(authConfig))
+	protected.GET("/home", handler.Home)
+
+	// Not found (404) handler
+	app.GET("*", handler.NotFound)
 
 	// Api routes
-	v1 := app.Group("/api/v1")
-	v1.Post("/chat", middleware.ChatAuth(), handler.HandleChat)
+	// v1 := app.Group("/api/v1")
+	// v1.POST("/chat", handler.HandleChat)
 
 	// api.Get("/journal", handler.HandleJournal)
 	// api.Get("/t-accounts", handler.HandleTAccount)
 	// api.Get("/trial-balance", handler.HandleTrialBalance)
 
-	log.Fatal(app.Listen("0.0.0.0:3000"))
+	app.Logger.Fatal(app.Start(":3000"))
 }

@@ -3,7 +3,7 @@ package handlers
 import (
 	"errors"
 	"fmt"
-	"server/internal/database"
+	"server/internal/database/postgres"
 
 	"github.com/gofiber/fiber/v2"
 	"gorm.io/gorm"
@@ -11,7 +11,7 @@ import (
 
 type JournalResponse struct {
 	Message string                  `json:"message"`
-	Data    []database.JournalEntry `json:"data"`
+	Data    []postgres.JournalEntry `json:"data"`
 }
 
 func (h *Handler) HandleJournal(c *fiber.Ctx) error {
@@ -40,10 +40,10 @@ func (h *Handler) HandleJournal(c *fiber.Ctx) error {
 	return c.Status(fiber.StatusOK).JSON(response)
 }
 
-func getJournalEntries(db *gorm.DB) ([]database.JournalEntry, error) {
+func getJournalEntries(db *gorm.DB) ([]postgres.JournalEntry, error) {
 
 	// Raw journal entries from database
-	var J []database.JournalEntry
+	var J []postgres.JournalEntry
 	result := db.Find(&J)
 	if result.Error != nil {
 		return nil, fmt.Errorf("database error: %w", result.Error)
@@ -54,12 +54,12 @@ func getJournalEntries(db *gorm.DB) ([]database.JournalEntry, error) {
 	}
 
 	// sanitized journal entries
-	var JournalEntries []database.JournalEntry
+	var JournalEntries []postgres.JournalEntry
 
 	for i := range len(J) {
 
 		// Get credit accounts
-		var creditAccounts []database.Credit
+		var creditAccounts []postgres.Credit
 		creditResult := db.Where("journal_id = ?", J[i].Id).Find(&creditAccounts)
 		if creditResult.Error != nil {
 			return nil, fmt.Errorf("database error: %w", creditResult.Error)
@@ -70,7 +70,7 @@ func getJournalEntries(db *gorm.DB) ([]database.JournalEntry, error) {
 		}
 
 		// Get debit accounts
-		var debitAccounts []database.Debit
+		var debitAccounts []postgres.Debit
 		debitResult := db.Where("journal_id = ?", J[i].Id).Find(&debitAccounts)
 		if debitResult.Error != nil {
 			return nil, fmt.Errorf("database error: %w", debitResult.Error)
@@ -80,7 +80,7 @@ func getJournalEntries(db *gorm.DB) ([]database.JournalEntry, error) {
 			return nil, errors.New("no debit accounts found")
 		}
 
-		JournalEntries = append(JournalEntries, database.JournalEntry{
+		JournalEntries = append(JournalEntries, postgres.JournalEntry{
 			Id:          J[i].Id,
 			Date:        J[i].Date,
 			Debits:      debitAccounts,

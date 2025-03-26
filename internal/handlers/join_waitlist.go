@@ -2,11 +2,11 @@ package handlers
 
 import (
 	"encoding/json"
-	"fmt"
 	"log"
+	"net/http"
 	"os"
 
-	"github.com/gofiber/fiber/v2"
+	"github.com/labstack/echo/v4"
 	"github.com/sendgrid/sendgrid-go"
 )
 
@@ -21,13 +21,19 @@ type ContactRequest struct {
 	Contacts []Contact `json:"contacts"`
 }
 
-func (h *Handler) JoinWaitlist(c *fiber.Ctx) error {
+func (h *Handler) JoinWaitlist(c echo.Context) error {
 
-	var contact Contact
+	// Simple validation
+	if len(c.FormValue("firstname")) == 0 {
+		c.NoContent(http.StatusBadRequest)
+	}
 
-	if err := c.BodyParser(&contact); err != nil {
-		log.Println("Could not parse contact")
-		return c.SendStatus(fiber.StatusBadRequest)
+	if len(c.FormValue("lastname")) == 0 {
+		c.NoContent(http.StatusBadRequest)
+	}
+
+	if len(c.FormValue("email")) == 0 {
+		c.NoContent(http.StatusBadRequest)
 	}
 
 	sendGridApiKey := os.Getenv("SENDGRID_API_KEY")
@@ -37,19 +43,19 @@ func (h *Handler) JoinWaitlist(c *fiber.Ctx) error {
 		ListIds: []string{sendGridListId},
 		Contacts: []Contact{
 			{
-				Firstname: contact.Firstname,
-				Lastname:  contact.Lastname,
-				Email:     contact.Email,
+				Firstname: c.FormValue("firstname"),
+				Lastname:  c.FormValue("lastname"),
+				Email:     c.FormValue("email"),
 			},
 		},
 	}
 
-	fmt.Println(data)
+	// fmt.Println(data)
 
 	jsonBytes, err := json.Marshal(data)
 	if err != nil {
 		log.Println("failed to json marshal contacts")
-		return c.SendStatus(fiber.StatusInternalServerError)
+		return c.NoContent(http.StatusInternalServerError)
 	}
 
 	sendGridUrl := "https://api.sendgrid.com"
@@ -60,15 +66,15 @@ func (h *Handler) JoinWaitlist(c *fiber.Ctx) error {
 	response, err := sendgrid.API(request)
 	if err != nil {
 		log.Println("Sendgrid api error")
-		return c.SendStatus(fiber.StatusInternalServerError)
+		return c.NoContent(http.StatusInternalServerError)
 	}
 
 	if response.StatusCode != 202 {
 		log.Println(response.Body)
-		return c.SendStatus(fiber.StatusInternalServerError)
+		return c.NoContent(http.StatusInternalServerError)
 	}
 
 	log.Println(response.Body)
 	log.Println("Contact saved!!")
-	return c.SendStatus(fiber.StatusOK)
+	return c.NoContent(http.StatusOK)
 }

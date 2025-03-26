@@ -34,16 +34,17 @@ var benefits = []Benefit{
 		Description: `We use Google Workspace apps to seamlessly integrate with
     	your workflow. Our software delivers critical updates, lets you request
     	information, and provides detailed business analysis through a simple
-    	chat interface—helping you fully understand your business without the
-    	need to hire experts or learn new software.`,
+    	chat interface—helping you fully understand your business.`,
 	},
 }
 
 templ Benefits() {
 	<div>
-		<h2 class="text-2xl mb-8 font-medium">
-			Why you will love ThinkLedger
-		</h2>
+		<div class="w-full text-center">
+			<h2 class="text-2xl mb-8 font-medium">
+				Why you will love ThinkLedger
+			</h2>
+		</div>
 		<div class="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-8">
 			for _, benefit := range benefits {
 				<div class="p-4 border-2 rounded-lg border-gray-300">
@@ -51,7 +52,7 @@ templ Benefits() {
 						<i class={ benefit.Icon }></i>
 						<h3 class="text-xl font-medium ms-4">{ benefit.Title }</h3>
 					</div>
-					<div class="font-[Poppins]">{ benefit.Description }</div>
+					<div class="font-share-tech-mono">{ benefit.Description }</div>
 				</div>
 			}
 		</div>
