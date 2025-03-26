@@ -14,10 +14,7 @@ func (h *Handler) HandleSignInAuth(c echo.Context) error {
 	state, err := utils.GenerateRandomstring()
 	if err != nil {
 		log.Println(err)
-		return c.String(
-			http.StatusInternalServerError,
-			"Internal server error",
-		)
+		return c.String(500, "Internal server error")
 	}
 
 	// Set state cookie
@@ -31,10 +28,7 @@ func (h *Handler) HandleSignInAuth(c echo.Context) error {
 	})
 
 	// Add oauth2.AccessTypeOffline to get a refresh token
-	return c.Redirect(
-		http.StatusTemporaryRedirect,
-		h.OAuthConfig.AuthCodeURL(state),
-	)
+	return c.Redirect(307, h.OAuthConfig.AuthCodeURL(state))
 }
 
 // Logout user
@@ -56,20 +50,12 @@ func (h *Handler) HandleLogout(c echo.Context) error {
 
 	// Delete the user id from the redis cache
 	_, rErr := h.RedisClient.Del(ctx, authId).Result()
-
 	if rErr != nil {
 		log.Println(rErr)
 		return c.Redirect(307, "/")
 	}
 
-	c.SetCookie(&http.Cookie{
-		Name:     "authId",
-		Value:    "",
-		HttpOnly: true,
-		Path:     "/",
-		Secure:   true,
-		Expires:  time.Now().Add(5 * time.Minute),
-	})
+	utils.ClearAuthIdCookie(c)
 
 	return c.Redirect(307, "/")
 }

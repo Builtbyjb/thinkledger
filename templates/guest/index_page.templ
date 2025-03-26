@@ -1,6 +1,7 @@
 package guest
 
 import "server/templates/components"
+import "server/templates/layout"
 
 const indexTitle string = "ThinkLedger"
 const indexMetaDescription string = `Welcome to ThinkLedger. We help business owners like you
@@ -11,7 +12,7 @@ const indexMetaDescription string = `Welcome to ThinkLedger. We help business ow
 const indexScript string = "/static/dist/index.min.js"
 
 templ IndexPage() {
-	@GuestLayout(indexTitle, indexMetaDescription, indexScript) {
+	@layout.GuestLayout(indexTitle, indexMetaDescription, indexScript) {
 		<main class="space-y-16">
 			<section>
 				<div class="z-20 mb-4 w-[100%] sm:w-[90%] md:w-[90%] lg:w-[80%] 2xl:w-[70%] text-center mx-auto">

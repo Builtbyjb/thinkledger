@@ -1,23 +1,16 @@
 package handlers
 
 import (
-	"context"
 	"encoding/json"
 	"fmt"
-	"io"
 	"log"
 	"net/http"
+	"server/internal/utils"
 	"time"
 
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
-	"golang.org/x/oauth2"
 )
-
-type UserInfo struct {
-	Email string `json:"email"`
-	Name  string `json:"name"`
-}
 
 func (h *Handler) HandleCallbackAuth(c echo.Context) error {
 	ctx := c.Request().Context()
@@ -29,6 +22,7 @@ func (h *Handler) HandleCallbackAuth(c echo.Context) error {
 		return c.String(http.StatusBadRequest, "Invalid state parameter")
 	}
 
+	// Get google oauth2 token
 	token, err := h.OAuthConfig.Exchange(ctx, c.QueryParam("code"))
 	if err != nil {
 		log.Println(err)
@@ -45,51 +39,38 @@ func (h *Handler) HandleCallbackAuth(c echo.Context) error {
 	// Generate authentication id
 	authId := uuid.New().String()
 
+	// Set cookie and redis expiration date
+	expiration := time.Duration(24 * time.Hour)
+
+	userInfo, err := utils.GetUserInfo(token.AccessToken, h.OAuthConfig)
+	if err != nil {
+		log.Print(err)
+		c.String(500, "Failed to ger user info")
+	}
+
 	// Save the user token
-	expiration := time.Duration(0)
 	if err := h.RedisClient.Set(ctx, authId, tokenBytes, expiration).Err(); err != nil {
 		log.Println(err)
 		return c.String(500, "Failed to save token: "+err.Error())
 	}
 
-	// Set user cookie
+	// Save user name
+	name := fmt.Sprintf("name:%s", authId)
+	if err := h.RedisClient.Set(ctx, name, userInfo.Name, expiration).Err(); err != nil {
+		log.Println(err)
+		return c.String(500, "Failed to save user name: "+err.Error())
+	}
+
+	// Set user authentication cookie
 	c.SetCookie(&http.Cookie{
 		Name:     "authId",
 		Value:    authId,
 		HttpOnly: true,
 		Path:     "/",
 		Secure:   true,
+		SameSite: http.SameSiteStrictMode,
 		Expires:  time.Now().Add(24 * time.Hour),
 	})
 
-	return c.Redirect(http.StatusTemporaryRedirect, "/home")
-}
-
-func getUserInfo(accessToken string, oauthConfig *oauth2.Config) (*UserInfo, error) {
-	client := oauthConfig.Client(context.Background(), &oauth2.Token{
-		AccessToken: accessToken,
-		TokenType:   "Bearer",
-	})
-
-	response, err := client.Get("https://www.googleapis.com/oauth2/v2/userinfo")
-	if err != nil {
-		return nil, err
-	}
-	defer response.Body.Close()
-
-	if response.StatusCode != 200 {
-		return nil, fmt.Errorf("google API returned status: %d", response.StatusCode)
-	}
-
-	data, err := io.ReadAll(response.Body)
-	if err != nil {
-		return nil, err
-	}
-
-	var userInfo UserInfo
-	if err := json.Unmarshal(data, &userInfo); err != nil {
-		return nil, err
-	}
-
-	return &userInfo, nil
+	return c.Redirect(307, "/home")
 }

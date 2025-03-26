@@ -9,6 +9,7 @@ import "github.com/a-h/templ"
 import templruntime "github.com/a-h/templ/runtime"
 
 import "server/templates/components"
+import "server/templates/layout"
 
 const indexTitle string = "ThinkLedger"
 const indexMetaDescription string = `Welcome to ThinkLedger. We help business owners like you
@@ -89,7 +90,7 @@ func IndexPage() templ.Component {
 			}
 			return nil
 		})
-		templ_7745c5c3_Err = GuestLayout(indexTitle, indexMetaDescription, indexScript).Render(templ.WithChildren(ctx, templ_7745c5c3_Var2), templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = layout.GuestLayout(indexTitle, indexMetaDescription, indexScript).Render(templ.WithChildren(ctx, templ_7745c5c3_Var2), templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

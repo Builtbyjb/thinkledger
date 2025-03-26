@@ -82,14 +82,17 @@ func main() {
 	// Web routes
 	app.GET("/", handler.Index)
 
-	app.GET("/support", handler.Support)
-	app.GET("/support/bookkeeping", handler.SupportBookkeeping)
-	app.GET("/support/financial-reports", handler.SupportFinancialReports)
-	app.GET("/support/analytics-insights", handler.SupportAnalyticsInsights)
+	// Routes that appear when when a user is authenticated and unauthenticated
+	dynamic := app.Group("", middleware.SetUserInfo(redisClient))
+	dynamic.GET("/support", handler.Support)
+	dynamic.GET("/support/bookkeeping", handler.SupportBookkeeping)
+	dynamic.GET("/support/financial-reports", handler.SupportFinancialReports)
+	dynamic.GET("/support/analytics-insights", handler.SupportAnalyticsInsights)
+	dynamic.GET("/privacy-policy", handler.PrivacyPolicy)
+	dynamic.GET("/terms-of-service", handler.TermsOfService)
 
-	app.GET("/privacy-policy", handler.PrivacyPolicy)
-	app.GET("/terms-of-service", handler.TermsOfService)
 	app.POST("/join-waitlist", handler.JoinWaitlist)
+
 	app.GET("/sign-in", handler.SignIn)
 	app.GET("/log-out", handler.HandleLogout)
 

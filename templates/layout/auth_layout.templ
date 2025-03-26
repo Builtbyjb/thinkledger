@@ -1,17 +1,17 @@
-package auth
+package layout
 
 import (
 	"fmt"
 	"server/templates"
 )
 
-const hover string = "hover:bg-gray-600/50 hover:rounded-lg"
+const hover string = "hover:bg-[#0065FA]/70 hover:rounded-lg"
 
-templ authSidebar() {
-	<aside id="sidebar" class="sidebar-transition bg-[#0A0A0A] border-r border-gray-400/50 w-[17rem] h-screen flex flex-col overflow-hidden hidden md:block lg:block xl:block 2xl:block">
+templ authSidebar(username string) {
+	<aside id="sidebar" class="sidebar-transition bg-[#0A0A0A] border-r border-gray-400/50 w-[15rem] fixed z-[1000] top-0 left-0 h-screen flex flex-col overflow-hidden hidden md:block">
 		<div class="p-4 border-b border-gray-600 flex items-center justify-between">
 			<div class="flex flex-col gap-2">
-				<h1 class="font-semibold text-lg sidebar-text">John Doe</h1>
+				<h1 id="username" class="font-semibold text-lg sidebar-text">{ username }</h1>
 				<p class="sidebar-text">Company XYZ</p>
 			</div>
 		</div>
@@ -69,7 +69,7 @@ templ authSidebar() {
 				</li>
 				// Resources Dropdown
 				<li class="dropdown-container">
-					<button class={ fmt.Sprintf("dropdown-trigger w-full flex items-center text-sm justify-between gap-2 px-3 py-2 font-medium %s", hover) }>
+					<button class={ fmt.Sprintf("dropdown-trigger w-full flex items-center text-sm justify-between gap-2 px-3 py-2 font-medium d-btn d-btn-support d-btn-blog d-btn-documentation %s", hover) }>
 						<div class="flex items-center gap-2">
 							<i class="fa-solid fa-folder-minus"></i>
 							<span class="sidebar-text">Resources</span>
@@ -90,8 +90,8 @@ templ authSidebar() {
 									<span>Blog</span>
 								</a>
 							</li>
-							<li id="support" class={ hover }>
-								<a href="#" class="flex items-center gap-2 px-3 py-2 text-sm font-medium">
+							<li id="support" class={ fmt.Sprintf("link %s", hover) }>
+								<a href="/support" class="flex items-center gap-2 px-3 py-2 text-sm font-medium">
 									<span>Support</span>
 								</a>
 							</li>
@@ -100,7 +100,7 @@ templ authSidebar() {
 				</li>
 				// Legal Dropdown
 				<li class="dropdown-container">
-					<button class={ fmt.Sprintf("dropdown-trigger w-full flex items-center text-sm justify-between gap-2 px-3 py-2 font-medium %s", hover) }>
+					<button class={ fmt.Sprintf("dropdown-trigger w-full flex items-center text-sm justify-between gap-2 px-3 py-2 font-medium d-btn d-btn-terms-of-service d-btn-privacy-policy %s", hover) }>
 						<div class="flex items-center gap-2">
 							<i class="fa-solid fa-scale-balanced"></i>
 							<span class="sidebar-text">Legal</span>
@@ -111,18 +111,18 @@ templ authSidebar() {
 					</button>
 					<div class="dropdown-content max-h-0 overflow-hidden opacity-0 dropdown-transition">
 						<ul class="pl-7 mt-1 space-y-1 sidebar-submenu">
-							<li id="terms-of-service" class={ hover }>
-								<a href="#" class="flex items-center gap-2 px-3 py-2 text-sm font-medium">
+							<li id="terms-of-service" class={ fmt.Sprintf("link %s", hover) }>
+								<a href="/terms-of-service" class="flex items-center gap-2 px-3 py-2 text-sm font-medium">
 									<span>Terms of Service</span>
 								</a>
 							</li>
-							<li id="privacy-policy" class={ hover }>
-								<a href="#" class="flex items-center gap-2 px-3 py-2 text-sm font-medium">
+							<li id="privacy-policy" class={ fmt.Sprintf("link %s", hover) }>
+								<a href="/privacy-policy" class="flex items-center gap-2 px-3 py-2 text-sm font-medium">
 									<span>Privacy Policy</span>
 								</a>
 							</li>
 							<li id="cookie-policy" class={ hover }>
-								<a href="#" class="flex items-center gap-2 px-3 py-2 text-sm font-medium">
+								<a href="/privacy-policy#cookie-policy" class="flex items-center gap-2 px-3 py-2 text-sm font-medium">
 									<span>Cookie Policy</span>
 								</a>
 							</li>
@@ -141,12 +141,12 @@ templ authSidebar() {
 	</aside>
 }
 
-templ AuthLayout(title, metaDecription, script string) {
+templ AuthLayout(title, metaDecription, script, username string) {
 	@templates.Root(title, metaDecription, script) {
-		<div class="flex h-screen relative gap-4">
-			@authSidebar()
-			<div class="z-10">
-				<button id="toggle-sidebar" class="p-1 rounded-md hover:bg-gray-600/50 m-4 p-2 flex items-center gap-2">
+		<div class="h-screen gap-4 relative">
+			@authSidebar(username)
+			<div id="authlayout-div" class="z-10 md:ml-[17rem]">
+				<button id="toggle-sidebar-btn" class="rounded-md bg-[#0065FA]/90 p-2 m-4 flex items-center gap-2 fixed">
 					<i class="fa-solid fa-arrow-left"></i>
 					<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-panel-left">
 						<rect width="18" height="18" x="3" y="3" rx="2" ry="2"></rect>
@@ -154,7 +154,7 @@ templ AuthLayout(title, metaDecription, script string) {
 					</svg>
 					<span id="toggle-sidebar-text">Close</span>
 				</button>
-				<div>
+				<div class="px-4 pt-20 pb-8 z-20 md:mr-[10%] lg:mr-[10%] xl:mr-[20%] 2xl:mr-[30%]">
 					{ children... }
 				</div>
 			</div>

@@ -16,6 +16,11 @@ type AuthConfig struct {
 	RedisClient  *redis.Client
 }
 
+type UserInfo struct {
+	Email string `json:"email"`
+	Name  string `json:"name"`
+}
+
 type AccountDetail struct {
 	AccountName   string `json:"accountName"`
 	Amount        string `json:"amount"`

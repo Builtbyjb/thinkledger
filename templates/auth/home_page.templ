@@ -1,11 +1,13 @@
 package auth
 
+import "server/templates/layout"
+
 const homeTitle string = "Home"
 const homeMetaDescription string = "ThinkLedger | Home page"
 const homeScript string = "/static/dist/home.min.js"
 
-templ HomePage() {
-	@AuthLayout(homeTitle, homeMetaDescription, homeScript) {
+templ HomePage(username string) {
+	@layout.AuthLayout(homeTitle, homeMetaDescription, homeScript, username) {
 		// Main Content
 		<div class="flex-1 flex flex-col overflow-hidden">
 			//Header

@@ -8,6 +8,8 @@ package guest
 import "github.com/a-h/templ"
 import templruntime "github.com/a-h/templ/runtime"
 
+import "server/templates/layout"
+
 const termsOfServiceTitle string = "ThinkLedger | Terms of Service"
 const termsOfServiceMetaDescription string = `By accessing or using ThinkLedger’s AI accounting
 			software (the “Service”), provided by ThinkLedger
@@ -15,9 +17,11 @@ const termsOfServiceMetaDescription string = `By accessing or using ThinkLedger�
 			by these Terms of Service (“Terms”) and all policies
 			referenced herein.`
 
+const termsOfserviceScript string = "/static/dist/default.min.js"
+
 const termsOfServiceLastUpdated = "March 8, 2025"
 
-func TermsOfServicePage() templ.Component {
+func termsOfServiceLayout() templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
 		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
@@ -38,92 +42,151 @@ func TermsOfServicePage() templ.Component {
 			templ_7745c5c3_Var1 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Var2 := templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
-			templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
-			templ_7745c5c3_Buffer, templ_7745c5c3_IsBuffer := templruntime.GetBuffer(templ_7745c5c3_W)
-			if !templ_7745c5c3_IsBuffer {
-				defer func() {
-					templ_7745c5c3_BufErr := templruntime.ReleaseBuffer(templ_7745c5c3_Buffer)
-					if templ_7745c5c3_Err == nil {
-						templ_7745c5c3_Err = templ_7745c5c3_BufErr
-					}
-				}()
-			}
-			ctx = templ.InitializeContext(ctx)
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<h1 class=\"text-3xl font-bold mb-4\">Terms of Service</h1><div class=\"mb-4 flex items-center gap-3\"><i class=\"fa-solid fa-scale-balanced text-2xl\"></i><p class=\"text-sm\">Last updated: ")
-			if templ_7745c5c3_Err != nil {
-				return templ_7745c5c3_Err
-			}
-			var templ_7745c5c3_Var3 string
-			templ_7745c5c3_Var3, templ_7745c5c3_Err = templ.JoinStringErrs(termsOfServiceLastUpdated)
-			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/guest/terms_of_service_page.templ`, Line: 17, Col: 63}
-			}
-			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var3))
-			if templ_7745c5c3_Err != nil {
-				return templ_7745c5c3_Err
-			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "</p></div><div class=\"w-full space-y-4\"><section id=\"acceptance-of-terms\"><h2 class=\"font-medium py-4 text-2xl\">1. Acceptance of Terms</h2><p class=\"pb-4\">By accessing or using ThinkLedger’s AI accounting software (the “Service”), provided by ThinkLedger (“Company,” “we,” “us,” or “our”), you agree to be bound by these Terms of Service (“Terms”) and all policies referenced herein. If you do not agree to these Terms, you must not use the Service.</p></section><section id=\"modification-to-terms\"><h2 class=\"font-medium py-4 text-2xl\">2. Modification to Terms</h2><p class=\"pb-4\">We reserve the right to modify these Terms at any time without prior notice. You will receive an email notification after any changes and will be asked to accept the revised Terms to continue using our service.</p></section><section id=\"eligibility-and-registration\"><h2 class=\"font-medium py-4 text-2xl\">3. Eligibility and Registration</h2><ul class=\"list-disc pl-6 space-y-2\"><li>You must have the legal capacity to enter into a binding contract under applicable law.</li><li>If registration is required, you agree to provide accurate, complete, and up-to-date information and to update such information as necessary.</li></ul></section><section id=\"description-of-the-service\"><h2 class=\"font-medium py-4 text-2xl\">4. Description of the Service</h2><p class=\"pb-4\">Our Service is an AI-powered accounting software that automates bookkeeping functions, including integration with Google Workspace applications (such as Google Drive, Google Chat, Google Spreadsheets, and Google Slides) and the automatic import of your banking transactions into Google Spreadsheets. Use of the Service is subject to these Terms.</p></section><section id=\"access-to-third-party-services\"><h2 class=\"font-medium py-4 text-2xl\">5. Access to Third-Party Services</h2><ul class=\"list-disc pl-6 space-y-2\"><li><strong>Google Workspace Integration: </strong> Our Service connects with your Google Workspace account. By using our Service, you authorize us to access, manage, and interact with your Google Workspace data as necessary for the Service to function. Your use of Google Workspace is also subject to Google’s own Terms of Service, and we are not responsible for Google’s services or any changes therein.</li><li><strong>Banking Data Integration: </strong> To provide automated transaction recording, the Service requires access to your banking transaction data. By using our Service, you consent to the collection, processing, and secure transfer of your banking information. You are responsible for ensuring that you have the proper rights and permissions to share such information, and you agree to comply with any applicable financial institution policies and regulatory requirements.</li></ul></section><section id=\"permissions-and-data-access\"><h2 class=\"font-medium py-4 text-2xl\">6. Permissions and Data Access</h2><ul class=\"list-disc pl-6 space-y-2\"><li><strong>Google Workspace Permissions: </strong> You explicitly authorize our Service to read, write, and modify your files and data within the designated Google Workspace applications solely for the purposes of delivering the Service.</li><li><strong>Banking Information: </strong> You grant us permission to access your banking transaction data for the sole purpose of automating the recording of your financial transactions. All access will be governed by our")
-			if templ_7745c5c3_Err != nil {
-				return templ_7745c5c3_Err
-			}
-			var templ_7745c5c3_Var4 string
-			templ_7745c5c3_Var4, templ_7745c5c3_Err = templ.JoinStringErrs(" ")
-			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/guest/terms_of_service_page.templ`, Line: 120, Col: 41}
-			}
-			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var4))
-			if templ_7745c5c3_Err != nil {
-				return templ_7745c5c3_Err
-			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, " <a href=\"/privacy-policy#data-security\" class=\"underline hover:text-gray-400\" target=\"_blank\">Data Security</a>")
-			if templ_7745c5c3_Err != nil {
-				return templ_7745c5c3_Err
-			}
-			var templ_7745c5c3_Var5 string
-			templ_7745c5c3_Var5, templ_7745c5c3_Err = templ.JoinStringErrs(" ")
-			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/guest/terms_of_service_page.templ`, Line: 127, Col: 15}
-			}
-			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var5))
-			if templ_7745c5c3_Err != nil {
-				return templ_7745c5c3_Err
-			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 4, " and")
-			if templ_7745c5c3_Err != nil {
-				return templ_7745c5c3_Err
-			}
-			var templ_7745c5c3_Var6 string
-			templ_7745c5c3_Var6, templ_7745c5c3_Err = templ.JoinStringErrs(" ")
-			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/guest/terms_of_service_page.templ`, Line: 128, Col: 14}
-			}
-			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var6))
-			if templ_7745c5c3_Err != nil {
-				return templ_7745c5c3_Err
-			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 5, " <a href=\"/privacy-policy\" class=\"underline hover:text-gray-400\" target=\"_blank\">Privacy Policies</a> .</li><li>It is your responsibility to ensure that all third-party permissions and consents (including those required by your bank or Google) are properly in place.</li></ul></section><section id=\"data-security-and-privacy\"><h2 class=\"font-medium py-4 text-2xl\">7. Data Security and Privacy</h2><ul class=\"list-disc pl-6 space-y-2\"><li>We are committed to protecting your data in accordance with applicable Canadian privacy laws, including the Personal Information Protection and Electronic Documents Act (PIPEDA), and any other relevant legislation.</li><li>Our")
-			if templ_7745c5c3_Err != nil {
-				return templ_7745c5c3_Err
-			}
-			var templ_7745c5c3_Var7 string
-			templ_7745c5c3_Var7, templ_7745c5c3_Err = templ.JoinStringErrs(" ")
-			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/guest/terms_of_service_page.templ`, Line: 159, Col: 14}
-			}
-			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var7))
-			if templ_7745c5c3_Err != nil {
-				return templ_7745c5c3_Err
-			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 6, " <a href=\"/privacy-policy\" class=\"underline hover:text-gray-400\" target=\"_blank\">Privacy Policy</a> , which is incorporated herein by reference, outlines how we collect, use, store, and share your data.</li><li>Although we employ commercially reasonable security measures, we do not guarantee absolute security and are not liable for any unauthorized access or data breaches beyond our control.</li></ul></section><section id=\"intellectual-property-rights\"><h2 class=\"font-medium py-4 text-2xl\">8. Intellectual Property Rights</h2><ul class=\"list-disc pl-6 space-y-2\"><li>All intellectual property rights, including software, trademarks, and content provided by us, are owned by ThinkLedger or our licensors.</li><li>You are granted a limited, non-exclusive, non-transferable license to use the Service for your internal business purposes only, subject to these Terms.</li></ul></section><section id=\"user-responsibilities-and-acceptable-use\"><h2 class=\"font-medium py-4 text-2xl\">9. User Responsibilities and Acceptable Use</h2><ul class=\"list-disc pl-6 space-y-2\"><li>You agree to use the Service only for lawful purposes and in compliance with all applicable laws and regulations.</li><li>You are responsible for safeguarding your account credentials and for all activities that occur under your account.</li><li>You agree not to misuse, interfere with, or disrupt the Service, its functionality, or the servers and networks connected to it.</li></ul></section><section id=\"disclaimer-of-warranties\"><h2 class=\"font-medium py-4 text-2xl\">10. Disclaimer of Warranties</h2><ul class=\"list-disc pl-6 space-y-2\"><li>The Service is provided “as is” and “as available” without any warranties, whether express or implied, including without limitation warranties of merchantability, fitness for a particular purpose, or non-infringement.</li><li>We do not guarantee that the Service will be uninterrupted, error-free, or secure, nor do we warrant the accuracy or reliability of any data processed or generated by the Service.</li></ul></section><section id=\"limitation-of-liability\"><h2 class=\"font-medium py-4 text-2xl\">11. Limitation of Liability</h2><ul class=\"list-disc pl-6 space-y-2\"><li>Under no circumstances shall ThinkLedger be liable for any indirect, incidental, special, consequential, or punitive damages arising out of or related to your use of the Service—even if we have been advised of the possibility of such damages.</li><li>In no event shall our aggregate liability for any claim related to the Service exceed the total amount you paid (if any) to access the Service.</li><li>This limitation applies to all claims, whether based in contract, tort, or any other legal theory.</li></ul></section><section id=\"indemnification\"><h2 class=\"font-medium py-4 text-2xl\">12. Indemnification</h2><div class=\"space-y-4\"><p>You agree to indemnify, defend, and hold harmless ThinkLedger, its officers, directors, employees, and agents from any claims, liabilities, damages, losses, or expenses (including legal fees) arising out of or in connection with:</p><ul class=\"list-disc pl-6 space-y-2\"><li>Your use of the Service,</li><li>Your violation of these Terms, or</li><li>Your infringement of any third-party rights.</li></ul></div></section><section id=\"termination\"><h2 class=\"font-medium py-4 text-2xl\">13. Termination</h2><ul class=\"list-disc pl-6 space-y-2\"><li>We reserve the right to suspend or terminate your access to the Service at any time, with or without cause and without prior notice.</li><li>Upon termination, you must immediately cease all use of the Service and destroy any copies of proprietary materials.</li></ul></section><section id=\"governing-law-and-dispute-resolution\"><h2 class=\"font-medium py-4 text-2xl\">14. Governing Law and Dispute Resolution</h2><ul class=\"list-disc pl-6 space-y-2\"><li>These Terms shall be governed by and construed in accordance with the laws of Canada, and any disputes arising under these Terms shall be resolved exclusively in the courts of Ontario.</li><li>You agree to resolve any disputes through binding arbitration or mediation as provided in our Dispute Resolution Policy, where applicable.</li></ul></section><section id=\"force-majeure\"><h2 class=\"font-medium py-4 text-2xl\">15. Force Majeure (Superior Force)</h2><p>The Company shall not be liable for any failure or delay in performance under these Terms due to circumstances beyond our reasonable control, including natural disasters, acts of war, terrorism, labor disputes, or interruptions in third-party services.</p></section><section id=\"severability\"><h2 class=\"font-medium py-4 text-2xl\">16. Severability</h2><p>If any provision of these Terms is found to be invalid or unenforceable, the remaining provisions shall continue in full force and effect.</p></section><section id=\"entire-agreement\"><h2 class=\"font-medium py-4 text-2xl\">17. Entire Agreement</h2><p>These Terms, together with our Privacy Policy and any other policies referenced herein, constitute the entire agreement between you and ThinkLedger regarding your use of the Service and supersede any prior agreements or understandings.</p></section><section id=\"contact-information\"><h2 class=\"font-medium py-4 text-2xl\">18. Contact Information</h2><div class=\"pb-4 space-y-4\"><p>If you have any questions or concerns about these Terms, please contact us at:</p><ul class=\"list-disc pl-6 space-y-2\"><li>support@thinkledger.app</li></ul></div></section></div>")
-			if templ_7745c5c3_Err != nil {
-				return templ_7745c5c3_Err
-			}
-			return nil
-		})
-		templ_7745c5c3_Err = GuestLayout(termsOfServiceTitle, termsOfServiceMetaDescription, "").Render(templ.WithChildren(ctx, templ_7745c5c3_Var2), templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<h1 class=\"text-3xl font-bold mb-4\">Terms of Service</h1><div class=\"mb-4 flex items-center gap-3\"><i class=\"fa-solid fa-scale-balanced text-2xl\"></i><p class=\"text-sm\">Last updated: ")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
+		}
+		var templ_7745c5c3_Var2 string
+		templ_7745c5c3_Var2, templ_7745c5c3_Err = templ.JoinStringErrs(termsOfServiceLastUpdated)
+		if templ_7745c5c3_Err != nil {
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/guest/terms_of_service_page.templ`, Line: 20, Col: 62}
+		}
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var2))
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "</p></div><div class=\"w-full space-y-4\"><section id=\"acceptance-of-terms\"><h2 class=\"font-medium py-4 text-2xl\">1. Acceptance of Terms</h2><p class=\"pb-4\">By accessing or using ThinkLedger’s AI accounting software (the “Service”), provided by ThinkLedger (“Company,” “we,” “us,” or “our”), you agree to be bound by these Terms of Service (“Terms”) and all policies referenced herein. If you do not agree to these Terms, you must not use the Service.</p></section><section id=\"modification-to-terms\"><h2 class=\"font-medium py-4 text-2xl\">2. Modification to Terms</h2><p class=\"pb-4\">We reserve the right to modify these Terms at any time without prior notice. You will receive an email notification after any changes and will be asked to accept the revised Terms to continue using our service.</p></section><section id=\"eligibility-and-registration\"><h2 class=\"font-medium py-4 text-2xl\">3. Eligibility and Registration</h2><ul class=\"list-disc pl-6 space-y-2\"><li>You must have the legal capacity to enter into a binding contract under applicable law.</li><li>If registration is required, you agree to provide accurate, complete, and up-to-date information and to update such information as necessary.</li></ul></section><section id=\"description-of-the-service\"><h2 class=\"font-medium py-4 text-2xl\">4. Description of the Service</h2><p class=\"pb-4\">Our Service is an AI-powered accounting software that automates bookkeeping functions, including integration with Google Workspace applications (such as Google Drive, Google Chat, Google Spreadsheets, and Google Slides) and the automatic import of your banking transactions into Google Spreadsheets. Use of the Service is subject to these Terms.</p></section><section id=\"access-to-third-party-services\"><h2 class=\"font-medium py-4 text-2xl\">5. Access to Third-Party Services</h2><ul class=\"list-disc pl-6 space-y-2\"><li><strong>Google Workspace Integration: </strong> Our Service connects with your Google Workspace account. By using our Service, you authorize us to access, manage, and interact with your Google Workspace data as necessary for the Service to function. Your use of Google Workspace is also subject to Google’s own Terms of Service, and we are not responsible for Google’s services or any changes therein.</li><li><strong>Banking Data Integration: </strong> To provide automated transaction recording, the Service requires access to your banking transaction data. By using our Service, you consent to the collection, processing, and secure transfer of your banking information. You are responsible for ensuring that you have the proper rights and permissions to share such information, and you agree to comply with any applicable financial institution policies and regulatory requirements.</li></ul></section><section id=\"permissions-and-data-access\"><h2 class=\"font-medium py-4 text-2xl\">6. Permissions and Data Access</h2><ul class=\"list-disc pl-6 space-y-2\"><li><strong>Google Workspace Permissions: </strong> You explicitly authorize our Service to read, write, and modify your files and data within the designated Google Workspace applications solely for the purposes of delivering the Service.</li><li><strong>Banking Information: </strong> You grant us permission to access your banking transaction data for the sole purpose of automating the recording of your financial transactions. All access will be governed by our")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		var templ_7745c5c3_Var3 string
+		templ_7745c5c3_Var3, templ_7745c5c3_Err = templ.JoinStringErrs(" ")
+		if templ_7745c5c3_Err != nil {
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/guest/terms_of_service_page.templ`, Line: 123, Col: 40}
+		}
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var3))
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, " <a href=\"/privacy-policy#data-security\" class=\"underline hover:text-gray-400\" target=\"_blank\">Data Security</a>")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		var templ_7745c5c3_Var4 string
+		templ_7745c5c3_Var4, templ_7745c5c3_Err = templ.JoinStringErrs(" ")
+		if templ_7745c5c3_Err != nil {
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/guest/terms_of_service_page.templ`, Line: 130, Col: 14}
+		}
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var4))
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 4, " and")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		var templ_7745c5c3_Var5 string
+		templ_7745c5c3_Var5, templ_7745c5c3_Err = templ.JoinStringErrs(" ")
+		if templ_7745c5c3_Err != nil {
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/guest/terms_of_service_page.templ`, Line: 131, Col: 13}
+		}
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var5))
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 5, " <a href=\"/privacy-policy\" class=\"underline hover:text-gray-400\" target=\"_blank\">Privacy Policies</a> .</li><li>It is your responsibility to ensure that all third-party permissions and consents (including those required by your bank or Google) are properly in place.</li></ul></section><section id=\"data-security-and-privacy\"><h2 class=\"font-medium py-4 text-2xl\">7. Data Security and Privacy</h2><ul class=\"list-disc pl-6 space-y-2\"><li>We are committed to protecting your data in accordance with applicable Canadian privacy laws, including the Personal Information Protection and Electronic Documents Act (PIPEDA), and any other relevant legislation.</li><li>Our")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		var templ_7745c5c3_Var6 string
+		templ_7745c5c3_Var6, templ_7745c5c3_Err = templ.JoinStringErrs(" ")
+		if templ_7745c5c3_Err != nil {
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/guest/terms_of_service_page.templ`, Line: 162, Col: 13}
+		}
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var6))
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 6, " <a href=\"/privacy-policy\" class=\"underline hover:text-gray-400\" target=\"_blank\">Privacy Policy</a> , which is incorporated herein by reference, outlines how we collect, use, store, and share your data.</li><li>Although we employ commercially reasonable security measures, we do not guarantee absolute security and are not liable for any unauthorized access or data breaches beyond our control.</li></ul></section><section id=\"intellectual-property-rights\"><h2 class=\"font-medium py-4 text-2xl\">8. Intellectual Property Rights</h2><ul class=\"list-disc pl-6 space-y-2\"><li>All intellectual property rights, including software, trademarks, and content provided by us, are owned by ThinkLedger or our licensors.</li><li>You are granted a limited, non-exclusive, non-transferable license to use the Service for your internal business purposes only, subject to these Terms.</li></ul></section><section id=\"user-responsibilities-and-acceptable-use\"><h2 class=\"font-medium py-4 text-2xl\">9. User Responsibilities and Acceptable Use</h2><ul class=\"list-disc pl-6 space-y-2\"><li>You agree to use the Service only for lawful purposes and in compliance with all applicable laws and regulations.</li><li>You are responsible for safeguarding your account credentials and for all activities that occur under your account.</li><li>You agree not to misuse, interfere with, or disrupt the Service, its functionality, or the servers and networks connected to it.</li></ul></section><section id=\"disclaimer-of-warranties\"><h2 class=\"font-medium py-4 text-2xl\">10. Disclaimer of Warranties</h2><ul class=\"list-disc pl-6 space-y-2\"><li>The Service is provided “as is” and “as available” without any warranties, whether express or implied, including without limitation warranties of merchantability, fitness for a particular purpose, or non-infringement.</li><li>We do not guarantee that the Service will be uninterrupted, error-free, or secure, nor do we warrant the accuracy or reliability of any data processed or generated by the Service.</li></ul></section><section id=\"limitation-of-liability\"><h2 class=\"font-medium py-4 text-2xl\">11. Limitation of Liability</h2><ul class=\"list-disc pl-6 space-y-2\"><li>Under no circumstances shall ThinkLedger be liable for any indirect, incidental, special, consequential, or punitive damages arising out of or related to your use of the Service—even if we have been advised of the possibility of such damages.</li><li>In no event shall our aggregate liability for any claim related to the Service exceed the total amount you paid (if any) to access the Service.</li><li>This limitation applies to all claims, whether based in contract, tort, or any other legal theory.</li></ul></section><section id=\"indemnification\"><h2 class=\"font-medium py-4 text-2xl\">12. Indemnification</h2><div class=\"space-y-4\"><p>You agree to indemnify, defend, and hold harmless ThinkLedger, its officers, directors, employees, and agents from any claims, liabilities, damages, losses, or expenses (including legal fees) arising out of or in connection with:</p><ul class=\"list-disc pl-6 space-y-2\"><li>Your use of the Service,</li><li>Your violation of these Terms, or</li><li>Your infringement of any third-party rights.</li></ul></div></section><section id=\"termination\"><h2 class=\"font-medium py-4 text-2xl\">13. Termination</h2><ul class=\"list-disc pl-6 space-y-2\"><li>We reserve the right to suspend or terminate your access to the Service at any time, with or without cause and without prior notice.</li><li>Upon termination, you must immediately cease all use of the Service and destroy any copies of proprietary materials.</li></ul></section><section id=\"governing-law-and-dispute-resolution\"><h2 class=\"font-medium py-4 text-2xl\">14. Governing Law and Dispute Resolution</h2><ul class=\"list-disc pl-6 space-y-2\"><li>These Terms shall be governed by and construed in accordance with the laws of Canada, and any disputes arising under these Terms shall be resolved exclusively in the courts of Ontario.</li><li>You agree to resolve any disputes through binding arbitration or mediation as provided in our Dispute Resolution Policy, where applicable.</li></ul></section><section id=\"force-majeure\"><h2 class=\"font-medium py-4 text-2xl\">15. Force Majeure (Superior Force)</h2><p>The Company shall not be liable for any failure or delay in performance under these Terms due to circumstances beyond our reasonable control, including natural disasters, acts of war, terrorism, labor disputes, or interruptions in third-party services.</p></section><section id=\"severability\"><h2 class=\"font-medium py-4 text-2xl\">16. Severability</h2><p>If any provision of these Terms is found to be invalid or unenforceable, the remaining provisions shall continue in full force and effect.</p></section><section id=\"entire-agreement\"><h2 class=\"font-medium py-4 text-2xl\">17. Entire Agreement</h2><p>These Terms, together with our Privacy Policy and any other policies referenced herein, constitute the entire agreement between you and ThinkLedger regarding your use of the Service and supersede any prior agreements or understandings.</p></section><section id=\"contact-information\"><h2 class=\"font-medium py-4 text-2xl\">18. Contact Information</h2><div class=\"pb-4 space-y-4\"><p>If you have any questions or concerns about these Terms, please contact us at:</p><ul class=\"list-disc pl-6 space-y-2\"><li>support@thinkledger.app</li></ul></div></section></div>")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		return nil
+	})
+}
+
+func TermsOfServicePage(isAuth bool, username string) templ.Component {
+	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
+		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
+		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
+			return templ_7745c5c3_CtxErr
+		}
+		templ_7745c5c3_Buffer, templ_7745c5c3_IsBuffer := templruntime.GetBuffer(templ_7745c5c3_W)
+		if !templ_7745c5c3_IsBuffer {
+			defer func() {
+				templ_7745c5c3_BufErr := templruntime.ReleaseBuffer(templ_7745c5c3_Buffer)
+				if templ_7745c5c3_Err == nil {
+					templ_7745c5c3_Err = templ_7745c5c3_BufErr
+				}
+			}()
+		}
+		ctx = templ.InitializeContext(ctx)
+		templ_7745c5c3_Var7 := templ.GetChildren(ctx)
+		if templ_7745c5c3_Var7 == nil {
+			templ_7745c5c3_Var7 = templ.NopComponent
+		}
+		ctx = templ.ClearChildren(ctx)
+		if isAuth {
+			templ_7745c5c3_Var8 := templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
+				templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
+				templ_7745c5c3_Buffer, templ_7745c5c3_IsBuffer := templruntime.GetBuffer(templ_7745c5c3_W)
+				if !templ_7745c5c3_IsBuffer {
+					defer func() {
+						templ_7745c5c3_BufErr := templruntime.ReleaseBuffer(templ_7745c5c3_Buffer)
+						if templ_7745c5c3_Err == nil {
+							templ_7745c5c3_Err = templ_7745c5c3_BufErr
+						}
+					}()
+				}
+				ctx = templ.InitializeContext(ctx)
+				templ_7745c5c3_Err = termsOfServiceLayout().Render(ctx, templ_7745c5c3_Buffer)
+				if templ_7745c5c3_Err != nil {
+					return templ_7745c5c3_Err
+				}
+				return nil
+			})
+			templ_7745c5c3_Err = layout.AuthLayout(
+				termsOfServiceTitle,
+				termsOfServiceMetaDescription,
+				termsOfserviceScript,
+				username,
+			).Render(templ.WithChildren(ctx, templ_7745c5c3_Var8), templ_7745c5c3_Buffer)
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+		} else {
+			templ_7745c5c3_Var9 := templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
+				templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
+				templ_7745c5c3_Buffer, templ_7745c5c3_IsBuffer := templruntime.GetBuffer(templ_7745c5c3_W)
+				if !templ_7745c5c3_IsBuffer {
+					defer func() {
+						templ_7745c5c3_BufErr := templruntime.ReleaseBuffer(templ_7745c5c3_Buffer)
+						if templ_7745c5c3_Err == nil {
+							templ_7745c5c3_Err = templ_7745c5c3_BufErr
+						}
+					}()
+				}
+				ctx = templ.InitializeContext(ctx)
+				templ_7745c5c3_Err = termsOfServiceLayout().Render(ctx, templ_7745c5c3_Buffer)
+				if templ_7745c5c3_Err != nil {
+					return templ_7745c5c3_Err
+				}
+				return nil
+			})
+			templ_7745c5c3_Err = layout.GuestLayout(termsOfServiceTitle, termsOfServiceMetaDescription, "").Render(templ.WithChildren(ctx, templ_7745c5c3_Var9), templ_7745c5c3_Buffer)
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
 		}
 		return nil
 	})

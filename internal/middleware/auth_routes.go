@@ -2,6 +2,7 @@ package middleware
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 	"server/internal/utils"
@@ -28,8 +29,16 @@ func AuthRoutes(authConfig utils.AuthConfig) echo.MiddlewareFunc {
 			}
 			authId := cookie.Value
 
-			// Get token from token store
+			// Get token from redis
 			tokenStr, err := authConfig.RedisClient.Get(ctx, authId).Result()
+			if err != nil {
+				log.Println(err)
+				return c.Redirect(307, "/sign-in")
+			}
+
+			// Get username from redis
+			name := fmt.Sprintf("name:%s", authId)
+			username, err := authConfig.RedisClient.Get(ctx, name).Result()
 			if err != nil {
 				log.Println(err)
 				return c.Redirect(307, "/sign-in")
@@ -46,6 +55,9 @@ func AuthRoutes(authConfig utils.AuthConfig) echo.MiddlewareFunc {
 			if token.Expiry.Before(time.Now()) {
 
 				if token.RefreshToken == "" {
+
+					utils.ClearAuthIdCookie(c)
+
 					log.Println("Token has expired and no refresh token is available")
 					return c.Redirect(307, "/sign-in")
 				}
@@ -70,13 +82,18 @@ func AuthRoutes(authConfig utils.AuthConfig) echo.MiddlewareFunc {
 			// Verify the token with google
 			isValid := verifyToken(token.AccessToken)
 			if !isValid {
+
+				// Empty the auth id cookie is the token is not valid
+				utils.ClearAuthIdCookie(c)
+
 				log.Println("Access token is not valid")
 				return c.Redirect(307, "/sign-in")
 			}
 
 			// Token is valid, store it in context for handlers to use
-			c.Set("userToken", token)
-			c.Set("authId", authId)
+			// c.Set("userToken", token)
+			// c.Set("authId", authId)
+			c.Set("username", username)
 			return next(c)
 		}
 	}

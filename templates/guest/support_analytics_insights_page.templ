@@ -3,31 +3,48 @@ package guest
 import (
 	"fmt"
 	"server/lib/styles"
+	"server/templates/layout"
 )
 
 const supportAnalyticsInsightsTitle string = "ThinkLedger | Support - Analytics Insights"
 const supportAnalyticsInsightsMetaDescription string = `Get AI-powered insights about your finances`
+const supportAnalyticsInsightsScript string = "/static/dist/default.min.js"
 
-templ SupportAnalyticsInsightsPage() {
-	@GuestLayout(
-		supportAnalyticsInsightsTitle,
-		supportAnalyticsInsightsMetaDescription,
-		"",
-	) {
-		<a href="/support" class="flex items-center gap-2 mb-8">
-			<i class={ fmt.Sprintf("fa-solid fa-arrow-left text-3xl %v", styles.LinkIconStyle) }></i>
-			<span>Back</span>
-		</a>
-		<div class="mb-4 flex items-center">
-			<i class="fa-solid fa-chart-line text-2xl mr-4"></i>
-			<h3 class="font-medium text-xl">Analytics Insights</h3>
-		</div>
-		<p class="leading-[1.5]">
-			Access financial analytics and insights directly through Google
-			Chat. This user-friendly interface lets you interact with your
-			data and our services seamlessly. You can request regular
-			updates on your business's financial health, compare performance
-			across different accounting periods, and much more.
-		</p>
+templ supportAnalyticsInsightsLayout() {
+	<a href="/support" class="flex items-center gap-2 mb-8">
+		<i class={ fmt.Sprintf("fa-solid fa-arrow-left text-3xl %v", styles.LinkIconStyle) }></i>
+		<span>Back</span>
+	</a>
+	<div class="mb-4 flex items-center">
+		<i class="fa-solid fa-chart-line text-2xl mr-4"></i>
+		<h3 class="font-medium text-xl">Analytics Insights</h3>
+	</div>
+	<p class="leading-[1.5]">
+		Access financial analytics and insights directly through Google
+		Chat. This user-friendly interface lets you interact with your
+		data and our services seamlessly. You can request regular
+		updates on your business's financial health, compare performance
+		across different accounting periods, and much more.
+	</p>
+}
+
+templ SupportAnalyticsInsightsPage(isAuth bool, username string) {
+	if isAuth {
+		@layout.AuthLayout(
+			supportAnalyticsInsightsTitle,
+			supportAnalyticsInsightsMetaDescription,
+			supportAnalyticsInsightsScript,
+			username,
+		) {
+			@supportAnalyticsInsightsLayout()
+		}
+	} else {
+		@layout.GuestLayout(
+			supportAnalyticsInsightsTitle,
+			supportAnalyticsInsightsMetaDescription,
+			"",
+		) {
+			@supportAnalyticsInsightsLayout()
+		}
 	}
 }
