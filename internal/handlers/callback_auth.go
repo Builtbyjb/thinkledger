@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
 	"golang.org/x/oauth2"
 )
@@ -19,6 +20,8 @@ type UserInfo struct {
 }
 
 func (h *Handler) HandleCallbackAuth(c echo.Context) error {
+	ctx := c.Request().Context()
+
 	// Verify state to prevent CSRF
 	cookie, err := c.Cookie("state")
 	if err != nil || cookie.Value != c.QueryParam("state") {
@@ -26,33 +29,33 @@ func (h *Handler) HandleCallbackAuth(c echo.Context) error {
 		return c.String(http.StatusBadRequest, "Invalid state parameter")
 	}
 
-	userId, err := c.Cookie("user_id")
+	token, err := h.OAuthConfig.Exchange(ctx, c.QueryParam("code"))
 	if err != nil {
 		log.Println(err)
-		return c.String(http.StatusBadRequest, "Invalid user_id cookie")
+		return c.String(500, "Token exchange failed: "+err.Error())
 	}
 
-	token, err := h.OAuthConfig.Exchange(context.Background(), c.QueryParam("code"))
+	// Convert token to jsonBytes for easy type conversion later
+	tokenBytes, err := json.Marshal(token)
 	if err != nil {
 		log.Println(err)
-		return c.String(
-			http.StatusInternalServerError,
-			"Token exchange failed: "+err.Error(),
-		)
+		return c.String(500, "Failed to Marshal token")
 	}
 
-	if err := h.TokenStore.SaveToken(userId.Value, token); err != nil {
+	// Generate authentication id
+	authId := uuid.New().String()
+
+	// Save the user token
+	expiration := time.Duration(0)
+	if err := h.RedisClient.Set(ctx, authId, tokenBytes, expiration).Err(); err != nil {
 		log.Println(err)
-		return c.String(
-			http.StatusInternalServerError,
-			"Failed to save token: "+err.Error(),
-		)
+		return c.String(500, "Failed to save token: "+err.Error())
 	}
 
 	// Set user cookie
 	c.SetCookie(&http.Cookie{
-		Name:     "user_id",
-		Value:    userId.Value,
+		Name:     "authId",
+		Value:    authId,
 		HttpOnly: true,
 		Path:     "/",
 		Secure:   true,

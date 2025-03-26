@@ -16,21 +16,21 @@ templ authSidebar() {
 			</div>
 		</div>
 		// Sidebar Content
-		<div class="overflow-y-auto p-2">
+		<div class="overflow-hidden p-2">
 			<ul class="mt-1 space-y-1">
-				<li class={ hover }>
-					<a href="/home" class="flex items-center gap-2 px-3 py-2 text-sm text-[#0065FA] font-medium">
+				<li id="home" class={ fmt.Sprintf("link %s", hover) }>
+					<a href="/home" class="flex items-center gap-2 px-3 py-2 text-sm font-medium">
 						<i class="fa-solid fa-house"></i>
 						<span class="sidebar-text">Home</span>
 					</a>
 				</li>
-				<li class={ hover }>
+				<li id="team" class={ fmt.Sprintf("link %s", hover) }>
 					<a href="#" class="flex items-center gap-2 px-3 py-2 text-sm font-medium">
 						<i class="fa-solid fa-user-group"></i>
 						<span class="sidebar-text">Team</span>
 					</a>
 				</li>
-				<li class={ hover }>
+				<li id="settings" class={ fmt.Sprintf("link %s", hover) }>
 					<a href="#" class="flex items-center gap-2 px-3 py-2 text-sm font-medium">
 						<i class="fa-solid fa-gear"></i>
 						<span class="sidebar-text">Settings</span>
@@ -49,12 +49,12 @@ templ authSidebar() {
 					</button>
 					<div class="dropdown-content max-h-0 overflow-hidden opacity-0 dropdown-transition">
 						<ul class="pl-7 mt-1 space-y-1 sidebar-submenu">
-							<li class={ hover }>
+							<li id="banking" class={ hover }>
 								<a href="#" class="flex items-center gap-2 px-3 py-2 text-sm font-medium">
 									<span>Banking</span>
 								</a>
 							</li>
-							<li class={ hover }>
+							<li id="shopping" class={ hover }>
 								<a href="#" class="flex items-center gap-2 px-3 py-2 text-sm font-medium">
 									<span>Shopping Platforms</span>
 								</a>
@@ -80,17 +80,17 @@ templ authSidebar() {
 					</button>
 					<div class="dropdown-content max-h-0 overflow-hidden opacity-0 dropdown-transition">
 						<ul class="pl-7 mt-1 space-y-1 sidebar-submenu">
-							<li class={ hover }>
+							<li id="documentation" class={ hover }>
 								<a href="#" class="flex items-center gap-2 px-3 py-2 text-sm font-medium">
 									<span>Documentation</span>
 								</a>
 							</li>
-							<li class={ hover }>
+							<li id="blog" class={ hover }>
 								<a href="#" class="flex items-center gap-2 px-3 py-2 text-sm font-medium">
 									<span>Blog</span>
 								</a>
 							</li>
-							<li class={ hover }>
+							<li id="support" class={ hover }>
 								<a href="#" class="flex items-center gap-2 px-3 py-2 text-sm font-medium">
 									<span>Support</span>
 								</a>
@@ -111,17 +111,17 @@ templ authSidebar() {
 					</button>
 					<div class="dropdown-content max-h-0 overflow-hidden opacity-0 dropdown-transition">
 						<ul class="pl-7 mt-1 space-y-1 sidebar-submenu">
-							<li class={ hover }>
+							<li id="terms-of-service" class={ hover }>
 								<a href="#" class="flex items-center gap-2 px-3 py-2 text-sm font-medium">
 									<span>Terms of Service</span>
 								</a>
 							</li>
-							<li class={ hover }>
+							<li id="privacy-policy" class={ hover }>
 								<a href="#" class="flex items-center gap-2 px-3 py-2 text-sm font-medium">
 									<span>Privacy Policy</span>
 								</a>
 							</li>
-							<li class={ hover }>
+							<li id="cookie-policy" class={ hover }>
 								<a href="#" class="flex items-center gap-2 px-3 py-2 text-sm font-medium">
 									<span>Cookie Policy</span>
 								</a>
@@ -133,7 +133,7 @@ templ authSidebar() {
 		</div>
 		// Sidebar Footer -->
 		<div class="p-4 fixed bottom-0">
-			<a href="/" class={ fmt.Sprintf("flex items-center gap-2 px-3 text-sm py-2 %s", hover) }>
+			<a href="/log-out" class={ fmt.Sprintf("flex items-center gap-2 px-3 text-sm py-2 %s", hover) }>
 				<i class="fa-solid fa-right-from-bracket text-red-500"></i>
 				<span class="sidebar-text text-red-500">Log out</span>
 			</a>

@@ -1,6 +1,9 @@
 package utils
 
-import "golang.org/x/oauth2"
+import (
+	"github.com/redis/go-redis/v9"
+	"golang.org/x/oauth2"
+)
 
 type TokenStore interface {
 	GetToken(userID string) (*oauth2.Token, error)
@@ -10,10 +13,8 @@ type TokenStore interface {
 // Config for the OAuth middleware
 type AuthConfig struct {
 	OAuth2Config *oauth2.Config
-	TokenStore   TokenStore
-	LoginPath    string // Path to redirect if token is invalid or missing
+	RedisClient  *redis.Client
 }
-
 
 type AccountDetail struct {
 	AccountName   string `json:"accountName"`

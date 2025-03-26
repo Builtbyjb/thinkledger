@@ -1,12 +1,14 @@
 package middleware
 
 import (
+	"encoding/json"
 	"log"
 	"net/http"
 	"server/internal/utils"
 	"time"
 
 	"github.com/labstack/echo/v4"
+	"golang.org/x/oauth2"
 )
 
 func AuthRoutes(authConfig utils.AuthConfig) echo.MiddlewareFunc {
@@ -14,23 +16,30 @@ func AuthRoutes(authConfig utils.AuthConfig) echo.MiddlewareFunc {
 		return func(c echo.Context) error {
 			ctx := c.Request().Context()
 
-			cookie, err := c.Request().Cookie("user_id")
+			cookie, err := c.Request().Cookie("authId")
 			if err != nil {
 				log.Println(err)
-				return c.Redirect(http.StatusTemporaryRedirect, "/sign-in")
+				return c.Redirect(307, "/sign-in")
 			}
 
 			if cookie.Value == "" {
-				log.Println("userId cookie is empty")
-				return c.Redirect(http.StatusTemporaryRedirect, "/sign-in")
+				log.Println("authId cookie is empty")
+				return c.Redirect(307, "/sign-in")
 			}
-			userId := cookie.Value
+			authId := cookie.Value
 
 			// Get token from token store
-			token, err := authConfig.TokenStore.GetToken(userId)
+			tokenStr, err := authConfig.RedisClient.Get(ctx, authId).Result()
 			if err != nil {
 				log.Println(err)
-				return c.Redirect(http.StatusTemporaryRedirect, "/sign-in")
+				return c.Redirect(307, "/sign-in")
+			}
+
+			// Deserialize the token from JSON
+			var token *oauth2.Token
+			if err := json.Unmarshal([]byte(tokenStr), &token); err != nil {
+				log.Println("Failed to unmarshal token:", err)
+				return c.Redirect(307, "/sign-in")
 			}
 
 			// Check if the token as expired and try refreshing if there is a refresh token
@@ -38,20 +47,21 @@ func AuthRoutes(authConfig utils.AuthConfig) echo.MiddlewareFunc {
 
 				if token.RefreshToken == "" {
 					log.Println("Token has expired and no refresh token is available")
-					return c.Redirect(http.StatusTemporaryRedirect, "/sign-in")
+					return c.Redirect(307, "/sign-in")
 				}
 
 				// Try refreshing the token
 				newToken, err := authConfig.OAuth2Config.TokenSource(ctx, token).Token()
 				if err != nil {
 					log.Println(err)
-					return c.Redirect(http.StatusTemporaryRedirect, "/sign-in")
+					return c.Redirect(307, "/sign-in")
 				}
 
 				// Save the new token
 				token = newToken
-				if err := authConfig.TokenStore.SaveToken(userId, token); err != nil {
-					return c.JSON(http.StatusInternalServerError, map[string]string{
+				if err := authConfig.RedisClient.Set(ctx, authId, token, 0).Err(); err != nil {
+					log.Println(err)
+					return c.JSON(500, map[string]string{
 						"error": "Failed to save refreshed token",
 					})
 				}
@@ -61,12 +71,12 @@ func AuthRoutes(authConfig utils.AuthConfig) echo.MiddlewareFunc {
 			isValid := verifyToken(token.AccessToken)
 			if !isValid {
 				log.Println("Access token is not valid")
-				return c.Redirect(http.StatusTemporaryRedirect, "/sign-in")
+				return c.Redirect(307, "/sign-in")
 			}
 
 			// Token is valid, store it in context for handlers to use
 			c.Set("userToken", token)
-			c.Set("userId", userId)
+			c.Set("authId", authId)
 			return next(c)
 		}
 	}

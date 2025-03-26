@@ -1,10 +1,9 @@
 package handlers
 
 import (
-	"server/internal/utils"
-
 	"github.com/a-h/templ"
 	"github.com/labstack/echo/v4"
+	"github.com/redis/go-redis/v9"
 	"golang.org/x/oauth2"
 	"gorm.io/gorm"
 )
@@ -14,7 +13,7 @@ type Handler struct {
 	DB          *gorm.DB
 	ApiKey      string
 	OAuthConfig *oauth2.Config
-	TokenStore  utils.TokenStore
+	RedisClient *redis.Client
 }
 
 // Renders templ templates

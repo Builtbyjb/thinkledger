@@ -1,4 +1,8 @@
+import { setActiveLink } from "./utils.min.js";
+
 (function () {
+    setActiveLink();
+
     const sidebar = document.querySelector("#sidebar");
     const toggleSidebar = document.querySelector("#toggle-sidebar");
     const dropdownTriggers = document.querySelectorAll(".dropdown-trigger");

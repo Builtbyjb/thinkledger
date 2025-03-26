@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"os"
 
+	"server/internal/database/redis"
 	"server/internal/handlers"
 	"server/internal/middleware"
 	"server/internal/utils"
@@ -38,8 +39,8 @@ func main() {
 
 	app.Static("/static", "./static")
 
-	// Connect to database and create database engine
-	// db := database.DB()
+	// Create redis client
+	redisClient := redis.GetRedisClient()
 
 	// OAuth2 configuration
 	var oAuthConfig = &oauth2.Config{
@@ -53,19 +54,18 @@ func main() {
 		Endpoint: google.Endpoint,
 	}
 
-	// Temporary in-memory token store
-	var tokenStore = utils.NewInMemoryTokenStore()
+	// For authentication middleware
+	authConfig := utils.AuthConfig{
+		OAuth2Config: oAuthConfig,
+		RedisClient:  redisClient,
+	}
 
-	// authConfig := utils.AuthConfig{
-	// 	OAuth2Config: oAuthConfig,
-	// 	TokenStore:   tokenStore,
-	// }
-
+	// Dependency injection between routes
 	handler := &handlers.Handler{
 		// DB:     db,
 		OAuthConfig: oAuthConfig,
 		ApiKey:      GEMINI_API_KEY,
-		TokenStore:  tokenStore,
+		RedisClient: redisClient,
 	}
 
 	// health check
@@ -91,16 +91,15 @@ func main() {
 	app.GET("/terms-of-service", handler.TermsOfService)
 	app.POST("/join-waitlist", handler.JoinWaitlist)
 	app.GET("/sign-in", handler.SignIn)
+	app.GET("/log-out", handler.HandleLogout)
 
 	// Authentication routes
 	app.GET("/auth-sign-in", handler.HandleSignInAuth)
 	app.GET("/auth/google/callback", handler.HandleCallbackAuth)
 
 	// Protected web routes
-	// protected := app.Group("", middleware.AuthRoutes(authConfig))
-	// protected.GET("/home", handler.Home)
-
-	app.GET("/home", handler.Home)
+	protected := app.Group("", middleware.AuthRoutes(authConfig))
+	protected.GET("/home", handler.Home)
 
 	// Not found (404) handler
 	app.GET("*", handler.NotFound)

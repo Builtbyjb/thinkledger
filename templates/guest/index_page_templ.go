@@ -16,7 +16,7 @@ const indexMetaDescription string = `Welcome to ThinkLedger. We help business ow
 		accurate bookkeeping and AI-driven financial analysis while keeping
 		you in full control of your financial data.`
 
-const indexScript string = "/static/dist/index.js"
+const indexScript string = "/static/dist/index.min.js"
 
 func IndexPage() templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {

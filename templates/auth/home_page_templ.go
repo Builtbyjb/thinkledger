@@ -10,7 +10,7 @@ import templruntime "github.com/a-h/templ/runtime"
 
 const homeTitle string = "Home"
 const homeMetaDescription string = "ThinkLedger | Home page"
-const homeScript string = "/static/dist/home.js"
+const homeScript string = "/static/dist/home.min.js"
 
 func HomePage() templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
@@ -45,7 +45,7 @@ func HomePage() templ.Component {
 				}()
 			}
 			ctx = templ.InitializeContext(ctx)
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, " <div class=\"flex-1 flex flex-col overflow-hidden\"><header class=\"h-16 flex items-center px-4\"><h1 class=\"text-lg font-semibold\">Think Ledger</h1></header><main class=\"flex-1 overflow-y-auto p-4\"><div class=\"max-w-7xl mx-auto\"><h2 class=\"text-2xl font-bold mb-6\">Welcome to the Think Ledger</h2><p class=\"mb-4\">We are still in development mode. Feel free to play around.</p><p class=\"mb-6\">Find any bugs? Email us at support@thinkledger.app</p><div class=\"grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6\"></div></div></main></div>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, " <div class=\"flex-1 flex flex-col overflow-hidden\"><main class=\"flex-1 overflow-y-auto p-4\"><div class=\"max-w-7xl mx-auto\"><h2 class=\"text-2xl font-bold mb-6\">Welcome to the Think Ledger</h2><p class=\"mb-4\">We are still in development mode. Feel free to play around.</p><p class=\"mb-6\">Find any bugs? Email us at support@thinkledger.app</p><div class=\"grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6\"></div></div></main></div>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}

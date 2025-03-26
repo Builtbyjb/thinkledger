@@ -13,7 +13,7 @@ import "server/templates/components"
 const supportTitle string = "ThinkLedger | Support"
 const supportMetaDescription string = `Find answers to your questions about
 our software and services`
-const supportScript = "/static/dist/support.js"
+const supportScript = "/static/dist/support.min.js"
 
 func SupportPage() templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {

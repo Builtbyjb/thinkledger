@@ -2,16 +2,16 @@ package auth
 
 const homeTitle string = "Home"
 const homeMetaDescription string = "ThinkLedger | Home page"
-const homeScript string = "/static/dist/home.js"
+const homeScript string = "/static/dist/home.min.js"
 
 templ HomePage() {
 	@AuthLayout(homeTitle, homeMetaDescription, homeScript) {
 		// Main Content
 		<div class="flex-1 flex flex-col overflow-hidden">
 			//Header
-			<header class="h-16 flex items-center px-4">
-				<h1 class="text-lg font-semibold">Think Ledger</h1>
-			</header>
+			// <header class="h-16 flex items-center px-4">
+			// <h1 class="text-lg font-semibold">Think Ledger</h1>
+			// </header>
 			// Content
 			<main class="flex-1 overflow-y-auto p-4">
 				<div class="max-w-7xl mx-auto">
