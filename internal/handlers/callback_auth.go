@@ -19,7 +19,7 @@ func (h *Handler) HandleCallbackAuth(c echo.Context) error {
 	cookie, err := c.Cookie("state")
 	if err != nil || cookie.Value != c.QueryParam("state") {
 		log.Println(err)
-		return c.String(http.StatusBadRequest, "Invalid state parameter")
+		return c.String(400, "Invalid state parameter")
 	}
 
 	// Get google oauth2 token

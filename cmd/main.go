@@ -82,7 +82,7 @@ func main() {
 	// Web routes
 	app.GET("/", handler.Index)
 
-	// Routes that appear when when a user is authenticated and unauthenticated
+	// Routes that appear when a user is authenticated and unauthenticated
 	dynamic := app.Group("", middleware.SetUserInfo(redisClient))
 	dynamic.GET("/support", handler.Support)
 	dynamic.GET("/support/bookkeeping", handler.SupportBookkeeping)
