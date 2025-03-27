@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"net/http"
 	"server/templates"
 	"server/templates/auth"
 	"server/templates/guest"
@@ -33,54 +32,54 @@ func (h *Handler) Index(c echo.Context) error {
 		}
 	}
 
-	return Render(c, http.StatusOK, guest.IndexPage())
+	return Render(c, 200, guest.IndexPage())
 }
 
 func (h *Handler) Support(c echo.Context) error {
 	username := c.Get("username").(string)
 	isAuth := checkAuth(c)
-	return Render(c, http.StatusOK, guest.SupportPage(isAuth, username))
+	return Render(c, 200, guest.SupportPage(isAuth, username))
 }
 
 func (h *Handler) SupportBookkeeping(c echo.Context) error {
 	username := c.Get("username").(string)
 	isAuth := checkAuth(c)
-	return Render(c, http.StatusOK, guest.SupportBookkeepingPage(isAuth, username))
+	return Render(c, 200, guest.SupportBookkeepingPage(isAuth, username))
 }
 
 func (h *Handler) SupportFinancialReports(c echo.Context) error {
 	username := c.Get("username").(string)
 	isAuth := checkAuth(c)
-	return Render(c, http.StatusOK, guest.SupportFinancialReportsPage(isAuth, username))
+	return Render(c, 200, guest.SupportFinancialReportsPage(isAuth, username))
 }
 
 func (h *Handler) SupportAnalyticsInsights(c echo.Context) error {
 	username := c.Get("username").(string)
 	isAuth := checkAuth(c)
-	return Render(c, http.StatusOK, guest.SupportAnalyticsInsightsPage(isAuth, username))
+	return Render(c, 200, guest.SupportAnalyticsInsightsPage(isAuth, username))
 }
 
 func (h *Handler) PrivacyPolicy(c echo.Context) error {
 	username := c.Get("username").(string)
 	isAuth := checkAuth(c)
-	return Render(c, http.StatusOK, guest.PrivacyPolicyPage(isAuth, username))
+	return Render(c, 200, guest.PrivacyPolicyPage(isAuth, username))
 }
 
 func (h *Handler) TermsOfService(c echo.Context) error {
 	username := c.Get("username").(string)
 	isAuth := checkAuth(c)
-	return Render(c, http.StatusOK, guest.TermsOfServicePage(isAuth, username))
+	return Render(c, 200, guest.TermsOfServicePage(isAuth, username))
 }
 
 func (h *Handler) NotFound(c echo.Context) error {
-	return Render(c, http.StatusOK, templates.NotFoundPage())
+	return Render(c, 200, templates.NotFoundPage())
 }
 
 func (h *Handler) SignIn(c echo.Context) error {
-	return Render(c, http.StatusOK, templates.SignInPage())
+	return Render(c, 200, templates.SignInPage())
 }
 
 func (h *Handler) Home(c echo.Context) error {
 	username := c.Get("username").(string)
-	return Render(c, http.StatusOK, auth.HomePage(username))
+	return Render(c, 200, auth.HomePage(username))
 }
