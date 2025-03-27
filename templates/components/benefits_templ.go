@@ -16,20 +16,20 @@ type Benefit struct {
 
 var benefits = []Benefit{
 	{
-		Title: "Cost savings",
+		Title: "Cost Savings",
 		Icon:  "fa-solid fa-money-check-dollar text-2xl",
 		Description: `We lower labor costs by reducing the need for manual
     	bookkeeping and by preventing costly mistakes that could lead to penalties
     	or financial losses.`,
 	},
 	{
-		Title: "Time efficiency",
+		Title: "Time Efficiency",
 		Icon:  "fa-solid fa-hourglass-start text-2xl",
 		Description: `We reduce the time spent on financial management by
     	eliminating manual tasks, streamlining processes, and improving efficiency.`,
 	},
 	{
-		Title: "Real time financial insights",
+		Title: "Real Time Financial Insights",
 		Icon:  "fa-solid fa-lightbulb text-2xl",
 		Description: `Our software lets you run queries on your financial data,
     	making it easy to retrieve specific information and compare data across
@@ -37,7 +37,7 @@ var benefits = []Benefit{
     	helping you act faster with accurate insights.`,
 	},
 	{
-		Title: "Easy to use",
+		Title: "Easy to Use",
 		Icon:  "fa-solid fa-arrow-pointer text-2xl",
 		Description: `We use Google Workspace apps to seamlessly integrate with
     	your workflow. Our software delivers critical updates, lets you request
