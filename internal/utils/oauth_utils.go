@@ -20,7 +20,7 @@ func ClearAuthIdCookie(c echo.Context) {
 		HttpOnly: true,
 		Path:     "/",
 		Secure:   true,
-		SameSite: http.SameSiteStrictMode,
+		SameSite: http.SameSiteLaxMode,
 		Expires:  time.Now().Add(5 * time.Minute),
 	})
 }

@@ -68,7 +68,7 @@ func (h *Handler) HandleCallbackAuth(c echo.Context) error {
 		HttpOnly: true,
 		Path:     "/",
 		Secure:   true,
-		SameSite: http.SameSiteStrictMode,
+		SameSite: http.SameSiteLaxMode,
 		Expires:  time.Now().Add(24 * time.Hour),
 	})
 
