@@ -3,6 +3,7 @@ package handlers
 import (
 	"github.com/a-h/templ"
 	"github.com/labstack/echo/v4"
+	"github.com/plaid/plaid-go/plaid"
 	"github.com/redis/go-redis/v9"
 	"golang.org/x/oauth2"
 	"gorm.io/gorm"
@@ -14,6 +15,7 @@ type Handler struct {
 	ApiKey      string
 	OAuthConfig *oauth2.Config
 	RedisClient *redis.Client
+	PlaidClient *plaid.APIClient
 }
 
 // Renders templ templates

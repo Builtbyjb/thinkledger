@@ -9,12 +9,13 @@ import "github.com/a-h/templ"
 import templruntime "github.com/a-h/templ/runtime"
 
 import "server/templates/layout"
+import "server/lib/styles"
 
-const homeTitle string = "Home"
-const homeMetaDescription string = "ThinkLedger | Home page"
-const homeScript string = "/static/dist/home.min.js"
+const bankingTitle string = "Banking"
+const bankingMetaDescription string = "Connect bank accounts"
+const bankingScript string = "/static/dist/banking.min.js"
 
-func HomePage(username string) templ.Component {
+func BankingPage(username string) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
 		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
@@ -47,13 +48,35 @@ func HomePage(username string) templ.Component {
 				}()
 			}
 			ctx = templ.InitializeContext(ctx)
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, " <div class=\"flex-1 flex flex-col overflow-hidden\"><main class=\"flex-1 overflow-y-auto p-4\"><div class=\"max-w-7xl mx-auto\"><h2 class=\"text-2xl font-bold mb-6\">Welcome to Think Ledger</h2><p class=\"mb-4\">We are still in development mode. Feel free to play around.</p><p class=\"mb-6\">Find any bugs? Email us at support@thinkledger.app</p><div class=\"grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6\"></div></div></main></div>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<h1 class=\"text-2xl font-medium mb-8\">Banking</h1>")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			var templ_7745c5c3_Var3 = []any{styles.BtnStyleFull}
+			templ_7745c5c3_Err = templ.RenderCSSItems(ctx, templ_7745c5c3_Buffer, templ_7745c5c3_Var3...)
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "<button id=\"connect-bank-account\" class=\"")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			var templ_7745c5c3_Var4 string
+			templ_7745c5c3_Var4, templ_7745c5c3_Err = templ.JoinStringErrs(templ.CSSClasses(templ_7745c5c3_Var3).String())
+			if templ_7745c5c3_Err != nil {
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/auth/banking_page.templ`, Line: 1, Col: 0}
+			}
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var4))
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, "\">Connect a bank account</button><div class=\"mt-8\"><h2 class=\"text-xl mb-4\">Connected Bank Accounts</h2><div class=\"border-2 border-gray-300 rounded-lg p-4\"><h3 class=\"text-lg\">Bank of Montreal </h3><div class=\"flex items-center gap-8\"><p>Status: Connected</p><button class=\"text-red-500\">Delete</button></div></div></div>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			return nil
 		})
-		templ_7745c5c3_Err = layout.AuthLayout(homeTitle, homeMetaDescription, homeScript, username).Render(templ.WithChildren(ctx, templ_7745c5c3_Var2), templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = layout.AuthLayout(bankingTitle, bankingMetaDescription, bankingScript, username).Render(templ.WithChildren(ctx, templ_7745c5c3_Var2), templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

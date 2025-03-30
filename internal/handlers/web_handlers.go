@@ -9,7 +9,7 @@ import (
 )
 
 func checkAuth(c echo.Context) bool {
-	cookie, err := c.Request().Cookie("authId")
+	cookie, err := c.Request().Cookie("session_id")
 	if err != nil {
 		return false
 	}
@@ -24,7 +24,7 @@ func checkAuth(c echo.Context) bool {
 func (h *Handler) Index(c echo.Context) error {
 
 	// Redirect users to the home page if they authenicated
-	cookie, err := c.Request().Cookie("authId")
+	cookie, err := c.Request().Cookie("session_id")
 	if err == nil {
 
 		if cookie.Value != "" {
@@ -82,4 +82,9 @@ func (h *Handler) SignIn(c echo.Context) error {
 func (h *Handler) Home(c echo.Context) error {
 	username := c.Get("username").(string)
 	return Render(c, 200, auth.HomePage(username))
+}
+
+func (h *Handler) Banking(c echo.Context) error {
+	username := c.Get("username").(string)
+	return Render(c, 200, auth.BankingPage(username))
 }

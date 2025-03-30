@@ -1,0 +1,27 @@
+package auth
+
+import "server/templates/layout"
+import "server/lib/styles"
+
+const bankingTitle string = "Banking"
+const bankingMetaDescription string = "Connect bank accounts"
+const bankingScript string = "/static/dist/banking.min.js"
+
+templ BankingPage(username string) {
+	@layout.AuthLayout(bankingTitle, bankingMetaDescription, bankingScript, username) {
+		<h1 class="text-2xl font-medium mb-8">Banking</h1>
+		<button id="connect-bank-account" class={ styles.BtnStyleFull }>
+			Connect a bank account
+		</button>
+		<div class="mt-8">
+			<h2 class="text-xl mb-4">Connected Bank Accounts</h2>
+			<div class="border-2 border-gray-300 rounded-lg p-4">
+				<h3 class="text-lg">Bank of Montreal </h3>
+				<div class="flex items-center gap-8">
+					<p>Status: Connected</p>
+					<button class="text-red-500">Delete</button>
+				</div>
+			</div>
+		</div>
+	}
+}

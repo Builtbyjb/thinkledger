@@ -1,6 +1,8 @@
 package handlers
 
 import (
+	"context"
+	"fmt"
 	"log"
 	"net/http"
 	"server/internal/utils"
@@ -31,31 +33,32 @@ func (h *Handler) HandleSignInAuth(c echo.Context) error {
 	return c.Redirect(307, h.OAuthConfig.AuthCodeURL(state))
 }
 
-// Logout user
-func (h *Handler) HandleLogout(c echo.Context) error {
-	ctx := c.Request().Context()
+// Sign out user
+func (h *Handler) HandleSignout(c echo.Context) error {
+	ctx := context.Background()
 
-	cookie, err := c.Request().Cookie("authId")
+	cookie, err := c.Request().Cookie("session_id")
 	if err != nil {
 		log.Println(err)
 		return c.Redirect(307, "/")
 	}
 
 	if cookie.Value == "" {
-		log.Println("authId cookie is empty")
+		log.Println("session id cookie is empty")
 		return c.Redirect(307, "/")
 	}
 
-	authId := cookie.Value
+	sessionID := cookie.Value
+	sessionUser := fmt.Sprintf("user:%s", sessionID)
 
 	// Delete the user id from the redis cache
-	_, rErr := h.RedisClient.Del(ctx, authId).Result()
+	_, rErr := h.RedisClient.Del(ctx, sessionID, sessionUser).Result()
 	if rErr != nil {
 		log.Println(rErr)
 		return c.Redirect(307, "/")
 	}
 
-	utils.ClearAuthIdCookie(c)
+	utils.ClearSessionIDCookie(c)
 
 	return c.Redirect(307, "/")
 }

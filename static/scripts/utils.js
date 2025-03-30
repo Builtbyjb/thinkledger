@@ -41,8 +41,8 @@ export function handleSidebar() {
 
         const sidebarBtnLeft = "left-[15rem]";
 
-        const authLayoutDivMax = "md:ml-[17rem]";
-        const authLayoutDivMin = "ml-[7rem]";
+        const authLayoutDivMax = "md:ml-[16rem]";
+        const authLayoutDivMin = "ml-[5rem]";
 
         // Check if device is mobile
         const isMobile = () => window.innerWidth < 768;
@@ -140,7 +140,7 @@ export function handleSidebar() {
                     toggleSidebarBtn.classList.add(sidebarBtnLeft, "top-0");
                     toggleSidebarText.innerText = "Close";
                 } else {
-                    toggleSidebarBtn.classList.remove("left-[17rem]", "top-0");
+                    toggleSidebarBtn.classList.remove(sidebarBtnLeft, "top-0");
                     toggleSidebarText.innerText = "Open";
                 }
                 // Reset desktop styles

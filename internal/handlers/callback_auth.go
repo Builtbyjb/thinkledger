@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"encoding/json"
-	"fmt"
 	"log"
 	"net/http"
 	"server/internal/utils"
@@ -12,7 +11,7 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-func (h *Handler) HandleCallbackAuth(c echo.Context) error {
+func (h *Handler) HandleGoogleCallbackAuth(c echo.Context) error {
 	ctx := c.Request().Context()
 
 	// Verify state to prevent CSRF
@@ -33,38 +32,49 @@ func (h *Handler) HandleCallbackAuth(c echo.Context) error {
 	tokenBytes, err := json.Marshal(token)
 	if err != nil {
 		log.Println(err)
-		return c.String(500, "Failed to Marshal token")
+		return c.String(500, "Failed to marshal token")
 	}
 
 	// Generate authentication id
-	authId := uuid.New().String()
+	sessionID := uuid.New().String()
 
-	// Set cookie and redis expiration date
+	// Set redis expiration date
 	expiration := time.Duration(24 * time.Hour)
 
+	// Use the access token to get information about the user trying signing in
 	userInfo, err := utils.GetUserInfo(token.AccessToken, h.OAuthConfig)
 	if err != nil {
 		log.Print(err)
-		c.String(500, "Failed to ger user info")
+		c.String(500, "Failed to get user info")
 	}
 
-	// Save the user token
-	if err := h.RedisClient.Set(ctx, authId, tokenBytes, expiration).Err(); err != nil {
+	// TODO: check if the user is new the added the postgress database
+
+	// Convert user info to json bytes
+	userBytes, err := json.Marshal(userInfo)
+	if err != nil {
+		log.Println(err)
+		return c.String(500, "Failed to marshal user info")
+	}
+
+	// use go channels to run these operations of multiple go routines
+	// Save user token
+	if err := h.RedisClient.Set(ctx, sessionID, tokenBytes, expiration).Err(); err != nil {
 		log.Println(err)
 		return c.String(500, "Failed to save token: "+err.Error())
 	}
 
-	// Save user name
-	name := fmt.Sprintf("name:%s", authId)
-	if err := h.RedisClient.Set(ctx, name, userInfo.Name, expiration).Err(); err != nil {
+	// Save user info
+	sessionUser := "user:" + sessionID
+	if err := h.RedisClient.Set(ctx, sessionUser, userBytes, expiration).Err(); err != nil {
 		log.Println(err)
-		return c.String(500, "Failed to save user name: "+err.Error())
+		return c.String(500, "Failed to save user info: "+err.Error())
 	}
 
 	// Set user authentication cookie
 	c.SetCookie(&http.Cookie{
-		Name:     "authId",
-		Value:    authId,
+		Name:     "session_id",
+		Value:    sessionID,
 		HttpOnly: true,
 		Path:     "/",
 		Secure:   true,
@@ -73,4 +83,8 @@ func (h *Handler) HandleCallbackAuth(c echo.Context) error {
 	})
 
 	return c.Redirect(307, "/home")
+}
+
+func (h *Handler) HandlePlaidCallbackAuth(c echo.Context) error {
+	return c.NoContent(200)
 }

@@ -8,10 +8,7 @@ package layout
 import "github.com/a-h/templ"
 import templruntime "github.com/a-h/templ/runtime"
 
-import (
-	"fmt"
-	"server/templates"
-)
+import "server/templates"
 
 const hover string = "hover:bg-[#0065FA]/70 hover:rounded-lg"
 
@@ -43,7 +40,7 @@ func authSidebar(username string) templ.Component {
 		var templ_7745c5c3_Var2 string
 		templ_7745c5c3_Var2, templ_7745c5c3_Err = templ.JoinStringErrs(username)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/layout/auth_layout.templ`, Line: 14, Col: 75}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/layout/auth_layout.templ`, Line: 11, Col: 75}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var2))
 		if templ_7745c5c3_Err != nil {
@@ -53,7 +50,7 @@ func authSidebar(username string) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		var templ_7745c5c3_Var3 = []any{fmt.Sprintf("link %s", hover)}
+		var templ_7745c5c3_Var3 = []any{"link " + hover}
 		templ_7745c5c3_Err = templ.RenderCSSItems(ctx, templ_7745c5c3_Buffer, templ_7745c5c3_Var3...)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
@@ -75,7 +72,7 @@ func authSidebar(username string) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		var templ_7745c5c3_Var5 = []any{fmt.Sprintf("link %s", hover)}
+		var templ_7745c5c3_Var5 = []any{"link " + hover}
 		templ_7745c5c3_Err = templ.RenderCSSItems(ctx, templ_7745c5c3_Buffer, templ_7745c5c3_Var5...)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
@@ -97,7 +94,7 @@ func authSidebar(username string) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		var templ_7745c5c3_Var7 = []any{fmt.Sprintf("link %s", hover)}
+		var templ_7745c5c3_Var7 = []any{"link " + hover}
 		templ_7745c5c3_Err = templ.RenderCSSItems(ctx, templ_7745c5c3_Buffer, templ_7745c5c3_Var7...)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
@@ -119,7 +116,7 @@ func authSidebar(username string) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		var templ_7745c5c3_Var9 = []any{fmt.Sprintf("dropdown-trigger w-full flex items-center text-sm justify-between gap-2 px-3 py-2 font-medium %s", hover)}
+		var templ_7745c5c3_Var9 = []any{"dropdown-trigger w-full flex items-center text-sm justify-between gap-2 px-3 py-2 font-medium d-btn d-btn-banking d-btn-google d-btn-shopping " + hover}
 		templ_7745c5c3_Err = templ.RenderCSSItems(ctx, templ_7745c5c3_Buffer, templ_7745c5c3_Var9...)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
@@ -141,7 +138,7 @@ func authSidebar(username string) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		var templ_7745c5c3_Var11 = []any{hover}
+		var templ_7745c5c3_Var11 = []any{"link " + hover}
 		templ_7745c5c3_Err = templ.RenderCSSItems(ctx, templ_7745c5c3_Buffer, templ_7745c5c3_Var11...)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
@@ -159,11 +156,11 @@ func authSidebar(username string) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 12, "\"><a href=\"#\" class=\"flex items-center gap-2 px-3 py-2 text-sm font-medium\"><span>Banking</span></a></li>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 12, "\"><a href=\"/banking\" class=\"flex items-center gap-2 px-3 py-2 text-sm font-medium\"><span>Banking</span></a></li>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		var templ_7745c5c3_Var13 = []any{hover}
+		var templ_7745c5c3_Var13 = []any{"link " + hover}
 		templ_7745c5c3_Err = templ.RenderCSSItems(ctx, templ_7745c5c3_Buffer, templ_7745c5c3_Var13...)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
@@ -181,16 +178,16 @@ func authSidebar(username string) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 14, "\"><a href=\"#\" class=\"flex items-center gap-2 px-3 py-2 text-sm font-medium\"><span>Shopping Platforms</span></a></li></ul></div></li><li class=\"dropdown-container\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 14, "\"><a href=\"#\" class=\"flex items-center gap-2 px-3 py-2 text-sm font-medium\"><span>Shopping Platforms</span></a></li>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		var templ_7745c5c3_Var15 = []any{fmt.Sprintf("dropdown-trigger w-full flex items-center text-sm justify-between gap-2 px-3 py-2 font-medium d-btn d-btn-support d-btn-blog d-btn-documentation %s", hover)}
+		var templ_7745c5c3_Var15 = []any{"link " + hover}
 		templ_7745c5c3_Err = templ.RenderCSSItems(ctx, templ_7745c5c3_Buffer, templ_7745c5c3_Var15...)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 15, "<button class=\"")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 15, "<li id=\"google\" class=\"")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -203,16 +200,16 @@ func authSidebar(username string) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 16, "\"><div class=\"flex items-center gap-2\"><i class=\"fa-solid fa-folder-minus\"></i> <span class=\"sidebar-text\">Resources</span></div><svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" class=\"lucide lucide-chevron-down sidebar-text dropdown-icon transition-transform\"><path d=\"m6 9 6 6 6-6\"></path></svg></button><div class=\"dropdown-content max-h-0 overflow-hidden opacity-0 dropdown-transition\"><ul class=\"pl-7 mt-1 space-y-1 sidebar-submenu\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 16, "\"><a href=\"#\" class=\"flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium\"><span>Google Workspace</span></a></li></ul></div></li><li class=\"dropdown-container\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		var templ_7745c5c3_Var17 = []any{hover}
+		var templ_7745c5c3_Var17 = []any{"dropdown-trigger w-full flex items-center text-sm justify-between gap-2 px-3 py-2 font-medium d-btn d-btn-support d-btn-blog d-btn-documentation " + hover}
 		templ_7745c5c3_Err = templ.RenderCSSItems(ctx, templ_7745c5c3_Buffer, templ_7745c5c3_Var17...)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 17, "<li id=\"documentation\" class=\"")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 17, "<button class=\"")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -225,7 +222,7 @@ func authSidebar(username string) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 18, "\"><a href=\"#\" class=\"flex items-center gap-2 px-3 py-2 text-sm font-medium\"><span>Documentation</span></a></li>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 18, "\"><div class=\"flex items-center gap-2\"><i class=\"fa-solid fa-folder-minus\"></i> <span class=\"sidebar-text\">Resources</span></div><svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" class=\"lucide lucide-chevron-down sidebar-text dropdown-icon transition-transform\"><path d=\"m6 9 6 6 6-6\"></path></svg></button><div class=\"dropdown-content max-h-0 overflow-hidden opacity-0 dropdown-transition\"><ul class=\"pl-7 mt-1 space-y-1 sidebar-submenu\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -234,7 +231,7 @@ func authSidebar(username string) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 19, "<li id=\"blog\" class=\"")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 19, "<li id=\"documentation\" class=\"")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -247,16 +244,16 @@ func authSidebar(username string) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 20, "\"><a href=\"#\" class=\"flex items-center gap-2 px-3 py-2 text-sm font-medium\"><span>Blog</span></a></li>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 20, "\"><a href=\"#\" class=\"flex items-center gap-2 px-3 py-2 text-sm font-medium\"><span>Documentation</span></a></li>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		var templ_7745c5c3_Var21 = []any{fmt.Sprintf("link %s", hover)}
+		var templ_7745c5c3_Var21 = []any{hover}
 		templ_7745c5c3_Err = templ.RenderCSSItems(ctx, templ_7745c5c3_Buffer, templ_7745c5c3_Var21...)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 21, "<li id=\"support\" class=\"")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 21, "<li id=\"blog\" class=\"")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -269,16 +266,16 @@ func authSidebar(username string) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 22, "\"><a href=\"/support\" class=\"flex items-center gap-2 px-3 py-2 text-sm font-medium\"><span>Support</span></a></li></ul></div></li><li class=\"dropdown-container\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 22, "\"><a href=\"#\" class=\"flex items-center gap-2 px-3 py-2 text-sm font-medium\"><span>Blog</span></a></li>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		var templ_7745c5c3_Var23 = []any{fmt.Sprintf("dropdown-trigger w-full flex items-center text-sm justify-between gap-2 px-3 py-2 font-medium d-btn d-btn-terms-of-service d-btn-privacy-policy %s", hover)}
+		var templ_7745c5c3_Var23 = []any{"link " + hover}
 		templ_7745c5c3_Err = templ.RenderCSSItems(ctx, templ_7745c5c3_Buffer, templ_7745c5c3_Var23...)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 23, "<button class=\"")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 23, "<li id=\"support\" class=\"")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -291,16 +288,16 @@ func authSidebar(username string) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 24, "\"><div class=\"flex items-center gap-2\"><i class=\"fa-solid fa-scale-balanced\"></i> <span class=\"sidebar-text\">Legal</span></div><svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" class=\"lucide lucide-chevron-down sidebar-text dropdown-icon transition-transform\"><path d=\"m6 9 6 6 6-6\"></path></svg></button><div class=\"dropdown-content max-h-0 overflow-hidden opacity-0 dropdown-transition\"><ul class=\"pl-7 mt-1 space-y-1 sidebar-submenu\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 24, "\"><a href=\"/support\" class=\"flex items-center gap-2 px-3 py-2 text-sm font-medium\"><span>Support</span></a></li></ul></div></li><li class=\"dropdown-container\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		var templ_7745c5c3_Var25 = []any{fmt.Sprintf("link %s", hover)}
+		var templ_7745c5c3_Var25 = []any{"dropdown-trigger w-full flex items-center text-sm justify-between gap-2 px-3 py-2 font-medium d-btn d-btn-terms-of-service d-btn-privacy-policy " + hover}
 		templ_7745c5c3_Err = templ.RenderCSSItems(ctx, templ_7745c5c3_Buffer, templ_7745c5c3_Var25...)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 25, "<li id=\"terms-of-service\" class=\"")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 25, "<button class=\"")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -313,16 +310,16 @@ func authSidebar(username string) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 26, "\"><a href=\"/terms-of-service\" class=\"flex items-center gap-2 px-3 py-2 text-sm font-medium\"><span>Terms of Service</span></a></li>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 26, "\"><div class=\"flex items-center gap-2\"><i class=\"fa-solid fa-scale-balanced\"></i> <span class=\"sidebar-text\">Legal</span></div><svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" class=\"lucide lucide-chevron-down sidebar-text dropdown-icon transition-transform\"><path d=\"m6 9 6 6 6-6\"></path></svg></button><div class=\"dropdown-content max-h-0 overflow-hidden opacity-0 dropdown-transition\"><ul class=\"pl-7 mt-1 space-y-1 sidebar-submenu\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		var templ_7745c5c3_Var27 = []any{fmt.Sprintf("link %s", hover)}
+		var templ_7745c5c3_Var27 = []any{"link " + hover}
 		templ_7745c5c3_Err = templ.RenderCSSItems(ctx, templ_7745c5c3_Buffer, templ_7745c5c3_Var27...)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 27, "<li id=\"privacy-policy\" class=\"")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 27, "<li id=\"terms-of-service\" class=\"")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -335,16 +332,16 @@ func authSidebar(username string) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 28, "\"><a href=\"/privacy-policy\" class=\"flex items-center gap-2 px-3 py-2 text-sm font-medium\"><span>Privacy Policy</span></a></li>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 28, "\"><a href=\"/terms-of-service\" class=\"flex items-center gap-2 px-3 py-2 text-sm font-medium\"><span>Terms of Service</span></a></li>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		var templ_7745c5c3_Var29 = []any{hover}
+		var templ_7745c5c3_Var29 = []any{"link " + hover}
 		templ_7745c5c3_Err = templ.RenderCSSItems(ctx, templ_7745c5c3_Buffer, templ_7745c5c3_Var29...)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 29, "<li id=\"cookie-policy\" class=\"")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 29, "<li id=\"privacy-policy\" class=\"")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -357,16 +354,16 @@ func authSidebar(username string) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 30, "\"><a href=\"/privacy-policy#cookie-policy\" class=\"flex items-center gap-2 px-3 py-2 text-sm font-medium\"><span>Cookie Policy</span></a></li></ul></div></li></ul></div><div class=\"p-4 fixed bottom-0\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 30, "\"><a href=\"/privacy-policy\" class=\"flex items-center gap-2 px-3 py-2 text-sm font-medium\"><span>Privacy Policy</span></a></li>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		var templ_7745c5c3_Var31 = []any{fmt.Sprintf("flex items-center gap-2 px-3 text-sm py-2 %s", hover)}
+		var templ_7745c5c3_Var31 = []any{hover}
 		templ_7745c5c3_Err = templ.RenderCSSItems(ctx, templ_7745c5c3_Buffer, templ_7745c5c3_Var31...)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 31, "<a href=\"/log-out\" class=\"")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 31, "<li id=\"cookie-policy\" class=\"")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -379,7 +376,7 @@ func authSidebar(username string) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 32, "\"><i class=\"fa-solid fa-right-from-bracket text-red-500\"></i> <span class=\"sidebar-text text-red-500\">Log out</span></a></div></aside>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 32, "\"><a href=\"/privacy-policy#cookie-policy\" class=\"flex items-center gap-2 px-3 py-2 text-sm font-medium\"><span>Cookie Policy</span></a></li></ul></div></li></ul></div><div class=\"p-4 fixed bottom-0\"><a href=\"/sign-out\" class=\"flex items-center gap-2 px-3 text-sm py-2\"><i class=\"fa-solid fa-right-from-bracket text-red-500\"></i> <span class=\"sidebar-text text-red-500\">Sign out</span></a></div></aside>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -428,7 +425,7 @@ func AuthLayout(title, metaDecription, script, username string) templ.Component 
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 34, "<div id=\"authlayout-div\" class=\"z-10 md:ml-[17rem]\"><button id=\"toggle-sidebar-btn\" class=\"rounded-md bg-[#0065FA]/90 p-2 m-4 flex items-center gap-2 fixed\"><svg xmlns=\"http://www.w3.org/2000/svg\" width=\"20\" height=\"20\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" class=\"lucide lucide-panel-left\"><rect width=\"18\" height=\"18\" x=\"3\" y=\"3\" rx=\"2\" ry=\"2\"></rect> <line x1=\"9\" x2=\"9\" y1=\"3\" y2=\"21\"></line></svg> <span id=\"toggle-sidebar-text\">Close</span></button><div class=\"px-4 pt-20 pb-8 z-20 md:mr-[10%] lg:mr-[10%] xl:mr-[20%] 2xl:mr-[30%]\">")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 34, "<div id=\"authlayout-div\" class=\"z-10 md:ml-[16rem]\"><button id=\"toggle-sidebar-btn\" class=\"rounded-md bg-[#0065FA]/90 p-2 m-4 flex items-center gap-2 fixed\"><svg xmlns=\"http://www.w3.org/2000/svg\" width=\"20\" height=\"20\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" class=\"lucide lucide-panel-left\"><rect width=\"18\" height=\"18\" x=\"3\" y=\"3\" rx=\"2\" ry=\"2\"></rect> <line x1=\"9\" x2=\"9\" y1=\"3\" y2=\"21\"></line></svg> <span id=\"toggle-sidebar-text\">Close</span></button><div class=\"px-4 pt-20 pb-8 z-20 md:mr-[10%] lg:mr-[10%] xl:mr-[20%] 2xl:mr-[30%]\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}

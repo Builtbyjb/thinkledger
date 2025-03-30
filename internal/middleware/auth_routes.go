@@ -2,11 +2,8 @@ package middleware
 
 import (
 	"encoding/json"
-	"fmt"
 	"log"
-	"net/http"
 	"server/internal/utils"
-	"time"
 
 	"github.com/labstack/echo/v4"
 	"golang.org/x/oauth2"
@@ -17,104 +14,75 @@ func AuthRoutes(authConfig utils.AuthConfig) echo.MiddlewareFunc {
 		return func(c echo.Context) error {
 			ctx := c.Request().Context()
 
-			cookie, err := c.Request().Cookie("authId")
+			cookie, err := c.Request().Cookie("session_id")
 			if err != nil {
 				log.Println(err)
 				return c.Redirect(307, "/sign-in")
 			}
 
 			if cookie.Value == "" {
-				log.Println("authId cookie is empty")
+				log.Println("session id cookie is empty")
 				return c.Redirect(307, "/sign-in")
 			}
-			authId := cookie.Value
+			sessionID := cookie.Value
 
 			// Get token from redis
-			tokenStr, err := authConfig.RedisClient.Get(ctx, authId).Result()
+			tokenStr, err := authConfig.RedisClient.Get(ctx, sessionID).Result()
 			if err != nil {
-				log.Println(err)
+				log.Printf("Error getting token bytes: %s", err)
 				return c.Redirect(307, "/sign-in")
 			}
 
-			// Get username from redis
-			name := fmt.Sprintf("name:%s", authId)
-			username, err := authConfig.RedisClient.Get(ctx, name).Result()
-			if err != nil {
-				log.Println(err)
-				return c.Redirect(307, "/sign-in")
-			}
-
-			// Deserialize the token from JSON
+			// Deserialize token to JSON
 			var token *oauth2.Token
 			if err := json.Unmarshal([]byte(tokenStr), &token); err != nil {
-				log.Println("Failed to unmarshal token:", err)
+				log.Println(err)
 				return c.Redirect(307, "/sign-in")
 			}
 
-			// Check if the token as expired and try refreshing if there is a refresh token
-			if token.Expiry.Before(time.Now()) {
-
-				if token.RefreshToken == "" {
-
-					utils.ClearAuthIdCookie(c)
-
-					log.Println("Token has expired and no refresh token is available")
-					return c.Redirect(307, "/sign-in")
-				}
-
-				// Try refreshing the token
-				newToken, err := authConfig.OAuth2Config.TokenSource(ctx, token).Token()
-				if err != nil {
-					log.Println(err)
-					return c.Redirect(307, "/sign-in")
-				}
-
-				// Save the new token
-				token = newToken
-				if err := authConfig.RedisClient.Set(ctx, authId, token, 0).Err(); err != nil {
-					log.Println(err)
-					return c.JSON(500, map[string]string{
-						"error": "Failed to save refreshed token",
-					})
-				}
+			/*
+				write logic that alerts the user for a refresh token, if the refresh token
+				as expired and pause all operations on the users account
+			*/
+			verifedToken, err := utils.VerifyGoogleToken(token, authConfig.OAuth2Config)
+			if err != nil {
+				utils.ClearSessionIDCookie(c)
+				log.Println(err)
+				return c.Redirect(307, "/sign-in")
 			}
 
-			// Verify the token with google
-			isValid := verifyToken(token.AccessToken)
-			if !isValid {
+			verifiedTokenBytes, err := json.Marshal(verifedToken)
+			if err != nil {
+				log.Println(err)
+				return c.String(500, "Failed to marshal token: "+err.Error())
+			}
 
-				// Empty the auth id cookie is the token is not valid
-				utils.ClearAuthIdCookie(c)
+			// Save the new verified token
+			if err := authConfig.RedisClient.Set(ctx, sessionID, verifiedTokenBytes, 0).Err(); err != nil {
+				log.Printf("Error saving new verified token: %s", err)
+				return c.String(500, "Failed to save token: "+err.Error())
+			}
 
-				log.Println("Access token is not valid")
+			// Get user info from redis
+			sessionUser := "user:" + sessionID
+			userInfoStr, err := authConfig.RedisClient.Get(ctx, sessionUser).Result()
+			if err != nil {
+				log.Printf("Error getting user bytes: %s", err)
+				return c.Redirect(307, "/sign-in")
+			}
+
+			// Deserialize user info to JSON
+			var userInfo *utils.UserInfo
+			if err := json.Unmarshal([]byte(userInfoStr), &userInfo); err != nil {
+				log.Println(err)
 				return c.Redirect(307, "/sign-in")
 			}
 
 			// Token is valid, store it in context for handlers to use
 			// c.Set("userToken", token)
 			// c.Set("authId", authId)
-			c.Set("username", username)
+			c.Set("username", userInfo.Name)
 			return next(c)
 		}
 	}
-}
-
-func verifyToken(accessToken string) bool {
-	client := &http.Client{Timeout: 10 * time.Second}
-	tokenInfoURL := "https://www.googleapis.com/oauth2/v3/tokeninfo?access_token=" + accessToken
-
-	response, err := client.Get(tokenInfoURL)
-	if err != nil {
-		log.Println("Token response error")
-		return false
-	}
-	defer response.Body.Close()
-
-	// Response status code would be 200 if the token is valid
-	if response.StatusCode != 200 {
-		log.Println("Token response status code error")
-		return false
-	}
-
-	return true
 }
