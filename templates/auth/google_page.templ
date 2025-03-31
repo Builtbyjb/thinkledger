@@ -1,0 +1,33 @@
+package auth
+
+import ("server/templates/layout")
+
+const googleTitle string = "Google Workspace"
+const googleMetaDescription string = "Connect google Workspace accounts"
+const googleScript string = ""
+
+templ GooglePage(username string) {
+	@layout.AuthLayout(
+		googleTitle,
+		googleMetaDescription,
+		googleScript,
+		username,
+	){
+		<h1>Google Workspace</h1>
+		<div>
+			<h2>Connect Google Accounts</h2>
+			<div>
+				<h3>Google Sheet</h3>
+				<button id="connect-google-sheet">
+					Connect
+				</button>
+			</div>
+			<div>
+				<h3>Google Drive</h3>
+				<button id="connect-google-drive">
+					Connect
+				</button>
+			</div>
+		</div>
+	}
+}

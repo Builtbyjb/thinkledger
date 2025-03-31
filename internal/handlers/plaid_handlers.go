@@ -105,7 +105,7 @@ func (h *Handler) HandlePlaidAccessToken(c echo.Context) error {
 	}
 
 	accessToken := exchangePublicTokenResp.GetAccessToken()
-	fmt.Printf("Plaid access token: %s", accessToken)
+	fmt.Printf("Plaid access token: %s\n", accessToken)
 
 	// TODO: store access token in a postgres database
 
@@ -121,8 +121,25 @@ func (h *Handler) HandlePlaidAccessToken(c echo.Context) error {
 		})
 	}
 
-	// TODO: parse transaction response
-	fmt.Println(transactionsResp)
+	transactionJsonBytes, err := json.MarshalIndent(transactionsResp, "", "  ")
+	if err != nil {
+		log.Println(err)
+		c.JSON(500, map[string]string{
+			"error": "Internal server error",
+		})
+	}
+
+	// fmt.Println(string(transactionJsonBytes))
+
+	var transactionJsonData utils.PlaidTransactionResponse
+	if err := json.Unmarshal(transactionJsonBytes, &transactionJsonData); err != nil {
+		log.Println(err)
+		return c.JSON(500, map[string]string{
+			"error": "Internal server error",
+		})
+	}
+
+	// fmt.Println(transactionJsonData)
 
 	return c.JSON(200, map[string]string{
 		"success": "access token gotten",

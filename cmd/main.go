@@ -106,6 +106,7 @@ func main() {
 	protected := app.Group("", middleware.AuthRoutes(authConfig))
 	protected.GET("/home", handler.Home)
 	protected.GET("/banking", handler.Banking)
+	protected.GET("/google", handler.Google)
 	protected.GET("/plaid-link-token", handler.HandlePlaidLinkToken)
 	protected.POST("/plaid-access-token", handler.HandlePlaidAccessToken)
 

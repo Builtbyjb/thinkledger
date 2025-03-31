@@ -3,7 +3,7 @@ module server
 go 1.24.1
 
 require (
-	github.com/a-h/templ v0.3.833
+	github.com/a-h/templ v0.3.857
 	github.com/gofiber/fiber/v2 v2.52.5
 	github.com/google/generative-ai-go v0.19.0
 	github.com/google/uuid v1.6.0

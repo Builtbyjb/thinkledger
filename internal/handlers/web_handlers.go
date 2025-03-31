@@ -88,3 +88,8 @@ func (h *Handler) Banking(c echo.Context) error {
 	username := c.Get("username").(string)
 	return Render(c, 200, auth.BankingPage(username))
 }
+
+func (h *Handler) Google(c echo.Context) error {
+	username := c.Get("username").(string)
+	return Render(c, 200, auth.GooglePage(username))
+}
