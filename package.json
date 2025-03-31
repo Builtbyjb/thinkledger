@@ -4,5 +4,9 @@
     },
     "devDependencies": {
         "uglifyjs-folder": "^3.3.0"
+    },
+    "dependencies": {
+        "@tailwindcss/cli": "^4.0.17",
+        "tailwindcss": "^4.0.17"
     }
 }

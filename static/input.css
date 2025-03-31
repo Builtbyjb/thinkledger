@@ -3,29 +3,25 @@
 @layer base {
     h1,
     h2,
-    h3 {
-        /* font-family: "Outfit", sans-serif; */
-        font-family: "Electrolize", sans-serif;
+    h3,
+    h4,
+    h5 {
+        font-family: "Roboto Slab", serif;
+        font-optical-sizing: auto;
+        font-style: normal;
     }
 
     p,
     a,
-    button,
-    ul,
     li,
     input,
-    textarea,
-    label {
-        /* font-family: "Poppins", sans-serif; */
-        font-family: "Share Tech Mono", monospace;
-    }
-
-    .font-poppins {
-        font-family: "Poppins", sans-serif;
-    }
-
-    .font-share-tech-mono {
-        font-family: "Share Tech Mono", monospace;
+    button,
+    div,
+    span,
+    textarea {
+        font-family: "Work Sans", sans-serif;
+        font-optical-sizing: auto;
+        font-style: normal;
     }
 
     .faq-answer {

@@ -1,6 +1,6 @@
 package styles
 
-const BtnStyleFull string = "bg-[#0065F2] hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition duration-200 ease-in-out transform hover:scale-110 cursor-pointer"
+const BtnStyleFull string = "bg-[#0065F2]/90 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition duration-200 ease-in-out transform hover:scale-110 cursor-pointer"
 
 const LinkTextStyle string = "underline transition delay-150 duration-500 ease-in-out hover:text-gray-400"
 

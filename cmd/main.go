@@ -1,7 +1,6 @@
 package main
 
 import (
-	"net/http"
 	"os"
 
 	"server/internal/database/redis"
@@ -11,6 +10,7 @@ import (
 
 	"github.com/joho/godotenv"
 	"github.com/labstack/echo/v4"
+	"github.com/plaid/plaid-go/plaid"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
 )
@@ -18,11 +18,6 @@ import (
 func init() {
 	// Load .env file
 	godotenv.Load()
-}
-
-type healthRes struct {
-	Ping string `json:"ping"`
-	Env  string `json:"env"`
 }
 
 func main() {
@@ -43,7 +38,7 @@ func main() {
 	redisClient := redis.GetRedisClient()
 
 	// OAuth2 configuration
-	var oAuthConfig = &oauth2.Config{
+	oAuthConfig := &oauth2.Config{
 		ClientID:     os.Getenv("GOOGLE_CLIENT_ID"),
 		ClientSecret: os.Getenv("GOOGLE_CLIENT_SECRET"),
 		RedirectURL:  os.Getenv("GOOGLE_REDIRECT_URL"),
@@ -54,7 +49,14 @@ func main() {
 		Endpoint: google.Endpoint,
 	}
 
-	// For authentication middleware
+	// Plaid configuration
+	configuration := plaid.NewConfiguration()
+	configuration.AddDefaultHeader("PLAID-CLIENT-ID", os.Getenv("PLAID_CLIENT_ID"))
+	configuration.AddDefaultHeader("PLAID-SECRET", os.Getenv("PLAID_CLIENT_SECRET"))
+	configuration.UseEnvironment(plaid.Sandbox)
+	plaidClient := plaid.NewAPIClient(configuration)
+
+	// For middleware authentication
 	authConfig := utils.AuthConfig{
 		OAuth2Config: oAuthConfig,
 		RedisClient:  redisClient,
@@ -66,17 +68,17 @@ func main() {
 		OAuthConfig: oAuthConfig,
 		ApiKey:      GEMINI_API_KEY,
 		RedisClient: redisClient,
+		PlaidClient: plaidClient,
 	}
 
 	// health check
 	app.GET("/ping", func(c echo.Context) error {
 		envCheck := os.Getenv("ENV_CHECK")
 
-		healthCheck := &healthRes{
-			Ping: "Pong!!",
-			Env:  envCheck,
-		}
-		return c.JSON(http.StatusOK, healthCheck)
+		return c.JSON(200, map[string]string{
+			"ping": "pong!!",
+			"env":  envCheck,
+		})
 	})
 
 	// Web routes
@@ -94,15 +96,22 @@ func main() {
 	app.POST("/join-waitlist", handler.JoinWaitlist)
 
 	app.GET("/sign-in", handler.SignIn)
-	app.GET("/log-out", handler.HandleLogout)
+	app.GET("/sign-out", handler.HandleSignout)
 
 	// Authentication routes
 	app.GET("/auth-sign-in", handler.HandleSignInAuth)
-	app.GET("/auth/google/callback", handler.HandleCallbackAuth)
+	app.GET("/auth/google/callback", handler.HandleGoogleCallbackAuth)
 
 	// Protected web routes
 	protected := app.Group("", middleware.AuthRoutes(authConfig))
 	protected.GET("/home", handler.Home)
+	protected.GET("/banking", handler.Banking)
+	protected.GET("/google", handler.Google)
+	protected.GET("/plaid-link-token", handler.HandlePlaidLinkToken)
+	protected.POST("/plaid-access-token", handler.HandlePlaidAccessToken)
+
+	app.POST("/plaid-webhooks", handler.HandlePlaidWebhooks)
+	app.GET("auth/plaid/callback", handler.HandlePlaidCallbackAuth)
 
 	// Not found (404) handler
 	app.GET("*", handler.NotFound)

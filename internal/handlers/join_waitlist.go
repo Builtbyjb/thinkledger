@@ -25,15 +25,15 @@ func (h *Handler) JoinWaitlist(c echo.Context) error {
 
 	// Simple validation
 	if len(c.FormValue("firstname")) == 0 {
-		c.NoContent(http.StatusBadRequest)
+		c.NoContent(400)
 	}
 
 	if len(c.FormValue("lastname")) == 0 {
-		c.NoContent(http.StatusBadRequest)
+		c.NoContent(400)
 	}
 
 	if len(c.FormValue("email")) == 0 {
-		c.NoContent(http.StatusBadRequest)
+		c.NoContent(400)
 	}
 
 	sendGridApiKey := os.Getenv("SENDGRID_API_KEY")
