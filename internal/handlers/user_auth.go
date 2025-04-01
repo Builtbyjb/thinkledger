@@ -12,7 +12,7 @@ import (
 )
 
 // Signin user
-func (h *Handler) HandleSignInAuth(c echo.Context) error {
+func (h *Handler) SignInAuth(c echo.Context) error {
 	state, err := utils.GenerateRandomstring()
 	if err != nil {
 		log.Println(err)
@@ -34,7 +34,7 @@ func (h *Handler) HandleSignInAuth(c echo.Context) error {
 }
 
 // Sign out user
-func (h *Handler) HandleSignout(c echo.Context) error {
+func (h *Handler) Signout(c echo.Context) error {
 	ctx := context.Background()
 
 	cookie, err := c.Request().Cookie("session_id")

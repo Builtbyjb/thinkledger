@@ -12,7 +12,7 @@ import (
 	"github.com/plaid/plaid-go/plaid"
 )
 
-func (h *Handler) HandlePlaidLinkToken(c echo.Context) error {
+func (h *Handler) PlaidLinkToken(c echo.Context) error {
 	ctx := context.Background()
 	var userInfo utils.UserInfo
 
@@ -70,7 +70,7 @@ func (h *Handler) HandlePlaidLinkToken(c echo.Context) error {
 	})
 }
 
-func (h *Handler) HandlePlaidAccessToken(c echo.Context) error {
+func (h *Handler) PlaidAccessToken(c echo.Context) error {
 	ctx := context.Background()
 
 	jsonData := make(map[string]any)
@@ -111,6 +111,9 @@ func (h *Handler) HandlePlaidAccessToken(c echo.Context) error {
 
 	request := plaid.NewTransactionsSyncRequest(accessToken)
 
+	// Number of initial transactions to get.
+	// request.Count = plaid.PtrInt32(100)
+
 	transactionsResp, _, err := h.PlaidClient.PlaidApi.TransactionsSync(ctx).
 		TransactionsSyncRequest(*request).
 		Execute()
@@ -146,6 +149,10 @@ func (h *Handler) HandlePlaidAccessToken(c echo.Context) error {
 	})
 }
 
-func (h *Handler) HandlePlaidWebhooks(c echo.Context) error {
+func (h *Handler) PlaidWebhooks(c echo.Context) error {
+	return c.NoContent(200)
+}
+
+func (h *Handler) PlaidCallback(c echo.Context) error {
 	return c.NoContent(200)
 }

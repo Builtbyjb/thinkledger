@@ -96,22 +96,23 @@ func main() {
 	app.POST("/join-waitlist", handler.JoinWaitlist)
 
 	app.GET("/sign-in", handler.SignIn)
-	app.GET("/sign-out", handler.HandleSignout)
+	app.GET("/sign-out", handler.Signout)
 
 	// Authentication routes
-	app.GET("/auth-sign-in", handler.HandleSignInAuth)
-	app.GET("/auth/google/callback", handler.HandleGoogleCallbackAuth)
+	app.GET("/auth-sign-in", handler.SignInAuth)
+	app.GET("/auth/google/callback/sign-in", handler.GoogleSignInCallback)
+	app.GET("/auth/google/callback/service", handler.GoogleServiceCallback)
 
 	// Protected web routes
 	protected := app.Group("", middleware.AuthRoutes(authConfig))
 	protected.GET("/home", handler.Home)
 	protected.GET("/banking", handler.Banking)
 	protected.GET("/google", handler.Google)
-	protected.GET("/plaid-link-token", handler.HandlePlaidLinkToken)
-	protected.POST("/plaid-access-token", handler.HandlePlaidAccessToken)
+	protected.GET("/plaid-link-token", handler.PlaidLinkToken)
+	protected.POST("/plaid-access-token", handler.PlaidAccessToken)
 
-	app.POST("/plaid-webhooks", handler.HandlePlaidWebhooks)
-	app.GET("auth/plaid/callback", handler.HandlePlaidCallbackAuth)
+	app.POST("/plaid-webhooks", handler.PlaidWebhooks)
+	app.GET("auth/plaid/callback", handler.PlaidCallback)
 
 	// Not found (404) handler
 	app.GET("*", handler.NotFound)

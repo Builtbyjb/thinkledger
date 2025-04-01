@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 	"server/internal/utils"
@@ -11,7 +12,7 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-func (h *Handler) HandleGoogleCallbackAuth(c echo.Context) error {
+func (h *Handler) GoogleSignInCallback(c echo.Context) error {
 	ctx := c.Request().Context()
 
 	// Verify state to prevent CSRF
@@ -20,6 +21,8 @@ func (h *Handler) HandleGoogleCallbackAuth(c echo.Context) error {
 		log.Println(err)
 		return c.String(400, "Invalid state parameter")
 	}
+
+	fmt.Println(c.QueryParam("scope"))
 
 	// Get google oauth2 token
 	token, err := h.OAuthConfig.Exchange(ctx, c.QueryParam("code"))
@@ -85,6 +88,6 @@ func (h *Handler) HandleGoogleCallbackAuth(c echo.Context) error {
 	return c.Redirect(307, "/home")
 }
 
-func (h *Handler) HandlePlaidCallbackAuth(c echo.Context) error {
+func (h *Handler) GoogleServiceCallback(c echo.Context) error {
 	return c.NoContent(200)
 }
