@@ -10,7 +10,7 @@ import (
 	"google.golang.org/api/idtoken"
 )
 
-func ChatAuth() fiber.Handler {
+func GoogleChatAuth() fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		authHeader := c.Get("Authorization")
 		if authHeader == "" {
@@ -22,7 +22,7 @@ func ChatAuth() fiber.Handler {
 		token := strings.TrimPrefix(authHeader, "Bearer ")
 		// log.Println(token)
 
-		tokenAudience := os.Getenv("GOOGLE_AUDIENCE")
+		tokenAudience := os.Getenv("GOOGLE_CHAT_AUDIENCE")
 
 		// Validate token
 		payload, err := idtoken.Validate(context.Background(), token, tokenAudience)

@@ -11,11 +11,12 @@ import (
 
 // Dependency injection between routes
 type Handler struct {
-	DB          *gorm.DB
-	ApiKey      string
-	OAuthConfig *oauth2.Config
-	RedisClient *redis.Client
-	PlaidClient *plaid.APIClient
+	DB                *gorm.DB
+	ApiKey            string
+	SignInAuthConfig  *oauth2.Config
+	ServiceAuthConfig *oauth2.Config
+	RedisClient       *redis.Client
+	PlaidClient       *plaid.APIClient
 }
 
 // Renders templ templates

@@ -1,19 +1,17 @@
 package guest
 
 import (
-	"fmt"
-	"server/lib/styles"
+	"server/internal/utils"
 	"server/templates/layout"
 )
 
-const supportAnalyticsInsightsTitle string = "ThinkLedger | Support - Analytics Insights"
+const supportAnalyticsInsightsTitle string = "Support - Analytics Insights"
 const supportAnalyticsInsightsMetaDescription string = `Get AI-powered insights about your finances`
 const supportAnalyticsInsightsScript string = "/static/dist/default.min.js"
 
 templ supportAnalyticsInsightsLayout() {
-	<a href="/support" class="flex items-center gap-2 mb-8">
-		<i class={ fmt.Sprintf("fa-solid fa-arrow-left text-3xl %v", styles.LinkIconStyle) }></i>
-		<span>Back</span>
+	<a href="/support" class="mb-8">
+		<i class={ "fa-solid fa-arrow-left text-3xl " + utils.LinkIconStyle }></i>
 	</a>
 	<div class="mb-4 flex items-center">
 		<i class="fa-solid fa-chart-line text-2xl mr-4"></i>

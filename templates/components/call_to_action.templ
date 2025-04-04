@@ -1,9 +1,9 @@
 package components
 
-import "server/lib/styles"
+import "server/internal/utils"
 
 templ joinWaitlistBtn() {
-	<button id="display-join-waitlist-form" class={ styles.BtnStyleFull }>
+	<button id="display-join-waitlist-form" class={ utils.BtnStyleFull }>
 		Join waitlist
 	</button>
 }
@@ -70,14 +70,14 @@ templ joinWaitlistForm() {
 					<a
 						href="/privacy-policy#communication-preferences"
 						target="_blank"
-						class={ styles.LinkTextStyle }
+						class={ utils.LinkTextStyle }
 					>
 						privacy policy
 					</a> for more information.
 				</p>
 				<button
 					type="submit"
-					class={ styles.BtnStyleFull }
+					class={ utils.BtnStyleFull }
 				>
 					Join waitlist
 				</button>

@@ -7,7 +7,7 @@ import (
 	"github.com/redis/go-redis/v9"
 )
 
-func GetRedisClient() *redis.Client {
+func RedisClient() *redis.Client {
 	redisUrl := os.Getenv("REDIS_URL")
 	opt, err := redis.ParseURL(redisUrl)
 	if err != nil {

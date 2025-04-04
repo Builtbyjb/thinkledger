@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"server/internal/utils"
 
 	"github.com/labstack/echo/v4"
 	"github.com/plaid/plaid-go/plaid"
@@ -14,27 +13,19 @@ import (
 
 func (h *Handler) PlaidLinkToken(c echo.Context) error {
 	ctx := context.Background()
-	var userInfo utils.UserInfo
 
 	cookie, _ := c.Request().Cookie("session_id")
 	sessionID := cookie.Value
 
-	sessionUser := "user:" + sessionID
-
-	// Get user info from redis
-	userInfoStr, err := h.RedisClient.Get(ctx, sessionUser).Result()
+	// Get userID
+	userID, err := h.RedisClient.Get(ctx, sessionID).Result()
 	if err != nil {
 		log.Println(err)
 		return c.String(500, "Internal server error")
 	}
 
-	if err := json.Unmarshal([]byte(userInfoStr), &userInfo); err != nil {
-		log.Println(err)
-		return c.String(500, "Internal server error")
-	}
-
 	user := plaid.LinkTokenCreateRequestUser{
-		ClientUserId: userInfo.Sub,
+		ClientUserId: userID,
 	}
 	request := plaid.NewLinkTokenCreateRequest(
 		"ThinkLedger",
@@ -107,42 +98,31 @@ func (h *Handler) PlaidAccessToken(c echo.Context) error {
 	accessToken := exchangePublicTokenResp.GetAccessToken()
 	fmt.Printf("Plaid access token: %s\n", accessToken)
 
-	// TODO: store access token in a postgres database
-
-	request := plaid.NewTransactionsSyncRequest(accessToken)
-
-	// Number of initial transactions to get.
-	// request.Count = plaid.PtrInt32(100)
-
-	transactionsResp, _, err := h.PlaidClient.PlaidApi.TransactionsSync(ctx).
-		TransactionsSyncRequest(*request).
-		Execute()
-	if err != nil {
-		log.Println(err)
-		return c.JSON(400, map[string]string{
-			"error": "Failed to get transactions data from plaid",
-		})
-	}
-
-	transactionJsonBytes, err := json.MarshalIndent(transactionsResp, "", "  ")
-	if err != nil {
-		log.Println(err)
-		c.JSON(500, map[string]string{
-			"error": "Internal server error",
-		})
-	}
-
-	// fmt.Println(string(transactionJsonBytes))
-
-	var transactionJsonData utils.PlaidTransactionResponse
-	if err := json.Unmarshal(transactionJsonBytes, &transactionJsonData); err != nil {
+	cookie, err := c.Request().Cookie("session_id")
+	if err != nil || cookie.Value == "" {
 		log.Println(err)
 		return c.JSON(500, map[string]string{
 			"error": "Internal server error",
 		})
 	}
 
-	// fmt.Println(transactionJsonData)
+	sessionID := cookie.Value
+	userID, err := h.RedisClient.Get(ctx, sessionID).Result()
+	if err != nil {
+		log.Println(err.Error())
+		return c.JSON(400, map[string]string{
+			"error": "Internal server error",
+		})
+
+	}
+
+	plaidAccessToken := "plaidAccessToken:" + userID
+	if err := h.RedisClient.Set(ctx, plaidAccessToken, accessToken, 0).Err(); err != nil {
+		log.Println(err.Error())
+		return c.JSON(400, map[string]string{
+			"error": "Internal server error",
+		})
+	}
 
 	return c.JSON(200, map[string]string{
 		"success": "access token gotten",

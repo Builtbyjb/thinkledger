@@ -1,6 +1,9 @@
 package handlers
 
 import (
+	"encoding/json"
+	"log"
+	"server/internal/utils"
 	"server/templates"
 	"server/templates/auth"
 	"server/templates/guest"
@@ -90,6 +93,27 @@ func (h *Handler) Banking(c echo.Context) error {
 }
 
 func (h *Handler) Google(c echo.Context) error {
+	ctx := c.Request().Context()
+	var activeScopes utils.ActiveScopes
+
 	username := c.Get("username").(string)
-	return Render(c, 200, auth.GooglePage(username))
+	userID := c.Get("userID").(string)
+
+	userScopes := "scopes:" + userID
+
+	activeScopesStr, err := h.RedisClient.Get(ctx, userScopes).Result()
+	if err != nil {
+		log.Println(err.Error())
+		activeScopes = utils.ActiveScopes{
+			GoogleSheet: "false",
+			GoogleDrive: "false",
+		}
+	} else {
+		if err := json.Unmarshal([]byte(activeScopesStr), &activeScopes); err != nil {
+			log.Println(err)
+			c.String(500, "Failed to marshal active scopes")
+		}
+	}
+
+	return Render(c, 200, auth.GooglePage(username, activeScopes))
 }

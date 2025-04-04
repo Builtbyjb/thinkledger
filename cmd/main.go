@@ -2,11 +2,13 @@ package main
 
 import (
 	"os"
+	"sync"
 
+	"server/cmd/app"
+	"server/internal/database/postgres"
 	"server/internal/database/redis"
 	"server/internal/handlers"
 	"server/internal/middleware"
-	"server/internal/utils"
 
 	"github.com/joho/godotenv"
 	"github.com/labstack/echo/v4"
@@ -25,23 +27,26 @@ func main() {
 	// Get gemini api key
 	GEMINI_API_KEY := os.Getenv("GEMINI_DEV_API_KEY")
 
-	app := echo.New()
+	e := echo.New()
 
-	app.Use(middleware.Cors())
-	app.Use(middleware.RequestTimer())
-	app.Use(middleware.RateLimiter())
-	app.Use(middleware.Recover())
+	e.Use(middleware.Cors())
+	e.Use(middleware.RequestTimer())
+	e.Use(middleware.RateLimiter())
+	e.Use(middleware.Recover())
 
-	app.Static("/static", "./static")
+	e.Static("/static", "./static")
 
 	// Create redis client
-	redisClient := redis.GetRedisClient()
+	redisClient := redis.RedisClient()
 
-	// OAuth2 configuration
-	oAuthConfig := &oauth2.Config{
-		ClientID:     os.Getenv("GOOGLE_CLIENT_ID"),
-		ClientSecret: os.Getenv("GOOGLE_CLIENT_SECRET"),
-		RedirectURL:  os.Getenv("GOOGLE_REDIRECT_URL"),
+	// Create database engine
+	db := postgres.DB()
+
+	// Sign in OAuth2 configuration
+	signInAuthConfig := &oauth2.Config{
+		ClientID:     os.Getenv("GOOGLE_SIGNIN_CLIENT_ID"),
+		ClientSecret: os.Getenv("GOOGLE_SIGNIN_CLIENT_SECRET"),
+		RedirectURL:  os.Getenv("GOOGLE_SIGNIN_REDIRECT_URL"),
 		Scopes: []string{
 			"https://www.googleapis.com/auth/userinfo.email",
 			"https://www.googleapis.com/auth/userinfo.profile",
@@ -49,81 +54,54 @@ func main() {
 		Endpoint: google.Endpoint,
 	}
 
+	// Service oauth configuration
+	serviceAuthConfig := &oauth2.Config{
+		ClientID:     os.Getenv("GOOGLE_SERVICE_CLIENT_ID"),
+		ClientSecret: os.Getenv("GOOGLE_SERVICE_CLIENT_SECRET"),
+		RedirectURL:  os.Getenv("GOOGLE_SERVICE_REDIRECT_URL"),
+		Scopes:       []string{},
+		Endpoint:     google.Endpoint,
+	}
+
 	// Plaid configuration
 	configuration := plaid.NewConfiguration()
 	configuration.AddDefaultHeader("PLAID-CLIENT-ID", os.Getenv("PLAID_CLIENT_ID"))
 	configuration.AddDefaultHeader("PLAID-SECRET", os.Getenv("PLAID_CLIENT_SECRET"))
-	configuration.UseEnvironment(plaid.Sandbox)
+	plaidEnv := os.Getenv("PLAID_ENV")
+
+	// Set plaid environment
+	if plaidEnv == "sandbox" {
+		configuration.UseEnvironment(plaid.Sandbox)
+	} else if plaidEnv == "development" {
+		configuration.UseEnvironment(plaid.Development)
+	} else if plaidEnv == "production" {
+		configuration.UseEnvironment(plaid.Production)
+	}
+
 	plaidClient := plaid.NewAPIClient(configuration)
 
-	// For middleware authentication
-	authConfig := utils.AuthConfig{
-		OAuth2Config: oAuthConfig,
-		RedisClient:  redisClient,
-	}
-
 	// Dependency injection between routes
-	handler := &handlers.Handler{
-		// DB:     db,
-		OAuthConfig: oAuthConfig,
-		ApiKey:      GEMINI_API_KEY,
-		RedisClient: redisClient,
-		PlaidClient: plaidClient,
+	h := &handlers.Handler{
+		DB:                db,
+		SignInAuthConfig:  signInAuthConfig,
+		ServiceAuthConfig: serviceAuthConfig,
+		ApiKey:            GEMINI_API_KEY,
+		RedisClient:       redisClient,
+		PlaidClient:       plaidClient,
 	}
 
-	// health check
-	app.GET("/ping", func(c echo.Context) error {
-		envCheck := os.Getenv("ENV_CHECK")
+	var wg sync.WaitGroup
 
-		return c.JSON(200, map[string]string{
-			"ping": "pong!!",
-			"env":  envCheck,
-		})
-	})
-
-	// Web routes
-	app.GET("/", handler.Index)
-
-	// Routes that appear when a user is authenticated and unauthenticated
-	dynamic := app.Group("", middleware.SetUserInfo(redisClient))
-	dynamic.GET("/support", handler.Support)
-	dynamic.GET("/support/bookkeeping", handler.SupportBookkeeping)
-	dynamic.GET("/support/financial-reports", handler.SupportFinancialReports)
-	dynamic.GET("/support/analytics-insights", handler.SupportAnalyticsInsights)
-	dynamic.GET("/privacy-policy", handler.PrivacyPolicy)
-	dynamic.GET("/terms-of-service", handler.TermsOfService)
-
-	app.POST("/join-waitlist", handler.JoinWaitlist)
-
-	app.GET("/sign-in", handler.SignIn)
-	app.GET("/sign-out", handler.Signout)
-
-	// Authentication routes
-	app.GET("/auth-sign-in", handler.SignInAuth)
-	app.GET("/auth/google/callback/sign-in", handler.GoogleSignInCallback)
-	app.GET("/auth/google/callback/service", handler.GoogleServiceCallback)
-
-	// Protected web routes
-	protected := app.Group("", middleware.AuthRoutes(authConfig))
-	protected.GET("/home", handler.Home)
-	protected.GET("/banking", handler.Banking)
-	protected.GET("/google", handler.Google)
-	protected.GET("/plaid-link-token", handler.PlaidLinkToken)
-	protected.POST("/plaid-access-token", handler.PlaidAccessToken)
-
-	app.POST("/plaid-webhooks", handler.PlaidWebhooks)
-	app.GET("auth/plaid/callback", handler.PlaidCallback)
-
-	// Not found (404) handler
-	app.GET("*", handler.NotFound)
-
-	// Api routes
-	// v1 := app.Group("/api/v1")
-	// v1.POST("/chat", handler.HandleChat)
-
-	// api.Get("/journal", handler.HandleJournal)
-	// api.Get("/t-accounts", handler.HandleTAccount)
-	// api.Get("/trial-balance", handler.HandleTrialBalance)
-
-	app.Logger.Fatal(app.Start(":3000"))
+	wg.Add(2)
+	// Handles server function calls
+	go func() {
+		defer wg.Done()
+		app.Server(e, h)
+	}()
+	// Handles core business logic and background tasks
+	go func() {
+		defer wg.Done()
+		app.Core(h)
+	}()
+	wg.Wait()
 }

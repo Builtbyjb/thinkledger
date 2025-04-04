@@ -2,9 +2,9 @@ package handlers
 
 import (
 	"encoding/json"
-	"fmt"
 	"log"
 	"net/http"
+	"server/internal/database/postgres"
 	"server/internal/utils"
 	"time"
 
@@ -22,56 +22,82 @@ func (h *Handler) GoogleSignInCallback(c echo.Context) error {
 		return c.String(400, "Invalid state parameter")
 	}
 
-	fmt.Println(c.QueryParam("scope"))
-
 	// Get google oauth2 token
-	token, err := h.OAuthConfig.Exchange(ctx, c.QueryParam("code"))
+	token, err := h.SignInAuthConfig.Exchange(ctx, c.QueryParam("code"))
 	if err != nil {
 		log.Println(err)
 		return c.String(500, "Token exchange failed: "+err.Error())
 	}
 
-	// Convert token to jsonBytes for easy type conversion later
-	tokenBytes, err := json.Marshal(token)
-	if err != nil {
-		log.Println(err)
-		return c.String(500, "Failed to marshal token")
-	}
-
 	// Generate authentication id
 	sessionID := uuid.New().String()
 
-	// Set redis expiration date
-	expiration := time.Duration(24 * time.Hour)
-
 	// Use the access token to get information about the user trying signing in
-	userInfo, err := utils.GetUserInfo(token.AccessToken, h.OAuthConfig)
+	userInfo, err := utils.GetUserInfo(token.AccessToken, h.SignInAuthConfig)
 	if err != nil {
 		log.Print(err)
 		c.String(500, "Failed to get user info")
 	}
 
-	// TODO: check if the user is new the added the postgress database
+	userID := userInfo.Sub
 
-	// Convert user info to json bytes
-	userBytes, err := json.Marshal(userInfo)
-	if err != nil {
-		log.Println(err)
-		return c.String(500, "Failed to marshal user info")
+	var user postgres.User
+	result := h.DB.Where("id = ?", userID).Find(&user)
+	if result.Error != nil {
+		log.Println("Database error")
+		c.String(500, "Internal server error")
 	}
 
-	// use go channels to run these operations of multiple go routines
-	// Save user token
-	if err := h.RedisClient.Set(ctx, sessionID, tokenBytes, expiration).Err(); err != nil {
+	if result.RowsAffected == 0 {
+		// Save new newUser, if no newUser was found
+		newUser := postgres.User{
+			ID:         userInfo.Sub,
+			Email:      userInfo.Email,
+			Name:       userInfo.Name,
+			GivenName:  userInfo.GivenName,
+			FamilyName: userInfo.FamilyName,
+			Picture:    userInfo.Picture,
+			Locale:     userInfo.Locale,
+		}
+
+		result := h.DB.Create(&newUser)
+		if result.Error != nil {
+			log.Println(result.Error)
+			c.String(500, "Failed to save new user")
+		}
+		if err := utils.SaveUserSignInToken(h.RedisClient, token, userID); err != nil {
+			log.Println(err)
+			c.String(500, "Internal server error")
+		}
+	} else {
+		if err := utils.SaveUserSignInToken(h.RedisClient, token, userID); err != nil {
+			log.Println(err)
+			c.String(500, "Internal server error")
+		}
+		h.DB.Save(&user)
+	}
+
+	// TODO: use goroutines
+	// Set redis expiration date
+	expiration := time.Duration(24 * time.Hour)
+
+	if err := h.RedisClient.Set(ctx, sessionID, userInfo.Sub, expiration).Err(); err != nil {
+		log.Println(err)
+		return c.String(500, "Failed to save userID: "+err.Error())
+	}
+
+	// Save user access token
+	userAccessToken := "signInAccessToken:" + userInfo.Sub
+	if err := h.RedisClient.Set(ctx, userAccessToken, token.AccessToken, expiration).Err(); err != nil {
 		log.Println(err)
 		return c.String(500, "Failed to save token: "+err.Error())
 	}
 
-	// Save user info
-	sessionUser := "user:" + sessionID
-	if err := h.RedisClient.Set(ctx, sessionUser, userBytes, expiration).Err(); err != nil {
+	// Save username
+	username := "username:" + userInfo.Sub
+	if err := h.RedisClient.Set(ctx, username, userInfo.Name, expiration).Err(); err != nil {
 		log.Println(err)
-		return c.String(500, "Failed to save user info: "+err.Error())
+		return c.String(500, "Failed to save username: "+err.Error())
 	}
 
 	// Set user authentication cookie
@@ -89,5 +115,44 @@ func (h *Handler) GoogleSignInCallback(c echo.Context) error {
 }
 
 func (h *Handler) GoogleServiceCallback(c echo.Context) error {
-	return c.NoContent(200)
+	ctx := c.Request().Context()
+
+	serviceCookie, err := c.Request().Cookie("service_state")
+	if err != nil || serviceCookie.Value != c.QueryParam("state") {
+		log.Println(err)
+		c.String(500, "Invalid state parameter")
+	}
+
+	sessionCookie, err := c.Request().Cookie("session_id")
+	if err != nil || sessionCookie.Value == "" {
+		log.Println(err)
+	}
+
+	sessionID := sessionCookie.Value
+
+	token, err := h.ServiceAuthConfig.Exchange(ctx, c.QueryParam("code"))
+	if err != nil {
+		log.Println(err)
+		c.String(500, "Failed to get google token")
+	}
+
+	userID, err := h.RedisClient.Get(ctx, sessionID).Result()
+	if err != nil {
+		log.Println(err.Error())
+		c.String(500, "Failed to get userID")
+	}
+
+	tokenBytes, err := json.Marshal(token)
+	if err != nil {
+		log.Println(err)
+		c.String(500, "Failed to marshal token")
+	}
+
+	serviceToken := "serviceToken:" + userID
+	if err := h.RedisClient.Set(ctx, serviceToken, tokenBytes, 0).Err(); err != nil {
+		log.Println(err.Error())
+		c.String(500, "Failed to save service token")
+	}
+
+	return c.Redirect(307, "/google")
 }

@@ -6,6 +6,16 @@ import (
 	"github.com/google/uuid"
 )
 
+type User struct {
+	ID         string `gorm:"type:text;primaryKey" json:"id"`
+	Email      string `gorm:"type:text;not null" json:"email"`
+	Name       string `gorm:"type:text;not null" json:"name"`
+	GivenName  string `gorm:"type:text;not null" json:"givenName"`
+	FamilyName string `gorm:"type:text;not null" json:"familyName"`
+	Picture    string `gorm:"type:text" json:"picture"`
+	Locale     string `gorm:"type:text" json:"locale"`
+}
+
 type Account struct {
 	Id            uuid.UUID `gorm:"type:uuid;primaryKey;default:gen_random_uuid()" json:"id"`
 	AccountName   string    `gorm:"type:text;not null" json:"accountName"`

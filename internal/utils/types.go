@@ -1,7 +1,6 @@
 package utils
 
 import (
-	"github.com/redis/go-redis/v9"
 	"golang.org/x/oauth2"
 )
 
@@ -11,10 +10,10 @@ type TokenStore interface {
 	SaveToken(userID string, token *oauth2.Token) error
 }
 
-// Config for the OAuth middleware
-type AuthConfig struct {
-	OAuth2Config *oauth2.Config
-	RedisClient  *redis.Client
+// Google active scopes
+type ActiveScopes struct {
+	GoogleSheet string
+	GoogleDrive string
 }
 
 // Google user info
@@ -95,6 +94,30 @@ type PlaidTransactionLocation struct {
 	PostalCode  string `json:"postal_code,omitempty"`
 	Region      string `json:"region,omityempty"`
 	StoreNumber string `json:"store_number,omityempty"`
+}
+
+// Google chat event
+type ChatEvent struct {
+	Type      string `json:"type"`
+	EventTime string `json:"eventTime"`
+	Space     struct {
+		Name        string `json:"name"`
+		Type        string `json:"type"`
+		DisplayName string `json:"displayName"`
+	} `json:"space"`
+	Message struct {
+		Name       string `json:"name"`
+		CreateTime string `json:"createTime"`
+		Sender     struct {
+			Name        string `json:"name"`
+			DisplayName string `json:"displayName"`
+			Email       string `json:"email"` // May be empty for Chat apps
+		} `json:"sender"`
+		Text   string `json:"text"`
+		Thread struct {
+			Name string `json:"name"`
+		} `json:"thread"`
+	} `json:"message"` // message is present for MESSAGE events
 }
 
 // Depss
