@@ -101,7 +101,7 @@ func main() {
 	// Handles core business logic and background tasks
 	go func() {
 		defer wg.Done()
-		app.Core(h)
+		// app.Core(h)
 	}()
 	wg.Wait()
 }

@@ -22,7 +22,7 @@ func RouteAuth(
 			cookie, err := c.Request().Cookie("session_id")
 			if err != nil || cookie.Value == "" {
 				log.Println(err)
-				return c.Redirect(307, "/sign-in")
+				return c.Redirect(307, "/")
 			}
 
 			sessionID := cookie.Value
@@ -31,7 +31,7 @@ func RouteAuth(
 			userID, err := redisClient.Get(ctx, sessionID).Result()
 			if err != nil {
 				log.Printf("Error getting userID: %s", err)
-				return c.Redirect(307, "/sign-in")
+				return c.Redirect(307, "/")
 			}
 
 			// Get token from redis
@@ -39,7 +39,7 @@ func RouteAuth(
 			accessToken, err := redisClient.Get(ctx, userToken).Result()
 			if err != nil {
 				log.Printf("Error getting access token: %s", err)
-				return c.Redirect(307, "/sign-in")
+				return c.Redirect(307, "/")
 			}
 
 			/*
@@ -54,7 +54,7 @@ func RouteAuth(
 				token, err := utils.GetUserSignInToken(redisClient, userID)
 				if err != nil {
 					log.Println(err)
-					c.Redirect(307, "/sign-in")
+					c.Redirect(307, "/")
 				}
 
 				// Try refreshing the token
@@ -62,13 +62,13 @@ func RouteAuth(
 				if err != nil {
 					utils.ClearSessionIDCookie(c)
 					log.Println(err)
-					return c.Redirect(307, "/sign-in")
+					return c.Redirect(307, "/")
 
 				} else {
 					// Save new token
 					if err := utils.SaveUserSignInToken(redisClient, newToken, userID); err != nil {
 						log.Println(err)
-						return c.Redirect(307, "/sign-in")
+						return c.Redirect(307, "/")
 					}
 
 					// Save new access token
@@ -85,7 +85,7 @@ func RouteAuth(
 			name, err := redisClient.Get(ctx, username).Result()
 			if err != nil {
 				log.Printf("Error getting user username: %s", err)
-				return c.Redirect(307, "/sign-in")
+				return c.Redirect(307, "/")
 			}
 
 			// Token is valid, store it in context for handlers to use

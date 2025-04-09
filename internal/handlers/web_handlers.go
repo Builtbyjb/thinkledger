@@ -78,10 +78,6 @@ func (h *Handler) NotFound(c echo.Context) error {
 	return Render(c, 200, templates.NotFoundPage())
 }
 
-func (h *Handler) SignIn(c echo.Context) error {
-	return Render(c, 200, templates.SignInPage())
-}
-
 func (h *Handler) Home(c echo.Context) error {
 	username := c.Get("username").(string)
 	return Render(c, 200, auth.HomePage(username))

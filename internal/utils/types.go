@@ -120,6 +120,22 @@ type ChatEvent struct {
 	} `json:"message"` // message is present for MESSAGE events
 }
 
+// Plaid metadata
+type Account struct {
+	ClassType          string `json:"class_type"`
+	ID                 string `json:"id"`
+	Name               string `json:"name"`
+	Type               string `json:"type"`
+	SubType            string `json:"sub_type"`
+	Mask               string `json:"mask"`
+	VerificationStatus string `json:"verification_status"`
+}
+
+type Institution struct {
+	InstitutionID string `json:"institution_id"`
+	Name          string `json:"name"`
+}
+
 // Depss
 type AccountDetail struct {
 	AccountName   string `json:"accountName"`

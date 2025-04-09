@@ -39,13 +39,13 @@ func GetPlaidTransaction(
 		return nil, err
 	}
 
-	// fmt.Println(string(transactionJsonBytes))
+	fmt.Println(string(transactionJsonBytes))
 
 	var transactionJsonData utils.PlaidTransactionResponse
 	if err := json.Unmarshal(transactionJsonBytes, &transactionJsonData); err != nil {
 		return nil, err
 	}
 
-	fmt.Println(transactionJsonData.Added)
+	// fmt.Println(transactionJsonData.Added)
 	return transactionJsonData.Added, nil
 }

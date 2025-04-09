@@ -33,6 +33,7 @@ func Core(h *handlers.Handler) {
 					h.PlaidClient,
 					u.ID,
 				)
+
 				// Handle errors gracefully
 				if err != nil {
 					log.Println(err)
@@ -40,11 +41,14 @@ func Core(h *handlers.Handler) {
 				} else {
 					if err := core.UpdateTransactionSheet(
 						h.RedisClient,
+						h.ServiceAuthConfig,
 						plaidTransactions,
 						u.ID,
 					); err != nil {
 						log.Println(err)
 						continue
+					} else {
+						break
 					}
 				}
 			}

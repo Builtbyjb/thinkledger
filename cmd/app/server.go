@@ -34,7 +34,6 @@ func Server(e *echo.Echo, h *handlers.Handler) {
 
 	e.POST("/join-waitlist", h.JoinWaitlist)
 
-	e.GET("/sign-in", h.SignIn)
 	e.GET("/sign-out", h.Signout)
 
 	// Authentication routes

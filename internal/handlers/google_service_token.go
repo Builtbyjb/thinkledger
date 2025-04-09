@@ -32,7 +32,7 @@ func (h *Handler) GoogleServiceToken(c echo.Context) error {
 	cookie, err := c.Request().Cookie("session_id")
 	if err != nil || cookie.Value == "" {
 		log.Println(err)
-		return c.Redirect(307, "/sign-in")
+		return c.Redirect(307, "/")
 	}
 
 	sessionID := cookie.Value

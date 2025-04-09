@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"server/internal/database/postgres"
+	"server/internal/utils"
 
 	"github.com/labstack/echo/v4"
 	"github.com/plaid/plaid-go/plaid"
@@ -64,6 +66,23 @@ func (h *Handler) PlaidLinkToken(c echo.Context) error {
 func (h *Handler) PlaidAccessToken(c echo.Context) error {
 	ctx := context.Background()
 
+	cookie, err := c.Request().Cookie("session_id")
+	if err != nil || cookie.Value == "" {
+		log.Println(err)
+		return c.JSON(500, map[string]string{
+			"error": "Internal server error",
+		})
+	}
+
+	sessionID := cookie.Value
+	userID, err := h.RedisClient.Get(ctx, sessionID).Result()
+	if err != nil {
+		log.Println(err.Error())
+		return c.JSON(400, map[string]string{
+			"error": "Internal server error",
+		})
+	}
+
 	jsonData := make(map[string]any)
 	if err := json.NewDecoder(c.Request().Body).Decode(&jsonData); err != nil {
 		log.Println(err)
@@ -72,14 +91,97 @@ func (h *Handler) PlaidAccessToken(c echo.Context) error {
 		})
 	}
 
-	// TODO: store metadata in a database
-
 	publicToken := jsonData["public_token"].(string)
 	if len(publicToken) == 0 {
 		log.Println("No public token")
 		return c.JSON(400, map[string]string{
 			"error": "No public token",
 		})
+	}
+
+	accountsJson := jsonData["accounts"]
+	if accountsJson == nil {
+		log.Println("No metadata")
+		return c.JSON(400, map[string]string{
+			"error": "No accounts",
+		})
+	}
+
+	institutionJson := jsonData["institution"]
+	if institutionJson == nil {
+		log.Println("No institution")
+		return c.JSON(400, map[string]string{
+			"error": "No institution",
+		})
+	}
+
+	accountBytes, err := json.Marshal(accountsJson)
+	if err != nil {
+		log.Println(err)
+		return c.JSON(400, map[string]string{
+			"error": "Failed to marshal accounts",
+		})
+	}
+
+	institutionBytes, err := json.Marshal(institutionJson)
+	if err != nil {
+		log.Println(err)
+		return c.JSON(400, map[string]string{
+			"error": "Failed to marshal institution",
+		})
+	}
+
+	var accounts []utils.Account
+	var institution utils.Institution
+
+	if err := json.Unmarshal([]byte(accountBytes), &accounts); err != nil {
+		log.Println(err)
+		return c.JSON(400, map[string]string{
+			"error": "Failed to unmarshal accounts",
+		})
+	}
+
+	if err := json.Unmarshal([]byte(institutionBytes), &institution); err != nil {
+		log.Println(err)
+		return c.JSON(400, map[string]string{
+			"error": "Failed to unmarshal institution",
+		})
+	}
+
+	// fmt.Println(accounts)
+	// fmt.Println(institution)
+
+	// Save bank info
+	bank := postgres.Institution{
+		ID:     institution.InstitutionID,
+		Name:   institution.Name,
+		UserID: userID,
+	}
+	result := h.DB.Create(&bank)
+	if result.Error != nil {
+		log.Println(result.Error)
+		return c.JSON(400, map[string]string{
+			"error": "Failed to create bank",
+		})
+	}
+
+	// Save account info
+	for _, a := range accounts {
+		account := postgres.Account{
+			UserID:        userID,
+			InstitutionID: institution.InstitutionID,
+			AccountID:     a.ID,
+			AccountName:   a.Name,
+			SubType:       a.SubType,
+			Type:          a.Type,
+		}
+		result := h.DB.Create(&account)
+		if result.Error != nil {
+			log.Println(result.Error)
+			return c.JSON(400, map[string]string{
+				"error": "Failed to create account",
+			})
+		}
 	}
 
 	exchangePublicTokenReq := plaid.NewItemPublicTokenExchangeRequest(publicToken)
@@ -97,24 +199,6 @@ func (h *Handler) PlaidAccessToken(c echo.Context) error {
 
 	accessToken := exchangePublicTokenResp.GetAccessToken()
 	fmt.Printf("Plaid access token: %s\n", accessToken)
-
-	cookie, err := c.Request().Cookie("session_id")
-	if err != nil || cookie.Value == "" {
-		log.Println(err)
-		return c.JSON(500, map[string]string{
-			"error": "Internal server error",
-		})
-	}
-
-	sessionID := cookie.Value
-	userID, err := h.RedisClient.Get(ctx, sessionID).Result()
-	if err != nil {
-		log.Println(err.Error())
-		return c.JSON(400, map[string]string{
-			"error": "Internal server error",
-		})
-
-	}
 
 	plaidAccessToken := "plaidAccessToken:" + userID
 	if err := h.RedisClient.Set(ctx, plaidAccessToken, accessToken, 0).Err(); err != nil {
