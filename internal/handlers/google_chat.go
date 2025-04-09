@@ -1,28 +1,5 @@
 package handlers
 
-type ChatEvent struct {
-	Type      string `json:"type"`
-	EventTime string `json:"eventTime"`
-	Space     struct {
-		Name        string `json:"name"`
-		Type        string `json:"type"`
-		DisplayName string `json:"displayName"`
-	} `json:"space"`
-	Message struct {
-		Name       string `json:"name"`
-		CreateTime string `json:"createTime"`
-		Sender     struct {
-			Name        string `json:"name"`
-			DisplayName string `json:"displayName"`
-			Email       string `json:"email"` // May be empty for Chat apps
-		} `json:"sender"`
-		Text   string `json:"text"`
-		Thread struct {
-			Name string `json:"name"`
-		} `json:"thread"`
-	} `json:"message,omitempty"` // message is present for MESSAGE events
-}
-
 // func (h *Handler) HandleChat(c echo.Context) error {
 
 // 	var chatEvent ChatEvent

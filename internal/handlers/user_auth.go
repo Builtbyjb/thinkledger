@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"net/http"
 	"server/internal/utils"
@@ -12,7 +11,7 @@ import (
 )
 
 // Signin user
-func (h *Handler) HandleSignInAuth(c echo.Context) error {
+func (h *Handler) SignInAuth(c echo.Context) error {
 	state, err := utils.GenerateRandomstring()
 	if err != nil {
 		log.Println(err)
@@ -30,32 +29,30 @@ func (h *Handler) HandleSignInAuth(c echo.Context) error {
 	})
 
 	// Add oauth2.AccessTypeOffline to get a refresh token
-	return c.Redirect(307, h.OAuthConfig.AuthCodeURL(state))
+	return c.Redirect(307, h.SignInAuthConfig.AuthCodeURL(state))
 }
 
 // Sign out user
-func (h *Handler) HandleSignout(c echo.Context) error {
+func (h *Handler) Signout(c echo.Context) error {
 	ctx := context.Background()
 
 	cookie, err := c.Request().Cookie("session_id")
 	if err != nil {
 		log.Println(err)
-		return c.Redirect(307, "/")
 	}
 
 	if cookie.Value == "" {
 		log.Println("session id cookie is empty")
-		return c.Redirect(307, "/")
 	}
 
 	sessionID := cookie.Value
-	sessionUser := fmt.Sprintf("user:%s", sessionID)
+
+	// TODO: Delete sign in token
 
 	// Delete the user id from the redis cache
-	_, rErr := h.RedisClient.Del(ctx, sessionID, sessionUser).Result()
+	_, rErr := h.RedisClient.Del(ctx, sessionID).Result()
 	if rErr != nil {
 		log.Println(rErr)
-		return c.Redirect(307, "/")
 	}
 
 	utils.ClearSessionIDCookie(c)
