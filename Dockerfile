@@ -1,14 +1,16 @@
-FROM golang:1.24.1-alpine3.21 AS builder
+FROM python:3.12-slim
+
+# Set working directory
 WORKDIR /app
+
+# Copy files to working directory
 COPY . .
-RUN go mod tidy
 
-# Output path first
-RUN go build -o ./bin/main.go ./cmd/main.go
+# Install uv
+COPY --from=ghcr.io/astral-sh/uv:0.6.14 /uv /uvx /bin/
 
-FROM golang:1.24.1-alpine3.21
-WORKDIR /app
-COPY --from=builder /app/static /app/static
-COPY --from=builder /app/bin /app/bin
-EXPOSE 3000
-CMD ["./bin/main.go"]
+# Install dependencies
+RUN uv sync --frozen --no-cache
+
+# Run application
+CMD ["/app/.venv/bin/uvicorn", "main:app", "--host", "0.0.0.0", "--port", "3000"]

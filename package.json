@@ -1,8 +1,12 @@
 {
     "scripts": {
-        "minify": "babel-minify ./static/scripts/ -d ./static/dist"
+        "minify": "uglifyjs-folder ./static/scripts/ -eo ./static/dist"
     },
     "devDependencies": {
-        "babel-minify": "^0.5.2"
+        "uglifyjs-folder": "^3.3.0"
+    },
+    "dependencies": {
+        "@tailwindcss/cli": "^4.0.17",
+        "tailwindcss": "^4.0.17"
     }
 }

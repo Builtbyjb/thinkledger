@@ -1,4 +1,9 @@
+import { setActiveLink, handleSidebar } from "./utils.min.js";
+
 (function () {
+    setActiveLink();
+    handleSidebar();
+
     const emailJsPublicKey = "o25JYcOD9t6qyLJvg";
     const emailJsServiceID = "service_8ve3b9t";
     const emailJsTemplateId = "template_joq4eek";
