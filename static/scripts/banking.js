@@ -23,7 +23,7 @@ import { setActiveLink, handleSidebar } from "./utils.min.js";
                 const handler = Plaid.create({
                     token: linkToken,
                     onSuccess: async (public_token, metadata) => {
-                        // console.log(metadata);
+                        console.log(metadata);
                         try {
                             const response = await fetch(
                                 "/plaid-access-token",
@@ -34,8 +34,8 @@ import { setActiveLink, handleSidebar } from "./utils.min.js";
                                     },
                                     body: JSON.stringify({
                                         public_token: public_token,
-                                        accounts: metadata.accounts,
-                                        institution: metadata.institution,
+                                        // accounts: metadata.accounts,
+                                        // institution: metadata.institution,
                                     }),
                                 },
                             );

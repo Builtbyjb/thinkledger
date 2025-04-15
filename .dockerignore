@@ -1,7 +1,6 @@
 node_nodules
-tailwindcss
 scripts
-*.templ
+.venv
 input.css
 package.json
 package-lock.json

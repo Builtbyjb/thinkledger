@@ -2,10 +2,15 @@ ngrok:
 	ngrok http --url=admittedly-adequate-scorpion.ngrok-free.app 3000
 
 
-air:
-	~/go/bin/air
+server:
+	uvicorn main:app --host 0.0.0.0 --port 3000 --reload
+
+minify:
+	npm run minify
+
+css:
+	npx tailwindcss -i ./static/input.css -o ./static/style.css --minify
 
 push:
-	~/go/bin/templ generate \
-	&& ./tailwindcss -i ./static/input.css -o ./static/style.css --minify \
+	npx @tailwindcss/cli -i ./static/input.css -o ./static/style.css --minify \
 	&& npm run minify
