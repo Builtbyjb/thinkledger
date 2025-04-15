@@ -27,9 +27,6 @@ export function handleSidebar() {
         const sidebar = document.querySelector("#sidebar");
         const toggleSidebarBtn = document.querySelector("#toggle-sidebar-btn");
         const dropdownTriggers = document.querySelectorAll(".dropdown-trigger");
-        const toggleSidebarText = document.querySelector(
-            "#toggle-sidebar-text",
-        );
         const authLayoutDiv = document.querySelector("#authlayout-div");
 
         // State
@@ -49,7 +46,6 @@ export function handleSidebar() {
 
         // Initialize mobile view
         if (isMobile()) {
-            toggleSidebarText.innerText = "Open";
             sidebar.classList.add("hidden");
         }
 
@@ -61,13 +57,11 @@ export function handleSidebar() {
 
                 if (isMobileSidebarOpen) {
                     toggleSidebarBtn.classList.add(sidebarBtnLeft, "top-0");
-                    toggleSidebarText.innerText = "Close";
 
                     sidebar.classList.add(sidebarMax);
                     sidebar.classList.remove("hidden");
                 } else {
                     toggleSidebarBtn.classList.remove(sidebarBtnLeft, "top-0");
-                    toggleSidebarText.innerText = "Open";
 
                     sidebar.classList.remove(sidebarMax);
                     sidebar.classList.add("hidden");
@@ -81,8 +75,6 @@ export function handleSidebar() {
 
                     authLayoutDiv.classList.remove(authLayoutDivMax);
                     authLayoutDiv.classList.add(authLayoutDivMin);
-
-                    toggleSidebarText.innerText = "Open";
 
                     // Hide text elements
                     document.querySelectorAll(".sidebar-text").forEach((el) => {
@@ -108,8 +100,6 @@ export function handleSidebar() {
 
                     authLayoutDiv.classList.add(authLayoutDivMax);
                     authLayoutDiv.classList.remove(authLayoutDivMin);
-
-                    toggleSidebarText.innerText = "Close";
 
                     // Show text elements
                     document.querySelectorAll(".sidebar-text").forEach((el) => {
@@ -138,10 +128,8 @@ export function handleSidebar() {
             if (isMobile()) {
                 if (isMobileSidebarOpen) {
                     toggleSidebarBtn.classList.add(sidebarBtnLeft, "top-0");
-                    toggleSidebarText.innerText = "Close";
                 } else {
                     toggleSidebarBtn.classList.remove(sidebarBtnLeft, "top-0");
-                    toggleSidebarText.innerText = "Open";
                 }
                 // Reset desktop styles
                 if (isSidebarCollapsed) {
@@ -168,13 +156,9 @@ export function handleSidebar() {
                 if (isSidebarCollapsed) {
                     authLayoutDiv.classList.remove(authLayoutDivMax);
                     authLayoutDiv.classList.add(authLayoutDivMin);
-
-                    toggleSidebarText.innerText = "Open";
                 } else {
                     authLayoutDiv.classList.add(authLayoutDivMax);
                     authLayoutDiv.classList.remove(authLayoutDivMin);
-
-                    toggleSidebarText.innerText = "Close";
                 }
 
                 toggleSidebarBtn.classList.remove(sidebarBtnLeft, "top-0");

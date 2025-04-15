@@ -1,0 +1,33 @@
+{% extends "layout/guest_layout.html" %}
+<!--  -->
+{% block title %} Support - Analytics Insights {% endblock %}
+<!--  -->
+{% block description %}
+<meta
+    name="description"
+    content="Get AI-powered insights about your finances"
+/>
+{% endblock %}
+<!--  -->
+{% block body %}
+<div class="mb-8">
+    <a href="/support">
+        <i class="fa-solid fa-arrow-left text-3xl {{ link_icon_style }}"></i>
+    </a>
+</div>
+<div class="mb-4 flex items-center">
+    <i class="fa-solid fa-chart-line text-2xl mr-4"></i>
+    <h3 class="font-medium text-xl">Analytics Insights</h3>
+</div>
+<p class="leading-[1.5]">
+    Access financial analytics and insights directly through Google Chat. This
+    user-friendly interface lets you interact with your data and our services
+    seamlessly. You can request regular updates on your business's financial
+    health, compare performance across different accounting periods, and much
+    more.
+</p>
+{% endblock %}
+<!--  -->
+{% block script %}
+<script type="module" src="/static/dist/default.min.js"></script>
+{% endblock %}
