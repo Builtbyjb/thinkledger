@@ -1,8 +1,7 @@
 ngrok:
 	ngrok http --url=admittedly-adequate-scorpion.ngrok-free.app 3000
 
-
-server:
+dev:
 	uvicorn main:app --host 0.0.0.0 --port 3000 --reload
 
 minify:
