@@ -8,7 +8,8 @@ from routes import (
     user_auth,
     integrations,
     plaid,
-    google_service_token
+    google_service_token,
+    join_waitlist,
 )
 from templates.content.features import FEATURES
 from templates.content.benefits import BENEFITS
@@ -24,8 +25,6 @@ load_dotenv()
 # 	e.Use(middleware.RateLimiter())
 # 	e.Use(middleware.Recover())
 
-# e.POST("/join-waitlist", h.JoinWaitlist)
-
 app = FastAPI()
 
 @app.on_event("startup")
@@ -39,6 +38,7 @@ app.include_router(google_callback.router)
 app.include_router(integrations.router)
 app.include_router(plaid.router)
 app.include_router(google_service_token.router)
+app.include_router(join_waitlist.router)
 
 templates = Jinja2Templates(directory="templates")
 app.mount("/static", StaticFiles(directory="static"), name="static")
