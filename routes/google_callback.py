@@ -79,8 +79,8 @@ async def google_sign_in_callback(
       id=user_id,
       email=str(user_info.get("email")),
       name=username,
-      given_name=str(user_info.get("givenName")),
-      family_name=str(user_info.get("familyName")),
+      given_name=str(user_info.get("given_name")),
+      family_name=str(user_info.get("family_name")),
       picture=str(user_info.get("picture")),
       locale=str(user_info.get("locale"))
     )
@@ -96,8 +96,8 @@ async def google_sign_in_callback(
 
   # Save userinfo to redis database
   try:
-    redis.set(session_id, user_id)
-    redis.set(f"username:{user_id}", username)
+    redis.set(session_id, user_id, ex=3600 * 24 * 7) # set expire data to one week
+    redis.set(f"username:{user_id}", username, ex=3600)
     redis.set(f"user_id:{user_id}", user_id) # For use later
     redis.set(f"username:{user_id}", username)
     redis.set(f"access_token:{user_id}", access_token)

@@ -7,6 +7,7 @@ from database.redis.redis import gen_redis, get_redis
 from utils.auth_utils import verify_access_token, refresh_access_token
 
 
+# Authentication mode options
 AuthMode = Literal["strict", "lax"]
 
 def auth_request(session_id: str, redis: Redis) -> bool:

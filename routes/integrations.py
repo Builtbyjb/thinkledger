@@ -1,7 +1,6 @@
 from fastapi import APIRouter, Request, status
 from fastapi.templating import Jinja2Templates
 from middleware.authentication import auth_required
-
 from utils.styles import BTN_STYLE_FULL
 
 

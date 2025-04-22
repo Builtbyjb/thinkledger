@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Request
-from fastapi.responses import RedirectResponse
+from fastapi.responses import RedirectResponse, Response
 from datetime import datetime, timedelta, timezone
 from utils.auth_utils import sign_in_auth_config
 
@@ -25,13 +25,20 @@ async def sign_in(request: Request):
         httponly=True,
         samesite="lax"
     )
-
     return response
 
 
 @router.get("/sign-out")
-async def sign_out(request: Request):
-    # Delete session id from redis
-    # Clear session id cookie
-    # Redirect to home page
-    pass
+async def sign_out(request: Request) -> Response:
+    response = RedirectResponse(url="/", status_code=302)
+    expires = datetime.now(timezone.utc) + timedelta(minutes=5)
+    response.set_cookie(
+      key="session_id",
+      value="",
+      expires=expires,
+      path="/",
+      secure=True,
+      httponly=True,
+      samesite="lax"
+    )
+    return response
