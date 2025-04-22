@@ -18,11 +18,32 @@ import os
 from database.redis.redis import get_redis
 from plaid.model.item_public_token_exchange_request import ItemPublicTokenExchangeRequest
 from pydantic import BaseModel
+from typing import Optional
+from database.postgres.postgres_db import get_db
+from database.postgres.postgres_schema import Institution, Account
 
 router = APIRouter()
 
+class AccountResponse(BaseModel):
+  id: str
+  name: str
+  mask: str
+  type: str
+  subtype: str
+  class_type: Optional[str]
+  verification_status: Optional[str]
+
+
+class InstitutionResponse(BaseModel):
+  institution_id: str
+  name: str
+
+
 class PlaidResponse(BaseModel):
   public_token: str
+  accounts: list[AccountResponse]
+  institution: InstitutionResponse
+
 
 def create_plaid_client() -> plaid_api.PlaidApi:
   PLAID_ENV = os.getenv("PLAID_ENV")
@@ -103,7 +124,7 @@ async def plaid_link_token(
       content={"error": "Internal Server Error"},
       status_code=500
     )
-  print(response['link_token'])
+  # print(response['link_token'])
   return JSONResponse(
     content={"linkToken": response["link_token"]},
     status_code=200
@@ -111,16 +132,69 @@ async def plaid_link_token(
 
 
 @router.post("/plaid-access-token")
-async def plaid_access_token(request: Request, response: PlaidResponse):
-  # TODO: Save meta data
+async def plaid_access_token(
+  request: Request,
+  data: PlaidResponse,
+  db = Depends(get_db),
+  redis= Depends(get_redis)
+) -> JSONResponse:
   exchange_request = ItemPublicTokenExchangeRequest(
-    public_token=response.public_token
+    public_token=data.public_token
   )
   client = create_plaid_client()
-  exchange_response = client.item_public_token_exchange(exchange_request)
-  access_token = exchange_response['access_token']
-  print(access_token)
-  return {"message": "Access token gotten"}
+  try:
+    exchange_response = client.item_public_token_exchange(exchange_request)
+    access_token = exchange_response['access_token']
+  except Exception as e:
+    print(f"Error exchanging public token: {e}")
+    return JSONResponse(content={"error": "Internal Server Error"}, status_code=500)
+
+  session_id = request.cookies.get("session_id")
+  user_id = str(redis.get(session_id))
+  if user_id is None:
+    print("User not found")
+    return JSONResponse(content={"error": "User not found"},status_code=404)
+  # print(access_token)
+
+  # Save Institution
+  try:
+    # Only add newly linked institutions
+    ins = db.get(Institution, data.institution.institution_id)
+    if ins is None:
+      new_ins = Institution(
+        id=data.institution.institution_id,
+        user_id=user_id,
+        name=data.institution.name,
+        access_token=access_token
+      )
+      db.add(new_ins)
+      db.commit()
+      db.refresh(new_ins)
+  except Exception as e:
+    print(f"Error saving institution: {e}")
+    return JSONResponse(content={"error": "Error saving institution"}, status_code=500)
+
+  # Save accounts
+  try:
+    for a in data.accounts:
+      # Only add newly linked accounts
+      acc = db.get(Account, a.id)
+      if acc is None:
+        new_acc = Account(
+          id=a.id,
+          user_id=user_id,
+          institution_id=data.institution.institution_id,
+          name=a.name,
+          subtype=a.subtype,
+          type=a.type
+        )
+        db.add(new_acc)
+        db.commit()
+        db.refresh(new_acc)
+  except Exception as e:
+    print(f"Error saving accounts: {e}")
+    return JSONResponse(content={"error": "Error saving accounts"}, status_code=500)
+  return JSONResponse(content={"message": "Institution and Accounts linked"}, status_code=200)
 
 
 @router.post("/plaid-webhooks")

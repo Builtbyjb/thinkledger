@@ -17,10 +17,9 @@ def delete():
   else: sys.exit("Could not get postgres url from env variables")
   if len(sys.argv) != 2: sys.exit("Usage: ./postgres_del.py <table_name>")
   table_name = sys.argv[1]
-  print(table_name)
+  print(f"Deleting {table_name} table")
   try:
     with engine.connect() as db:
-      # TODO: For some reason the user table is not deleting
       db.exec_driver_sql(f"DROP TABLE IF EXISTS {table_name}")
       db.commit()
   except Exception as e: return f"Error deleting table: {e}"

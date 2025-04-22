@@ -8,7 +8,6 @@ class User(SQLModel, table=True):
     given_name: str
     family_name: str
     picture: str
-    locale: str
 
 class Account(SQLModel, table=True):
     __tablename__ = "accounts" #type: ignore
@@ -16,7 +15,7 @@ class Account(SQLModel, table=True):
     user_id: str
     institution_id: str
     name: str
-    sub_type: str
+    subtype: str
     type: str
 
 class Institution(SQLModel, table=True):
@@ -24,3 +23,4 @@ class Institution(SQLModel, table=True):
     id: str = Field(primary_key=True)
     user_id: str
     name: str
+    access_token: str
