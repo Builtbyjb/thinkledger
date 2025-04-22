@@ -44,7 +44,6 @@ import { setActiveLink, handleSidebar } from "./utils.min.js";
           onExit: (err, metadata) => {},
           onEvent: (eventName, metadata) => {},
         });
-
         handler.open();
       }
     } catch (error) {

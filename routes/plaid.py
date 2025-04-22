@@ -68,6 +68,9 @@ async def plaid_link_token(
   request: Request,
   redis=Depends(get_redis)
 ) -> JSONResponse:
+  """
+    Get plaid link token to start the institution linking process
+  """
   SERVER_URL = os.getenv("SERVER_URL")
 
   session_id = request.cookies.get('session_id')
@@ -138,6 +141,10 @@ async def plaid_access_token(
   db = Depends(get_db),
   redis= Depends(get_redis)
 ) -> JSONResponse:
+  """
+    Get an institution's access token with a public token,
+    and save the institutions metadata to a database
+  """
   exchange_request = ItemPublicTokenExchangeRequest(
     public_token=data.public_token
   )

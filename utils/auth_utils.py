@@ -81,23 +81,22 @@ def verify_access_token(access_token: str) -> bool:
       print(f"Error verifying access token: {e}")
       return False
   if response.status_code != 200:
-    print("")
+    print("Error verifying access token")
     return False
   return True
 
 
-def refresh_access_token(access_token: str, refresh_token: str) -> tuple[Optional[str], bool]:
+def refresh_access_token(refresh_token: str, client_id: str, client_secret: str) -> tuple[Optional[str], bool]:
   """
     Refresh google access token.
   """
-  CLIENT_ID = os.getenv("GOOGLE_SIGNIN_CLIENT_ID")
-  CLIENT_SECRET = os.getenv("GOOGLE_SIGNIN_CLIENT_SECRET")
   payload = {
-    'client_id': CLIENT_ID,
-    'client_secret': CLIENT_SECRET,
+    'client_id':client_id,
+    'client_secret': client_secret,
     'refresh_token': refresh_token,
     'grant_type': 'refresh_token'
   }
+
   try:
     response = requests.post(
       TOKEN_REFRESH_URL,

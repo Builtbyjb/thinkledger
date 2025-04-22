@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Request, Depends
-from fastapi.responses import RedirectResponse, Response
+from fastapi.responses import RedirectResponse, Response, JSONResponse
 from datetime import datetime, timedelta, timezone
 import os
 from redis import Redis
@@ -147,5 +147,51 @@ async def google_sign_in_callback(
 
 
 @router.get("/services")
-async def google_service_callback(request: Request):
-  pass
+async def google_service_callback(request: Request, redis = Depends(get_redis)):
+  if request.cookies.get("state") != request.query_params.get("state"):
+    return Response(status_code=400, content="Invalid state")
+
+  CLIENT_ID = os.getenv("GOOGLE_SERVICE_CLIENT_ID")
+  CLIENT_SECRET = os.getenv("GOOGLE_SERVICE_CLIENT_SECRET")
+  REDIRECT_URL = os.getenv("GOOGLE_SERVICE_REDIRECT_URL")
+
+  # Get authorization tokens
+  try:
+    code = request.query_params.get("code")
+    payload = {
+      "code": code,
+      "client_id": CLIENT_ID,
+      "client_secret": CLIENT_SECRET,
+      "redirect_uri": REDIRECT_URL,
+      "grant_type": "authorization_code"
+    }
+    response = requests.post(TOKEN_URL, data=payload)
+    token = response.json()
+  except Exception as e:
+    print("Failed to get authorization tokens")
+    return Response(status_code=500, content=str(e))
+
+  session_id = request.cookies.get("session_id")
+  user_id = str(redis.get(session_id))
+  if user_id is None: return JSONResponse(
+    content={"error":"Unauthorized"},
+    status_code=401
+  )
+
+  # print(token)
+  access_token = token.get("access_token")
+  refresh_token = token.get("refresh_token")
+
+  try:
+    redis.set(f"service_access_token:{user_id}", access_token)
+    if refresh_token is not None:
+      redis.set(f"service_refresh_token:{user_id}", refresh_token)
+  except Exception as e:
+    print(e)
+    return JSONResponse(
+      content={"error": "Internal Server Error"},
+      status_code=500
+    )
+
+  print("tokens gotten")
+  return RedirectResponse("/google", status_code=302)

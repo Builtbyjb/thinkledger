@@ -5,6 +5,7 @@ from functools import wraps
 from redis import Redis
 from database.redis.redis import gen_redis, get_redis
 from utils.auth_utils import verify_access_token, refresh_access_token
+import os
 
 
 # Authentication mode options
@@ -20,22 +21,31 @@ def auth_request(session_id: str, redis: Redis) -> bool:
   except Exception as e:
     print(f"Error fetching user data or access token: {e}")
     return False
+
   # Verify access token
   if not verify_access_token(access_token):
     # If access token verification fails, try refreshing the token
-    try:
-      refresh_token = str(redis.get(f"refresh_token:{user_id}"))
+    try: refresh_token = str(redis.get(f"refresh_token:{user_id}"))
     except Exception as e:
       print(f"Error fetching refresh token: {e}")
       return False
+
     if refresh_token is None: return False
-    new_access_token, is_refreshed = refresh_access_token(access_token, refresh_token)
+
+    client_id = os.getenv("GOOGLE_SIGNIN_CLIENT_ID")
+    client_secret = os.getenv("GOOGLE_SIGNIN_CLIENT_SECRET")
+
+    if client_id is None: return False
+    if client_secret is None: return False
+
+    new_access_token, is_refreshed = refresh_access_token(refresh_token, client_id, client_secret)
     if not is_refreshed or new_access_token is None: return False
-    try:
-      redis.set(f"access_token:{user_id}", new_access_token)
+
+    try: redis.set(f"access_token:{user_id}", new_access_token)
     except Exception as e:
       print(f"Error setting new access token: {e}")
       return False
+
   return True
 
 

@@ -51,6 +51,7 @@ async def health_check():
 
 @app.get("/")
 async def Index(request: Request):
+  # TODO: Check if a user authenticated. if so redirect the user to /home
   return templates.TemplateResponse(
     request=request,
     name="guest/index.html",
