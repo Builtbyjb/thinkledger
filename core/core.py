@@ -28,12 +28,19 @@ def core(exit_thread):
       if h_len != 0:
         # Handle high task offload
         # ? Handle all high prority tasks,
-        task = redis.rpop(f"tasks:{TaskPriority.HIGH}:{u.id}")
-        print(task)
+        # TODO: Possible failure point
+        value = str(redis.rpop(f"tasks:{TaskPriority.HIGH}:{u.id}"))
+        if value is None: pass
+        task, access_token = value.split(":")
+        # print("value: ", value)
+        # print("task: ", task)
+        # print("access_token: ", access_token)
         if task == Tasks.trans_sync.value:
           # TODO: How do i know which bank to get the transactions from
-          transaction = get_transaction("")
-          print(transaction)
+          transaction = get_transaction(access_token)
+          print(transaction[0])
+      else:
+        print("No tasks")
 
       # Check for tasks of low level pro
       try: l_len = redis.llen(f"tasks:{TaskPriority.LOW}:{u.id}")
@@ -47,5 +54,3 @@ def core(exit_thread):
         task = redis.rpop(f"tasks:{TaskPriority.LOW}:{u.id}")
         print(task)
         pass
-
-      print(u.id)

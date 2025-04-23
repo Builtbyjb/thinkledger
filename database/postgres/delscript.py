@@ -15,7 +15,7 @@ def delete():
   POSTGRES_URL = os.getenv("POSTGRES_URL")
   if POSTGRES_URL is not None: engine = create_engine(POSTGRES_URL)
   else: sys.exit("Could not get postgres url from env variables")
-  if len(sys.argv) != 2: sys.exit("Usage: ./postgres_del.py <table_name>")
+  if len(sys.argv) != 2: sys.exit("Usage: ./delscript.py <table_name>")
   table_name = sys.argv[1]
   print(f"Deleting {table_name} table")
   try:

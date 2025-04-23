@@ -6,6 +6,7 @@ def get_transaction(access_token: str):
   request = TransactionsSyncRequest(
       access_token=access_token,
   )
+  # TODO: Possible failure point
   response = client.transactions_sync(request)
   transactions = response['added']
   return transactions

@@ -184,7 +184,8 @@ async def plaid_access_token(
 
   # Add transaction sync to user task queue
   # TODO: How do i know which bank to get the transactions from ?????
-  is_added = add_tasks(Tasks.trans_sync, user_id, TaskPriority.HIGH)
+  value = f"{Tasks.trans_sync.value}:{access_token}"
+  is_added = add_tasks(value, user_id, TaskPriority.HIGH)
   if is_added is False:
     print("Error adding tasks @plaid-access-token > plaid.py")
     return JSONResponse(content={"error": "Internal server error"}, status_code=500)

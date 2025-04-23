@@ -9,24 +9,21 @@
 <!--  -->
 {% block body %}
 <main class="space-y-16">
-    <section>
-        <div
-            class="z-20 mb-4 w-[100%] sm:w-[90%] md:w-[90%] lg:w-[80%] 2xl:w-[70%] text-center mx-auto"
-        >
-            <h1 class="text-4xl font-bold mb-4 leading-[1.2]">
-                Keep Track of Your Business's Financial Health.
-            </h1>
-            <p class="mb-8 text-lg">
-                We make it easier and cheaper for eCommerce business owners like
-                you to have a better understanding of your business's financial
-                health.
-            </p>
-            <p class="text-white mb-4">
-                Join the waitlist to get early access.
-            </p>
-            <div class="flex items-center gap-4 mx-auto w-fit">
-                {{ cta.call_to_action(btn_style_full) }}
-                <a href="/sign-in" class="{{ btn_style_outline }} flex gap-4">
+  <section>
+    <div
+      class="z-20 mb-4 w-[100%] sm:w-[90%] md:w-[90%] lg:w-[80%] 2xl:w-[70%] text-center mx-auto"
+    >
+      <h1 class="text-4xl font-bold mb-4 leading-[1.2]">
+        Keep Track of Your Business's Financial Health.
+      </h1>
+      <p class="mb-8 text-lg">
+        We make it easier and cheaper for eCommerce business owners like you to
+        have a better understanding of your business's financial health.
+      </p>
+      <p class="text-white mb-4">Join the waitlist to get early access.</p>
+      <div class="flex items-center gap-4 mx-auto w-fit">
+        {{ cta.call_to_action(btn_style_full) }}
+        <!-- <a href="/sign-in" class="{{ btn_style_outline }} flex gap-4">
                     <svg
                         version="1.1"
                         viewBox="0 0 56.6934 56.6934"
@@ -43,71 +40,69 @@
                         />
                     </svg>
                     <p>Sign in with Google</p>
-                </a>
-            </div>
+                </a> -->
+      </div>
+    </div>
+    <!-- <img class="md:h-[30rem] mx-auto" src="/static/assets/data_chart.png" alt="thinkledger data flow chart"/> -->
+  </section>
+
+  <section id="features">
+    <div>
+      <div class="w-full">
+        <h2 class="text-2xl font-medium mb-8">More on what we offer</h2>
+      </div>
+      <div
+        class="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-8"
+      >
+        {% for f in features %}
+        <div class="p-4 border-2 border-gray-300 rounded-lg">
+          <div class="flex items-center mb-4">
+            <i class="{{ f.icon }}"></i>
+            <h3 class="text-xl font-medium ms-4">{{ f.title }}</h3>
+          </div>
+          <div>{{ f.description }}</div>
         </div>
-        <!-- <img class="md:h-[30rem] mx-auto" src="/static/assets/data_chart.png" alt="thinkledger data flow chart"/> -->
-    </section>
+        {% endfor %}
+      </div>
+    </div>
+  </section>
 
-    <section id="features">
-        <div>
-            <div class="w-full">
-                <h2 class="text-2xl font-medium mb-8">More on what we offer</h2>
-            </div>
-            <div
-                class="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-8"
-            >
-                {% for f in features %}
-                <div class="p-4 border-2 border-gray-300 rounded-lg">
-                    <div class="flex items-center mb-4">
-                        <i class="{{ f.icon }}"></i>
-                        <h3 class="text-xl font-medium ms-4">{{ f.title }}</h3>
-                    </div>
-                    <div>{{ f.description }}</div>
-                </div>
-                {% endfor %}
-            </div>
+  <section id="benefits">
+    <div>
+      <div class="w-full">
+        <h2 class="text-2xl mb-8 font-medium">Why you will love ThinkLedger</h2>
+      </div>
+      <div
+        class="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-8"
+      >
+        {% for b in benefits %}
+        <div class="p-4 border-2 rounded-lg border-gray-300">
+          <div class="flex items-center mb-4">
+            <i class="{{ b.icon }}"></i>
+            <h3 class="text-xl font-medium ms-4">{{ b.title }}</h3>
+          </div>
+          <div>{{ b.description }}</div>
         </div>
-    </section>
+        {% endfor %}
+      </div>
+    </div>
+  </section>
 
-    <section id="benefits">
-        <div>
-            <div class="w-full">
-                <h2 class="text-2xl mb-8 font-medium">
-                    Why you will love ThinkLedger
-                </h2>
-            </div>
-            <div
-                class="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-8"
-            >
-                {% for b in benefits %}
-                <div class="p-4 border-2 rounded-lg border-gray-300">
-                    <div class="flex items-center mb-4">
-                        <i class="{{ b.icon }}"></i>
-                        <h3 class="text-xl font-medium ms-4">{{ b.title }}</h3>
-                    </div>
-                    <div>{{ b.description }}</div>
-                </div>
-                {% endfor %}
-            </div>
-        </div>
-    </section>
+  <section id="pricing" class="">
+    <!-- <Pricing /> -->
+  </section>
 
-    <section id="pricing" class="">
-        <!-- <Pricing /> -->
-    </section>
+  <section id="testimonials" class="">
+    <!-- <Testimonials /> -->
+  </section>
 
-    <section id="testimonials" class="">
-        <!-- <Testimonials /> -->
-    </section>
-
-    <section id="call-to-action">
-        <h2 class="text-3xl font-medium mb-4">
-            Running a healthy business has never been easier.
-        </h2>
-        <p class="mb-4">Join the waitlist to get early access today!</p>
-        {{ cta.call_to_action(btn_style_full) }}
-    </section>
+  <section id="call-to-action">
+    <h2 class="text-3xl font-medium mb-4">
+      Running a healthy business has never been easier.
+    </h2>
+    <p class="mb-4">Join the waitlist to get early access today!</p>
+    {{ cta.call_to_action(btn_style_full) }}
+  </section>
 </main>
 {% endblock %}
 <!--  -->
