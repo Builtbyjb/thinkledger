@@ -16,16 +16,13 @@ def get_redis():
     redis_client.close()
 
 
-def gen_redis(get_redis: Callable[..., Generator[redis.Redis, Any, None]]) -> Optional[redis.Redis]:
+def gen_redis(redis_gen: Callable[..., Generator[redis.Redis, Any, None]] = get_redis) -> Optional[redis.Redis]:
   """
     Takens in a redis generator function any redis a Redis instance or None.
     The Depends function from fastapi does not handle generators well, if it not called
     within a route.
   """
-  l = get_redis()
-  for v in l:
+  for v in redis_gen():
     if isinstance(v, redis.Redis):
       return v
-    else:
-      continue
   return None

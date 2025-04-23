@@ -12,9 +12,11 @@ from database.postgres.postgres_db  import get_db
 from database.redis.redis import get_redis
 from database.postgres.postgres_schema import User
 from typing import Optional
+from enum import Enum
+from utils.auth_utils import service_auth_config
 
 
-router = APIRouter(prefix="/auth/google/callback")
+router = APIRouter()
 
 TOKEN_URL = "https://oauth2.googleapis.com/token"
 
@@ -39,7 +41,6 @@ def add_user_pg(db: Session, user_info) -> bool:
     return False
   return True
 
-
 def add_user_redis(redis: Redis,
   user_id: str,
   session_id: str,
@@ -52,7 +53,6 @@ def add_user_redis(redis: Redis,
   """
   try:
     redis.set(session_id, user_id, ex=3600 * 24 * 7) # set expire data to one week
-    redis.set(f"username:{user_id}", username, ex=3600)
     redis.set(f"user_id:{user_id}", user_id) # For use later
     redis.set(f"username:{user_id}", username)
     redis.set(f"access_token:{user_id}", access_token)
@@ -63,8 +63,7 @@ def add_user_redis(redis: Redis,
     return False
   return True
 
-
-@router.get("/sign-in")
+@router.get("/auth/google/callback/sign-in")
 async def google_sign_in_callback(
   request: Request,
   db: Session = Depends(get_db),
@@ -148,8 +147,7 @@ async def google_sign_in_callback(
   )
   return response
 
-
-@router.get("/services")
+@router.get("/auth/google/callback/services")
 async def google_service_callback(request: Request, redis = Depends(get_redis)):
   """
     Completes getting google service tokens oauth flow
@@ -201,3 +199,46 @@ async def google_service_callback(request: Request, redis = Depends(get_redis)):
 
   print("tokens gotten")
   return RedirectResponse("/google", status_code=302)
+
+class GoogleScopes(Enum):
+  sheets = "https://www.googleapis.com/auth/spreadsheets"
+  drive = "https://www.googleapis.com/auth/drive.file"
+
+@router.get("/auth-google-service")
+async def google_service_token(request: Request) -> JSONResponse:
+  """
+    Starts google service tokens oauth flow
+  """
+  scopes: list[str] = []
+
+  google_sheet = request.query_params.get("google_sheet")
+  google_drive = request.query_params.get("google_drive")
+
+  if google_sheet == "true": scopes.append(GoogleScopes.sheets.value)
+  if google_drive == "true": scopes.append(GoogleScopes.drive.value)
+
+  if len(scopes) == 0: return JSONResponse(
+    content={"error": "No scopes provided"},
+    status_code=400,
+  )
+
+  # Get oauth service config
+  config = service_auth_config(scopes)
+  url, state = config.authorization_url(
+     #  access_type="offline",
+     # include_granted_scopes="true",
+     # prompt="consent"
+  )
+
+  response = JSONResponse(content={"url": url}, status_code=200)
+  expires = datetime.now(timezone.utc) + timedelta(minutes=5)
+  response.set_cookie(
+      key="state",
+      value=state,
+      expires=expires,
+      path="/",
+      secure=True,
+      httponly=True,
+      samesite="lax"
+  )
+  return response

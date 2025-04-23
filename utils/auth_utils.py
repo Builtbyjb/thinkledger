@@ -2,6 +2,7 @@ import os
 from google_auth_oauthlib.flow import Flow
 import requests
 from typing import Optional, List
+from database.redis.redis import gen_redis
 
 
 TOKEN_INFO_URL = "https://www.googleapis.com/oauth2/v3/tokeninfo"
@@ -114,3 +115,43 @@ def refresh_access_token(refresh_token: str, client_id: str, client_secret: str)
   except requests.exceptions.Timeout:
     print("Token Refresh Error: Request timed out.")
     return None, False
+
+def auth_session(session_id: str) -> bool:
+  """
+    Authenticates a user by verifying their access token and refreshing it if necessary.
+  """
+  redis = gen_redis()
+  if redis is None: return False
+
+  try:
+    user_id = str(redis.get(session_id))
+    access_token  = str(redis.get(f"access_token:{user_id}"))
+  except Exception as e:
+    print(f"Error fetching user data or access token: {e}")
+    return False
+
+  # Verify access token
+  if not verify_access_token(access_token):
+    # If access token verification fails, try refreshing the token
+    try: refresh_token = str(redis.get(f"refresh_token:{user_id}"))
+    except Exception as e:
+      print(f"Error fetching refresh token: {e}")
+      return False
+
+    if refresh_token is None: return False
+
+    client_id = os.getenv("GOOGLE_SIGNIN_CLIENT_ID")
+    client_secret = os.getenv("GOOGLE_SIGNIN_CLIENT_SECRET")
+
+    if client_id is None: return False
+    if client_secret is None: return False
+
+    new_access_token, is_refreshed = refresh_access_token(refresh_token, client_id, client_secret)
+    if not is_refreshed or new_access_token is None: return False
+
+    try: redis.set(f"access_token:{user_id}", new_access_token)
+    except Exception as e:
+      print(f"Error setting new access token: {e}")
+      return False
+
+  return True

@@ -5,7 +5,6 @@ from utils.styles import BTN_STYLE_FULL
 
 
 router = APIRouter(tags=["Integrations"])
-
 templates = Jinja2Templates(directory="web/templates")
 
 @router.get("/banking", status_code=status.HTTP_200_OK)

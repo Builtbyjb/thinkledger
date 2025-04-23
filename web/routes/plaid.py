@@ -1,7 +1,6 @@
 from fastapi import APIRouter, Response, Request, Depends
 from fastapi.responses import JSONResponse
-import plaid
-from plaid.api import plaid_api
+from utils.plaid_utils import create_plaid_client
 from plaid.model.link_token_create_request import LinkTokenCreateRequest
 from plaid.model.link_token_create_request_user import LinkTokenCreateRequestUser
 from plaid.model.products import Products
@@ -21,6 +20,8 @@ from pydantic import BaseModel
 from typing import Optional
 from database.postgres.postgres_db import get_db
 from database.postgres.postgres_schema import Institution, Account
+from utils.core_utils import add_tasks, TaskPriority, Tasks
+
 
 router = APIRouter()
 
@@ -33,34 +34,14 @@ class AccountResponse(BaseModel):
   class_type: Optional[str]
   verification_status: Optional[str]
 
-
 class InstitutionResponse(BaseModel):
   institution_id: str
   name: str
-
 
 class PlaidResponse(BaseModel):
   public_token: str
   accounts: list[AccountResponse]
   institution: InstitutionResponse
-
-
-def create_plaid_client() -> plaid_api.PlaidApi:
-  PLAID_ENV = os.getenv("PLAID_ENV")
-  PLAID_CLIENT_ID = os.getenv("PLAID_CLIENT_ID")
-  PLAID_CLIENT_SECRET = os.getenv("PLAID_CLIENT_SECRET")
-
-  host=plaid.Environment.Sandbox
-  if PLAID_ENV == "production": host=plaid.Environment.Production
-  config = plaid.Configuration(
-    host=host,
-    api_key={
-      'clientId': PLAID_CLIENT_ID,
-      'secret': PLAID_CLIENT_SECRET
-    })
-  api_client = plaid_api.ApiClient(config)
-  client = plaid_api.PlaidApi(api_client)
-  return client
 
 
 @router.get("/plaid-link-token")
@@ -133,7 +114,6 @@ async def plaid_link_token(
     status_code=200
   )
 
-
 @router.post("/plaid-access-token")
 async def plaid_access_token(
   request: Request,
@@ -200,14 +180,20 @@ async def plaid_access_token(
         db.refresh(new_acc)
   except Exception as e:
     print(f"Error saving accounts: {e}")
-    return JSONResponse(content={"error": "Error saving accounts"}, status_code=500)
-  return JSONResponse(content={"message": "Institution and Accounts linked"}, status_code=200)
+    return JSONResponse(content={"error": "Internal server error"}, status_code=500)
 
+  # Add transaction sync to user task queue
+  # TODO: How do i know which bank to get the transactions from ?????
+  is_added = add_tasks(Tasks.trans_sync, user_id, TaskPriority.HIGH)
+  if is_added is False:
+    print("Error adding tasks @plaid-access-token > plaid.py")
+    return JSONResponse(content={"error": "Internal server error"}, status_code=500)
+
+  return JSONResponse(content={"message": "Institution and Accounts linked"}, status_code=200)
 
 @router.post("/plaid-webhooks")
 async def plaid_webhooks():
   return Response(status_code=200)
-
 
 @router.get("/auth/plaid/callback")
 async def plaid_callback():

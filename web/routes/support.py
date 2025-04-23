@@ -5,11 +5,7 @@ from web.templates.content.support_categories import SUPPORT_CATEGORIES
 from utils.styles import BTN_STYLE_FULL, LINK_TEXT_STYLE, LINK_ICON_STYLE
 
 
-router = APIRouter(
-    prefix="/support",
-    tags=["Suppport"],
-)
-
+router = APIRouter(prefix="/support", tags=["Suppport"])
 templates = Jinja2Templates(directory="web/templates")
 
 

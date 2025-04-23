@@ -2,6 +2,7 @@ from sqlmodel import create_engine, Session, SQLModel
 import os
 import sys
 from dotenv import load_dotenv
+from typing import Optional, Callable, Generator, Any
 
 load_dotenv()
 
@@ -22,3 +23,10 @@ def get_db():
 # Function to create all tables
 def create_db_and_tables():
     SQLModel.metadata.create_all(engine)
+
+# Generate postgres db engine
+def gen_db(db_gen:Callable[..., Generator[Session, Any, None]] = get_db) -> Optional[Session]:
+  for l in db_gen():
+    if isinstance(l, Session):
+      return l
+  return None
