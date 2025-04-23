@@ -70,6 +70,9 @@ async def google_sign_in_callback(
   db: Session = Depends(get_db),
   redis: Redis = Depends(get_redis)
 ) -> Response:
+  """
+    Completes google sign-in oauth flow
+  """
   # Verify state parameter
   if request.query_params.get("state") != request.cookies.get("state"):
     print("Invalid state parameter")
@@ -148,6 +151,9 @@ async def google_sign_in_callback(
 
 @router.get("/services")
 async def google_service_callback(request: Request, redis = Depends(get_redis)):
+  """
+    Completes getting google service tokens oauth flow
+  """
   if request.cookies.get("state") != request.query_params.get("state"):
     return Response(status_code=400, content="Invalid state")
 

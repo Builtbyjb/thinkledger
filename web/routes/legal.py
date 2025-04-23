@@ -4,7 +4,7 @@ from fastapi.templating import Jinja2Templates
 
 router = APIRouter(tags=["Legal"])
 
-templates = Jinja2Templates(directory="templates")
+templates = Jinja2Templates(directory="web/templates")
 
 
 @router.get("/privacy-policy", status_code=status.HTTP_200_OK)

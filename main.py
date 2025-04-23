@@ -1,7 +1,7 @@
 from fastapi import FastAPI, Request, HTTPException
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
-from routes import (
+from web.routes import (
   google_callback,
   legal,
   support,
@@ -11,13 +11,13 @@ from routes import (
   google_service_token,
   join_waitlist,
 )
-from templates.content.features import FEATURES
-from templates.content.benefits import BENEFITS
+from web.templates.content.features import FEATURES
+from web.templates.content.benefits import BENEFITS
 from utils.styles import BTN_STYLE_FULL, BTN_STYLE_OUTLINE, HOVER
 from dotenv import load_dotenv
 from database.postgres.postgres_db import create_db_and_tables
-from middleware.rate_limiter import RateLimiter
-from middleware.authentication import auth_required
+from web.middleware.rate_limiter import RateLimiter
+from web.middleware.authentication import auth_required
 
 # Load .env file
 load_dotenv()
@@ -41,8 +41,8 @@ app.include_router(plaid.router)
 app.include_router(google_service_token.router)
 app.include_router(join_waitlist.router)
 
-templates = Jinja2Templates(directory="templates")
-app.mount("/static", StaticFiles(directory="static"), name="static")
+templates = Jinja2Templates(directory="web/templates")
+app.mount("/static", StaticFiles(directory="web/static"), name="static")
 
 @app.get("/health")
 async def health_check():

@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Request, status
 from fastapi.templating import Jinja2Templates
-from templates.content.faq import FAQs
-from templates.content.support_categories import SUPPORT_CATEGORIES
+from web.templates.content.faq import FAQs
+from web.templates.content.support_categories import SUPPORT_CATEGORIES
 from utils.styles import BTN_STYLE_FULL, LINK_TEXT_STYLE, LINK_ICON_STYLE
 
 
@@ -10,7 +10,7 @@ router = APIRouter(
     tags=["Suppport"],
 )
 
-templates = Jinja2Templates(directory="templates")
+templates = Jinja2Templates(directory="web/templates")
 
 
 @router.get("/", status_code=status.HTTP_200_OK)
