@@ -10,7 +10,7 @@ POSTGRES_URL = os.getenv("POSTGRES_URL")
 
 # Create SQLModel engine
 if POSTGRES_URL is not None:
-    engine = create_engine(POSTGRES_URL, echo=True)
+    engine = create_engine(POSTGRES_URL, echo=False)
 else:
     # Exit the program is a postgres connection url is not found
     sys.exit("Could not get postgres url from env variables")

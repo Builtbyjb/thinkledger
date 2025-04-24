@@ -1,12 +1,10 @@
 import os
-from google_auth_oauthlib.flow import Flow
+from google_auth_oauthlib.flow import Flow # type: ignore
 import requests
 from typing import Optional, List
 from database.redis.redis import gen_redis
+from utils.constants import TOKEN_INFO_URL, TOKEN_REFRESH_URL
 
-
-TOKEN_INFO_URL = "https://www.googleapis.com/oauth2/v3/tokeninfo"
-TOKEN_REFRESH_URL = "https://oauth2.googleapis.com/token"
 
 def sign_in_auth_config() -> Flow:
   """

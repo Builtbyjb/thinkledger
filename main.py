@@ -16,25 +16,23 @@ from web.middleware.rate_limiter import RateLimiter
 from fastapi.templating import Jinja2Templates
 import threading
 from core.core import core
+from contextlib import asynccontextmanager
 
 # Load .env file
 load_dotenv()
-
-app = FastAPI()
 exit_thread = threading.Event()
 
-@app.on_event("startup")
-def on_startup():
+@asynccontextmanager
+async def lifespan(app: FastAPI):
   create_db_and_tables()
   core_thread = threading.Thread(target=core,args=(exit_thread,), daemon=True)
   core_thread.start()
-
-
-@app.on_event("shutdown")
-def on_shutdown():
-  # Shut down core thread gracefully
+  yield
   exit_thread.set()
-  print("Shutting down core thread")
+  print("Shutdown core thread...")
+
+
+app = FastAPI(lifespan=lifespan)
 
 # Middleware
 app.add_middleware(RateLimiter)
@@ -55,7 +53,4 @@ templates = Jinja2Templates(directory="web/templates")
 # Handles page not found
 @app.exception_handler(404)
 async def NotFound(request: Request, exc: HTTPException):
-  return templates.TemplateResponse(
-    request=request,
-    name="not_found.html",
-  )
+  return templates.TemplateResponse(request=request, name="not_found.html")

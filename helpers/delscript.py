@@ -20,11 +20,10 @@ def delete():
   print(f"Deleting {table_name} table")
   try:
     with engine.connect() as db:
-      db.exec_driver_sql(f"DROP TABLE IF EXISTS {table_name}")
+      db.exec_driver_sql(f"DROP TABLE {table_name}")
       db.commit()
-  except Exception as e: return f"Error deleting table: {e}"
-  print("Table deleted successfully")
-
+  except Exception as e: sys.exit(f"Error deleting table: {e}")
+  sys.exit(f"Deleted {table_name} table")
 
 if __name__ == "__main__":
   load_dotenv()

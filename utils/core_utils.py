@@ -13,11 +13,11 @@ class TaskPriority(Enum):
   HIGH = "HIGH"
   LOW = "LOW"
 
-def add_tasks(value: str, user_id: str, prority: TaskPriority) -> bool:
+def add_tasks(value: str, user_id: str, priority: TaskPriority) -> bool:
   """
     Adds a task to the core task queue.
     Value is a string containing the task function signature, and its arguments,
-    separeted by a colon e.g "func:arg1:arg2"
+    separated by a colon e.g "func:arg1:arg2"
   """
   redis = gen_redis()
   if redis is None:
@@ -26,9 +26,18 @@ def add_tasks(value: str, user_id: str, prority: TaskPriority) -> bool:
 
   # Add tasks to list head (LPUSH)
   try:
-    redis.lpush(f"tasks:{prority}:{user_id}", value)
+    redis.lpush(f"tasks:{priority}:{user_id}", value)
   except Exception as e:
     print(f"Error adding task to queue: {e}")
     return False
 
   return True
+
+def invert_amount(amount: float) -> float:
+  """
+    Inverts the amount to be negative if it is positive, and positive if it is negative
+  """
+  if amount > 0:
+    return -amount
+  else:
+    return abs(amount)

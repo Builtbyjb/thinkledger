@@ -1,5 +1,5 @@
-import plaid
-from plaid.api import plaid_api
+import plaid # type: ignore
+from plaid.api import plaid_api #type: ignore
 import os
 
 

@@ -4,7 +4,8 @@ from database.postgres.postgres_schema import User
 from sqlmodel import select
 import time
 from utils.core_utils import TaskPriority, Tasks
-from core.celery import get_transaction
+from core.celery import get_transaction, add_transaction_to_google_sheet
+
 
 def core(exit_thread):
   print("Print starting core thread...")
@@ -18,31 +19,38 @@ def core(exit_thread):
     time.sleep(60)
     users = db.exec(select(User)).all()
     for u in users:
-      # TODO: Get user tasks
-      # Check for tasks of High level prority
+      # Check for tasks of High level priority
       try: h_len = redis.llen(f"tasks:{TaskPriority.HIGH}:{u.id}")
       except Exception as e:
         print(e)
-        return
+        continue
 
       if h_len != 0:
         # Handle high task offload
-        # ? Handle all high prority tasks,
-        # TODO: Possible failure point
-        value = str(redis.rpop(f"tasks:{TaskPriority.HIGH}:{u.id}"))
+        # ? Handle all high priority tasks,
+        try: value = str(redis.rpop(f"tasks:{TaskPriority.HIGH}:{u.id}"))
+        except Exception as e:
+          print(e)
+          continue
+
         if value is None: pass
         task, access_token = value.split(":")
         # print("value: ", value)
         # print("task: ", task)
         # print("access_token: ", access_token)
         if task == Tasks.trans_sync.value:
-          # TODO: How do i know which bank to get the transactions from
-          transaction = get_transaction(access_token)
-          print(transaction[0])
+          transactions = get_transaction(access_token)
+          if transactions is None:
+            print("Error getting transactions")
+            continue
+
+          if not add_transaction_to_google_sheet(transactions, u.id):
+            print("Error adding transaction to google sheet")
+            continue
       else:
         print("No tasks")
 
-      # Check for tasks of low level pro
+      # Check for tasks of low level priority
       try: l_len = redis.llen(f"tasks:{TaskPriority.LOW}:{u.id}")
       except Exception as e:
         print(e)
@@ -50,7 +58,8 @@ def core(exit_thread):
 
       if l_len != 0:
         # Handle low task offload
-        # TODO: remove task for list tail (RPOP)
-        task = redis.rpop(f"tasks:{TaskPriority.LOW}:{u.id}")
+        try: task = redis.rpop(f"tasks:{TaskPriority.LOW}:{u.id}")
+        except Exception as e:
+          print(e)
+          continue
         print(task)
-        pass
