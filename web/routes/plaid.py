@@ -21,10 +21,12 @@ from typing import Optional
 from database.postgres.postgres_db import get_db
 from database.postgres.postgres_schema import Institution, Account
 from utils.core_utils import add_tasks, TaskPriority, Tasks
-from sqlmodel import select
+from sqlmodel import select, Session
+from fastapi import BackgroundTasks
+from utils.logger import log
 
 
-router = APIRouter()
+router = APIRouter(prefix="/plaid", tags=["Plaid"])
 
 class AccountResponse(BaseModel):
   id: str
@@ -44,7 +46,7 @@ class PlaidResponse(BaseModel):
   accounts: list[AccountResponse]
   institution: InstitutionResponse
 
-@router.get("/plaid-link-token")
+@router.get("/link-token")
 async def plaid_link_token(request: Request, redis=Depends(get_redis)) -> JSONResponse:
   """
     Get plaid link token to start the institution linking process
@@ -54,12 +56,12 @@ async def plaid_link_token(request: Request, redis=Depends(get_redis)) -> JSONRe
   session_id = request.cookies.get('session_id')
   if session_id is None:
     # Should redirect user to the home page
-    print("Session ID not found")
+    log.error("Session ID not found")
     return JSONResponse(content={"error": "Session ID not found"}, status_code=400)
 
   try: user_id = str(redis.get(session_id))
   except Exception as e:
-    print(e)
+    log.error(e)
     return JSONResponse(content={"error":"Internal server error"}, status_code=500)
 
   link_request = LinkTokenCreateRequest(
@@ -69,8 +71,8 @@ async def plaid_link_token(request: Request, redis=Depends(get_redis)) -> JSONRe
     transactions=LinkTokenTransactions(days_requested=50),
     country_codes=[CountryCode('US'), CountryCode('CA')],
     language='en',
-    webhook=f"{SERVER_URL}/plaid-webhooks",
-    # redirect_uri=f"{SERVER_URL}/auth/plaid/callback",
+    webhook=f"{SERVER_URL}/plaid/webhooks",
+    # redirect_uri=f"{SERVER_URL}/plaid/auth/callback",
     account_filters=LinkTokenAccountFilters(
       depository=DepositoryFilter(
         account_subtypes=DepositoryAccountSubtypes([
@@ -86,42 +88,18 @@ async def plaid_link_token(request: Request, redis=Depends(get_redis)) -> JSONRe
   client = create_plaid_client()
   try: response = client.link_token_create(link_request)
   except Exception as e:
-    print(f"Error creating link token: {e}")
+    log.error(f"Error creating link token: {e}")
     return JSONResponse(content={"error": "Internal Server Error"}, status_code=500)
   # print(response['link_token'])
   return JSONResponse(content={"linkToken": response["link_token"]}, status_code=200)
 
-@router.post("/plaid-access-token")
-async def plaid_access_token(
-  request: Request, data: PlaidResponse, db = Depends(get_db),redis= Depends(get_redis)
-) -> JSONResponse:
+def add_institutions_to_db(db: Session, data, access_token: str, user_id: str):
   """
-    Get an institution's access token with a public token,
-    and save the institutions metadata to a database
+    Check if institution already exists before adding a new institutions; 
+    if it does, update the access token and remove old accounts information associated
+    with the institution.
   """
-  exchange_request = ItemPublicTokenExchangeRequest(public_token=data.public_token)
-  client = create_plaid_client()
   try:
-    exchange_response = client.item_public_token_exchange(exchange_request)
-    access_token = exchange_response['access_token']
-  except Exception as e:
-    print(f"Error exchanging public token: {e}")
-    return JSONResponse(content={"error": "Internal Server Error"}, status_code=500)
-
-  session_id = request.cookies.get("session_id")
-  user_id = str(redis.get(session_id))
-  if user_id is None:
-    print("User not found")
-    return JSONResponse(content={"error": "User not found"},status_code=404)
-  # print(access_token)
-
-  # Save Institution
-  # TODO: Use fastapi background tasks to save institution and accounts
-  try:
-    """
-      Check if institution already exists; if it does, update the access token and
-      remove old accounts information.
-    """
     ins = db.get(Institution, data.institution.institution_id)
     if ins is None:
       new_ins = Institution(
@@ -133,7 +111,7 @@ async def plaid_access_token(
       db.add(new_ins)
       db.commit()
       db.refresh(new_ins)
-    else: 
+    else:
       # Delete old accounts information associated with the institution
       statement = select(Account).where(Account.institution_id == data.institution.institution_id)
       accounts = db.exec(statement).all()
@@ -143,11 +121,14 @@ async def plaid_access_token(
       db.add(ins)
       db.commit()
       db.refresh(ins)
+    log.info("Institution added")
   except Exception as e:
-    print(f"Error saving institution: {e}")
-    return JSONResponse(content={"error": "Internal server error"}, status_code=500)
+    log.error(f"Error saving institution: {e}")
 
-  # Save accounts
+def add_accounts_to_db(db: Session, data, user_id: str):
+  """
+    Save accounts to the database
+  """
   try:
     for a in data.accounts:
       new_acc = Account(
@@ -161,31 +142,61 @@ async def plaid_access_token(
       db.add(new_acc)
       db.commit()
       db.refresh(new_acc)
+    log.info("Accounts added")
   except Exception as e:
-    print(f"Error saving accounts: {e}")
-    return JSONResponse(content={"error": "Internal server error"}, status_code=500)
+    log.error(f"Error saving accounts: {e}")
+
+@router.post("/access-token")
+async def plaid_access_token(
+  request: Request, data: PlaidResponse, bg: BackgroundTasks, db = Depends(get_db), redis= Depends(get_redis)
+) -> JSONResponse:
+  """
+    Get an institution's access token with a public token,
+    and save the institutions metadata to a database
+  """
+  exchange_request = ItemPublicTokenExchangeRequest(public_token=data.public_token)
+  client = create_plaid_client()
+  try:
+    exchange_response = client.item_public_token_exchange(exchange_request)
+    access_token = exchange_response['access_token']
+  except Exception as e:
+    log.error(f"Error exchanging public token: {e}")
+    return JSONResponse(content={"error": "Internal Server Error"}, status_code=500)
+
+  session_id = request.cookies.get("session_id")
+  user_id = str(redis.get(session_id))
+  if user_id is None:
+    log.error("User not found")
+    return JSONResponse(content={"error": "User not found"},status_code=404)
+  # print(access_token)
+
+  # Save Institution
+  bg.add_task(add_institutions_to_db, db, data, access_token, user_id)
+  # Save accounts
+  bg.add_task(add_accounts_to_db, db, data, user_id)
 
   # Add transaction sync to user task queue
   value = f"{Tasks.trans_sync.value}:{access_token}" # access token holds the institution information
   is_added = add_tasks(value, user_id, TaskPriority.HIGH)
   if is_added is False:
-    print("Error adding tasks @plaid-access-token > plaid.py")
+    log.error("Error adding tasks @plaid-access-token > plaid.py")
     return JSONResponse(content={"error": "Internal server error"}, status_code=500)
 
   return JSONResponse(content={"message": "Institution and Accounts linked"}, status_code=200)
 
-@router.post("/plaid-webhooks")
-async def plaid_webhooks():
+@router.post("/webhooks")
+async def plaid_webhooks(request: Request):
+  print(request.body())
   return Response(status_code=200)
 
-@router.get("/auth/plaid/callback")
+@router.get("/callback")
 async def plaid_callback():
   return True
 
-@router.delete("/plaid-account-remove")
+@router.delete("/account-remove/{account_id}")
 async def plaid_account_remove():
   pass
 
-@router.delete("/plaid-account-remove-all")
+@router.delete("/account-remove/all")
 async def plaid_account_remove_all():
   pass

@@ -79,7 +79,7 @@ def refresh_access_token(refresh_token: str, client_id: str, client_secret: str)
     'grant_type': 'refresh_token'
   }
 
-  try: 
+  try:
     response = requests.post(TOKEN_URL, data=payload, timeout=15)
     if response.status_code == 200:
       token_json = response.json()

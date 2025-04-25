@@ -19,7 +19,7 @@ def unlink_plaid_account():
     response = client.item_remove(request)
     print(response)
     sys.exit("Account unlinked successfully")
-  except Exception as e: sys.exit("Error unlinking account")
+  except Exception: sys.exit("Error unlinking account")
 
 
 if __name__ == "__main__":

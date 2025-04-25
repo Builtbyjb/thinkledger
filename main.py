@@ -1,15 +1,6 @@
 from fastapi import FastAPI, Request, HTTPException
 from fastapi.staticfiles import StaticFiles
-from web.routes import (
-  google,
-  legal,
-  support,
-  user_auth,
-  integrations,
-  plaid,
-  join_waitlist,
-  index,
-)
+from web.routes import google, legal, support, user_auth, integrations, plaid, join_waitlist, index
 from dotenv import load_dotenv
 from database.postgres.postgres_db import create_db_and_tables
 from web.middleware.rate_limiter import RateLimiter
@@ -17,6 +8,7 @@ from fastapi.templating import Jinja2Templates
 import threading
 from core.core import core
 from contextlib import asynccontextmanager
+from utils.logger import log
 
 # Load .env file
 load_dotenv()
@@ -33,7 +25,7 @@ async def lifespan(app: FastAPI):
   yield
   exit_thread.set()
   core_thread.join()
-  print("Shutdown core thread...")
+  log.info("Shutdown core thread...")
 
 app = FastAPI(lifespan=lifespan)
 
@@ -55,7 +47,7 @@ templates = Jinja2Templates(directory="web/templates")
 
 # Health check
 @app.get("/ping")
-async def ping(): 
+async def ping():
   thread_alive = core_thread.is_alive() if core_thread else False
   return {
     "thread_running": thread_alive,

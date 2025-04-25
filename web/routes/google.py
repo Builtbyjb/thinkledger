@@ -8,7 +8,7 @@ from google.oauth2 import id_token
 from google.auth.transport import requests as google_requests
 from utils.util import generate_crypto_string
 from sqlmodel import Session
-from database.postgres.postgres_db  import get_db
+from database.postgres.postgres_db import get_db
 from database.redis.redis import get_redis
 from database.postgres.postgres_schema import User
 from typing import Optional, Union
@@ -17,7 +17,7 @@ from utils.auth_utils import service_auth_config
 from utils.constants import TOKEN_URL
 
 
-router = APIRouter()
+router = APIRouter(prefix="/google", tags=["Google"])
 
 def add_user_pg(db: Session, user_info) -> bool:
   """
@@ -63,7 +63,7 @@ def add_user_redis(
     return False
   return True
 
-@router.get("/auth/google/callback/sign-in" , response_model=None)
+@router.get("/callback/sign-in", response_model=None)
 async def google_sign_in_callback(
   request: Request,
   db: Session = Depends(get_db),
@@ -145,7 +145,7 @@ async def google_sign_in_callback(
   )
   return response
 
-@router.get("/auth/google/callback/services")
+@router.get("/callback/service")
 async def google_service_callback(request: Request, redis = Depends(get_redis)):
   """
     Completes getting google service tokens oauth flow
@@ -195,7 +195,7 @@ class GoogleScopes(Enum):
   sheets = "https://www.googleapis.com/auth/spreadsheets"
   drive = "https://www.googleapis.com/auth/drive.file"
 
-@router.get("/auth-google-service")
+@router.get("/service")
 async def google_service_token(request: Request) -> JSONResponse:
   """
     Starts google service tokens oauth flow

@@ -1,65 +1,42 @@
-from core.google_core import create_google_service
-from utils.types import Transaction
-from database.postgres.postgres_db import gen_db
-from database.postgres.postgres_schema import Account, Institution
-from utils.core_utils import invert_amount
+from core.google_core import create_service, create_folder
+from utils.logger import log
+from database.redis.redis import gen_redis
 
+def add_transaction(transaction, user_id: str):
+  s_service, d_service = create_service(user_id)
+  if s_service is None or d_service is None:
+    log.error("Error creating Google Sheets or Google Drive service")
+    return
 
-def add_transaction_to_google_sheet(transactions, user_id: str) -> bool:
-  """
-  Amount rules:{
-    Money leaving the account is positive converted to negative
-    Money coming into the account is negative converted to positive
-  }
-  """
-  db = gen_db()
-  if db is None: return False
+  redis = gen_redis()
+  if redis is None:
+    log.error("Error getting redis instance")
+    return
 
-  print("transaction length: ", len(transactions))
+  # Get parent folder id or create it if it doesn't exist
+  try: parent_id = str(redis.get(f"thinkledger:{user_id}"))
+  except Exception as e:
+    log.error("Error getting thinkledger folder id from redis: ", e)
+    return
 
-  sheets_service, drive_service = create_google_service(user_id)
-  if sheets_service is None or drive_service is None:
-    print("Error creating Google Sheets service or Google Drive service")
-    return False
+  if parent_id is None:
+    parent_id = create_folder(d_service, "thinkledger", user_id)
+    if parent_id is None:
+      log.error("Error creating thinkledger folder")
+      return
 
-  # TODO: Create a google drive folder called thinkledger if it doesn't exist
-  # TODO: Create a general ledger subfolder in the thinkledger folder, if it doesn't exist
+  # Get general ledger folder id or create it if it doesn't exist
+  try: general_ledger_id = redis.get(f"general_ledger:{user_id}")
+  except Exception as e:
+    log.error("Error getting general ledger folder id from redis: ", e)
+    return
+
+  if general_ledger_id is None:
+    general_ledger_id = create_folder(d_service, "general_ledger", user_id, parent_id)
+    if general_ledger_id is None:
+      log.error("Error creating general ledger folder")
+      return
+
   # TODO: Create a spreadsheet file in the general ledger folder for the year if it doesn't exist
   # TODO: Create a a transaction sheet in the spreadsheet file, if it doesn't exist
-
-  for t in transactions:
-    acc = db.get(Account, t.account_id)
-    if acc is None:
-      print("Account not found in database")
-      return False
-    
-    ins = db.get(Institution, acc.institution_id)
-    if ins is None:
-      print("Institution not found in database")
-      return False
-
-    merchant_name = t.merchant_name
-    if t.merchant_name is None: merchant_name = t.name
-
-    amount = invert_amount(t.amount)
-
-    transaction = Transaction(
-      id=t.transaction_id,
-      date=t.date, 
-      amount=amount,
-      institution=ins.name,
-      institution_account_name=acc.name,
-      institution_account_type=acc.subtype,
-      category=t.category,
-      payment_channel=t.payment_channel,
-      merchant_name=merchant_name,
-      currency_code=t.iso_currency_code,
-      pending=t.pending,
-      authorized_date=t.authorized_date
-    )
-
-    # TODO: Add transaction to google sheet
-
-    # print(transaction)
-
-  return True
+  print(transaction)

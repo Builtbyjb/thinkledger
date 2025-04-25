@@ -15,4 +15,3 @@ class Transaction(BaseModel):
   currency_code: str
   pending: bool
   authorized_date: Optional[Date]
-    
