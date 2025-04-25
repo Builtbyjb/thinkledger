@@ -4,8 +4,18 @@ from database.postgres.postgres_schema import User
 from sqlmodel import select
 import time
 from utils.core_utils import TaskPriority, Tasks
-from core.celery import get_transaction, add_transaction_to_google_sheet
+from core.celery import add_transaction_to_google_sheet
+from core.plaid_core import get_transactions
 
+
+def handle_high_task(user_id: str):
+  pass
+
+def handle_low_task(user_id: str):
+  pass
+
+def handle_task(user_id: str):
+  pass
 
 def core(exit_thread):
   print("Print starting core thread...")
@@ -19,6 +29,7 @@ def core(exit_thread):
     time.sleep(60)
     users = db.exec(select(User)).all()
     for u in users:
+      # TODO: Split into two functions
       # Check for tasks of High level priority
       try: h_len = redis.llen(f"tasks:{TaskPriority.HIGH}:{u.id}")
       except Exception as e:
@@ -39,14 +50,14 @@ def core(exit_thread):
         # print("task: ", task)
         # print("access_token: ", access_token)
         if task == Tasks.trans_sync.value:
-          transactions = get_transaction(access_token)
-          if transactions is None:
-            print("Error getting transactions")
-            continue
-
-          if not add_transaction_to_google_sheet(transactions, u.id):
-            print("Error adding transaction to google sheet")
-            continue
+          for t in get_transactions(access_token):
+            if t is None:
+              print("Error getting transactions")
+              continue
+            else:
+              if not add_transaction_to_google_sheet(t, u.id):
+                print("Error adding transaction to google sheet")
+                continue
       else:
         print("No tasks")
 
@@ -63,3 +74,4 @@ def core(exit_thread):
           print(e)
           continue
         print(task)
+

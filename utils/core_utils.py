@@ -25,8 +25,7 @@ def add_tasks(value: str, user_id: str, priority: TaskPriority) -> bool:
     return False
 
   # Add tasks to list head (LPUSH)
-  try:
-    redis.lpush(f"tasks:{priority}:{user_id}", value)
+  try: redis.lpush(f"tasks:{priority}:{user_id}", value)
   except Exception as e:
     print(f"Error adding task to queue: {e}")
     return False
@@ -37,7 +36,5 @@ def invert_amount(amount: float) -> float:
   """
     Inverts the amount to be negative if it is positive, and positive if it is negative
   """
-  if amount > 0:
-    return -amount
-  else:
-    return abs(amount)
+  if amount > 0: return -amount
+  else: return abs(amount)

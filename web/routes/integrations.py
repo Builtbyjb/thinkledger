@@ -14,12 +14,8 @@ async def banking(request: Request):
   return templates.TemplateResponse(
     request=request,
     name="auth/banking.html",
-    context={
-      "username": username,
-      "btn_style_full": BTN_STYLE_FULL
-    }
+    context={"username": username, "btn_style_full": BTN_STYLE_FULL}
   )
-
 
 @router.get("/google", status_code=status.HTTP_200_OK)
 @auth_required(mode="strict")
@@ -28,8 +24,5 @@ async def google(request: Request):
   return templates.TemplateResponse(
     request=request,
     name="auth/google.html",
-    context={
-      "username": username,
-      "btn_style_full": BTN_STYLE_FULL
-    }
+    context={"username": username, "btn_style_full": BTN_STYLE_FULL}
   )

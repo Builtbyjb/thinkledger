@@ -12,10 +12,7 @@ def create_plaid_client() -> plaid_api.PlaidApi:
   if PLAID_ENV == "production": host=plaid.Environment.Production
   config = plaid.Configuration(
     host=host,
-    api_key={
-      'clientId': PLAID_CLIENT_ID,
-      'secret': PLAID_CLIENT_SECRET
-    })
+    api_key={'clientId': PLAID_CLIENT_ID, 'secret': PLAID_CLIENT_SECRET})
   api_client = plaid_api.ApiClient(config)
   client = plaid_api.PlaidApi(api_client)
   return client

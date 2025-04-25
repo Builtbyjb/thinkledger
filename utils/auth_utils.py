@@ -3,7 +3,7 @@ from google_auth_oauthlib.flow import Flow # type: ignore
 import requests
 from typing import Optional, List
 from database.redis.redis import gen_redis
-from utils.constants import TOKEN_INFO_URL, TOKEN_REFRESH_URL
+from utils.constants import TOKEN_INFO_URL, TOKEN_URL
 
 
 def sign_in_auth_config() -> Flow:
@@ -29,13 +29,8 @@ def sign_in_auth_config() -> Flow:
       "redirect_uris": [REDIRECT_URL],
     }
   }
-  config = Flow.from_client_config(
-    client_config,
-    scopes=SCOPES,
-    redirect_uri=REDIRECT_URL
-  )
+  config = Flow.from_client_config(client_config, scopes=SCOPES, redirect_uri=REDIRECT_URL)
   return config
-
 
 def service_auth_config(scopes: List[str]) -> Flow:
   """
@@ -57,25 +52,14 @@ def service_auth_config(scopes: List[str]) -> Flow:
       "redirect_uris": [REDIRECT_URL],
     }
   }
-  config = Flow.from_client_config(
-    client_config,
-    scopes=scopes,
-    redirect_uri=REDIRECT_URL
-  )
+  config = Flow.from_client_config(client_config, scopes=scopes, redirect_uri=REDIRECT_URL)
   return config
-
 
 def verify_access_token(access_token: str) -> bool:
   """
     Verify google access token.
   """
-  try:
-    # Verify access token
-    response = requests.get(
-      TOKEN_INFO_URL,
-      params={'access_token': access_token},
-      timeout=10  # Add a timeout
-    )
+  try: response = requests.get(TOKEN_INFO_URL, params={'access_token': access_token}, timeout=10)
   except Exception as e:
       print(f"Error verifying access token: {e}")
       return False
@@ -83,7 +67,6 @@ def verify_access_token(access_token: str) -> bool:
     print("Error verifying access token")
     return False
   return True
-
 
 def refresh_access_token(refresh_token: str, client_id: str, client_secret: str) -> tuple[Optional[str], bool]:
   """
@@ -96,13 +79,8 @@ def refresh_access_token(refresh_token: str, client_id: str, client_secret: str)
     'grant_type': 'refresh_token'
   }
 
-  try:
-    response = requests.post(
-      TOKEN_REFRESH_URL,
-      data=payload,
-      timeout=15
-    )
-
+  try: 
+    response = requests.post(TOKEN_URL, data=payload, timeout=15)
     if response.status_code == 200:
       token_json = response.json()
       new_access_token = str(token_json["access_token"])

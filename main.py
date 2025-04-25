@@ -21,16 +21,19 @@ from contextlib import asynccontextmanager
 # Load .env file
 load_dotenv()
 exit_thread = threading.Event()
+core_thread = None
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+  global core_thread
   create_db_and_tables()
-  core_thread = threading.Thread(target=core,args=(exit_thread,), daemon=True)
+  exit_thread.clear() # Ensure the exit thread is cleared before starting the core thread
+  core_thread = threading.Thread(target=core, args=(exit_thread,), daemon=True)
   core_thread.start()
   yield
   exit_thread.set()
+  core_thread.join()
   print("Shutdown core thread...")
-
 
 app = FastAPI(lifespan=lifespan)
 
@@ -49,6 +52,16 @@ app.include_router(join_waitlist.router)
 
 app.mount("/static", StaticFiles(directory="web/static"), name="static")
 templates = Jinja2Templates(directory="web/templates")
+
+# Health check
+@app.get("/ping")
+async def ping(): 
+  thread_alive = core_thread.is_alive() if core_thread else False
+  return {
+    "thread_running": thread_alive,
+    "shutdown_signal_set": exit_thread.is_set(),
+    "response": "pong"
+  }
 
 # Handles page not found
 @app.exception_handler(404)

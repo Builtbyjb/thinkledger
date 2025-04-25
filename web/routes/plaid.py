@@ -64,7 +64,7 @@ async def plaid_link_token(request: Request, redis=Depends(get_redis)) -> JSONRe
 
   link_request = LinkTokenCreateRequest(
     user=LinkTokenCreateRequestUser(client_user_id=user_id),
-    client_name='ThinkLedger',
+    client_name='Thinkledger',
     products=[Products('transactions')],
     transactions=LinkTokenTransactions(days_requested=50),
     country_codes=[CountryCode('US'), CountryCode('CA')],
@@ -74,8 +74,8 @@ async def plaid_link_token(request: Request, redis=Depends(get_redis)) -> JSONRe
     account_filters=LinkTokenAccountFilters(
       depository=DepositoryFilter(
         account_subtypes=DepositoryAccountSubtypes([
-           DepositoryAccountSubtype('checking'),
-           DepositoryAccountSubtype('savings')
+          DepositoryAccountSubtype('checking'),
+          DepositoryAccountSubtype('savings')
         ])
       ),
       credit=CreditFilter(
@@ -93,10 +93,7 @@ async def plaid_link_token(request: Request, redis=Depends(get_redis)) -> JSONRe
 
 @router.post("/plaid-access-token")
 async def plaid_access_token(
-  request: Request,
-  data: PlaidResponse,
-  db = Depends(get_db),
-  redis= Depends(get_redis)
+  request: Request, data: PlaidResponse, db = Depends(get_db),redis= Depends(get_redis)
 ) -> JSONResponse:
   """
     Get an institution's access token with a public token,
@@ -137,11 +134,10 @@ async def plaid_access_token(
       db.commit()
       db.refresh(new_ins)
     else: 
-      # Delete old accounts information
+      # Delete old accounts information associated with the institution
       statement = select(Account).where(Account.institution_id == data.institution.institution_id)
       accounts = db.exec(statement).all()
-      for account in accounts:
-        db.delete(account)
+      for account in accounts: db.delete(account)
       # Update access token
       ins.access_token = access_token
       db.add(ins)
@@ -185,7 +181,6 @@ async def plaid_webhooks():
 @router.get("/auth/plaid/callback")
 async def plaid_callback():
   return True
-
 
 @router.delete("/plaid-account-remove")
 async def plaid_account_remove():

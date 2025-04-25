@@ -3,7 +3,7 @@ from google.oauth2.credentials import Credentials
 from database.redis.redis import gen_redis
 from typing import Optional, Tuple
 import os
-from utils.constants import TOKEN_REFRESH_URL
+from utils.constants import TOKEN_URL
 
 CLIENT_ID = os.getenv("GOOGLE_SERVICE_CLIENT_ID")
 CLIENT_SECRET = os.getenv("GOOGLE_SERVICE_CLIENT_SECRET")
@@ -25,7 +25,7 @@ def create_google_service(user_id: str) -> Tuple[Optional[object], Optional[obje
 
   credentials = Credentials(
     token=access_token,
-    token_uri=TOKEN_REFRESH_URL,
+    token_uri=TOKEN_URL,
     refresh_token=refresh_token,
     client_id=CLIENT_ID,
     client_secret=CLIENT_SECRET,

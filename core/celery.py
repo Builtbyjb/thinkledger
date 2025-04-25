@@ -1,21 +1,9 @@
-from utils.plaid_utils import create_plaid_client
-from plaid.model.transactions_sync_request import TransactionsSyncRequest # type: ignore
 from core.google_core import create_google_service
 from utils.types import Transaction
 from database.postgres.postgres_db import gen_db
 from database.postgres.postgres_schema import Account, Institution
 from utils.core_utils import invert_amount
 
-
-def get_transaction(access_token: str):
-  client = create_plaid_client()
-  request = TransactionsSyncRequest(access_token=access_token)
-  try: response = client.transactions_sync(request)
-  except Exception as e:
-    print("Error getting transactions: ", e)
-    return None
-  transactions = response['added']
-  return transactions
 
 def add_transaction_to_google_sheet(transactions, user_id: str) -> bool:
   """
@@ -27,13 +15,19 @@ def add_transaction_to_google_sheet(transactions, user_id: str) -> bool:
   db = gen_db()
   if db is None: return False
 
+  print("transaction length: ", len(transactions))
+
   sheets_service, drive_service = create_google_service(user_id)
   if sheets_service is None or drive_service is None:
     print("Error creating Google Sheets service or Google Drive service")
     return False
 
+  # TODO: Create a google drive folder called thinkledger if it doesn't exist
+  # TODO: Create a general ledger subfolder in the thinkledger folder, if it doesn't exist
+  # TODO: Create a spreadsheet file in the general ledger folder for the year if it doesn't exist
+  # TODO: Create a a transaction sheet in the spreadsheet file, if it doesn't exist
+
   for t in transactions:
-    # TODO: Fix account mismatch
     acc = db.get(Account, t.account_id)
     if acc is None:
       print("Account not found in database")
@@ -66,6 +60,6 @@ def add_transaction_to_google_sheet(transactions, user_id: str) -> bool:
 
     # TODO: Add transaction to google sheet
 
-    print(transaction)
+    # print(transaction)
 
   return True
