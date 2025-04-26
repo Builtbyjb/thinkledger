@@ -7,6 +7,7 @@ from utils.logger import log
 from utils.core_utils import invert_amount
 from typing import Generator, Any
 
+
 def get_transactions(access_token: str) -> Generator[Any, None]:
   client = create_plaid_client()
   has_more: bool = True

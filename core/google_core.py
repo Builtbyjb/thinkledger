@@ -6,8 +6,7 @@ import os
 from utils.constants import TOKEN_URL
 from utils.logger import log
 
-CLIENT_ID = os.getenv("GOOGLE_SERVICE_CLIENT_ID")
-CLIENT_SECRET = os.getenv("GOOGLE_SERVICE_CLIENT_SECRET")
+
 
 async def create_service(user_id: str) -> Tuple[Optional[object], Optional[object]]:
   """
@@ -15,6 +14,9 @@ async def create_service(user_id: str) -> Tuple[Optional[object], Optional[objec
   """
   redis = gen_redis()
   if redis is None: return None, None
+
+  CLIENT_ID = os.getenv("GOOGLE_SERVICE_CLIENT_ID")
+  CLIENT_SECRET = os.getenv("GOOGLE_SERVICE_CLIENT_SECRET")
 
   # Verify access token; and if expired, use refresh token to get new access token
   access_token: Optional[str] = await redis.get(f"access_token:{user_id}")
