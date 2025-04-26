@@ -19,8 +19,7 @@ jobs:
       - name: Install dependencies
         run: |
           curl -LsSf https://astral.sh/uv/install.sh | sh
-          uv sync --frozen --no-cache
-          python3 -m pip install types-requests
+          uv sync
         
       - name: Install linters
         run: |
@@ -29,6 +28,9 @@ jobs:
 
       - name: Run ruff
         run: ruff check .
-        
+
+      - name: Install missing stubs
+        run: python3 -m pip install types-requests 
+
       - name: Run mypy
         run: mypy .
