@@ -33,4 +33,5 @@ jobs:
         run: python3 -m pip install types-requests 
 
       - name: Run mypy
-        run: mypy .
+        # run: python3 -m mypy --strict --ignore-missing-imports .
+        run: python3 -m mypy .
