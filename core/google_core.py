@@ -7,7 +7,6 @@ from utils.constants import TOKEN_URL
 from utils.logger import log
 
 
-
 async def create_service(user_id: str) -> Tuple[Optional[object], Optional[object]]:
   """
   Create a google sheet service and a google drive service; returns None if failed
@@ -15,8 +14,8 @@ async def create_service(user_id: str) -> Tuple[Optional[object], Optional[objec
   redis = gen_redis()
   if redis is None: return None, None
 
-  CLIENT_ID = os.getenv("GOOGLE_SERVICE_CLIENT_ID")
-  CLIENT_SECRET = os.getenv("GOOGLE_SERVICE_CLIENT_SECRET")
+  client_id = os.getenv("GOOGLE_SERVICE_CLIENT_ID")
+  client_secret = os.getenv("GOOGLE_SERVICE_CLIENT_SECRET")
 
   # Verify access token; and if expired, use refresh token to get new access token
   access_token: Optional[str] = await redis.get(f"access_token:{user_id}")
@@ -30,8 +29,8 @@ async def create_service(user_id: str) -> Tuple[Optional[object], Optional[objec
     token=access_token,
     token_uri=TOKEN_URL,
     refresh_token=refresh_token,
-    client_id=CLIENT_ID,
-    client_secret=CLIENT_SECRET,
+    client_id=client_id,
+    client_secret=client_secret,
   )
 
   try:

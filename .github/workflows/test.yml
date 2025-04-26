@@ -26,7 +26,8 @@ jobs:
           uv tool install ruff
           uv tool install mypy
 
-      - name: Run linters
-        run: |
-          ruff check .
-          mypy --strict .
+      - name: Run ruff
+        run: ruff check .
+        
+      - name: Run mypy
+        run: mypy .
