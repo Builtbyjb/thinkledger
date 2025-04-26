@@ -37,4 +37,4 @@ def invert_amount(amount: float) -> float:
     Inverts the amount to be negative if it is positive, and positive if it is negative
   """
   if amount > 0: return -amount
-  else: return abs(amount)
+  return abs(amount)

@@ -5,6 +5,7 @@ from functools import wraps
 from redis import Redis
 from database.redis.redis import gen_redis
 from utils.auth_utils import auth_session
+from typing import Any
 
 
 # Authentication mode options
@@ -19,7 +20,7 @@ def get_name(session_id: str, redis: Redis) -> Optional[str]:
     return None
   return username
 
-def auth_required(mode: AuthMode = "strict"):
+def auth_required(mode: AuthMode = "strict") -> Any:
   def decorator(func: Callable):
     @wraps(func)
     async def wrapper(request: Request, *args, **kwargs):

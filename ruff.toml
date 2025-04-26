@@ -9,38 +9,42 @@ lint.select = [
   "W6",
   "E71",
   "E72",
-  "E112",   # no-indented-block
-  "E113",   # unexpected-indentation
-  "E203",   # whitespace-before-punctuation
-  "E272",   # multiple-spaces-before-keyword
-  "E275",   # missing-whitespace-after-keyword
-  "E303",   # too-many-blank-lines
-  "E304",   # blank-line-after-decorator
-  "E501",   # line-too-long
+  "E112",   # No-indented-block
+  "E113",   # Unexpected-indentation
+  "E203",   # Whitespace-before-punctuation
+  "E272",   # Multiple-spaces-before-keyword
+  "E275",   # Missing-whitespace-after-keyword
+  "E303",   # Too-many-blank-lines
+  "E304",   # Blank-line-after-decorator
+  "E501",   # Line-too-long
   "E502",
-  "E702",   # multiple-statements-on-one-line-semicolon
-  "E703",   # useless-semicolon
-  "E731",   # lambda-assignment
-  "W191",   # tab-indentation
-  "W291",   # trailing-whitespace
-  "W293",   # blank-line-with-whitespace
-  "UP039",  # unnecessary-class-parentheses
-  "C416",   # unnecessary-comprehension
-  "RET506", # superfluous-else-raise
-  "RET507", # superfluous-else-continue
-  "A",      # builtin-variable-shadowing, builtin-argument-shadowing, builtin-attribute-shadowing
-  "SIM105", # suppressible-exception
-  "FURB110",# if-exp-instead-of-or-operator
-  "RUF018", # assignment-in-assert
-  "RET503", # implicit return type
-  "ANN201", # checks function return type
-  "F401", # unused imports
+  "E702",   # Multiple-statements-on-one-line-semicolon
+  "E703",   # Useless-semicolon
+  "E731",   # Lambda-assignment
+  "W191",   # Tab-indentation
+  "W291",   # Trailing-whitespace
+  "W293",   # Blank-line-with-whitespace
+  "UP039",  # Unnecessary-class-parentheses
+  "C416",   # Unnecessary-comprehension
+  "RET506", # Superfluous-else-raise
+  "RET507", # Superfluous-else-continue
+  "A",      # Builtin-variable-shadowing, builtin-argument-shadowing, builtin-attribute-shadowing
+  "SIM105", # Suppressible-exception
+  "FURB110",# If-exp-instead-of-or-operator
+  "RUF018", # Assignment-in-assert
+  "RET503", # Implicit return type
+  "RET505", # Unnecessary else statements
+  "RET504", # Unnecessary variable assignment before return
+  "ANN201", # Checks function return type
+  "F401", # Unused imports
+  "F841", # Variable assigned to but never used
 ]
 
-extend-select = [
-  "TCH", # type checking
+lint.extend-select = [
+  "TCH", # Type checking
+  "N", # Pep8 naming convention
 ]
 
-ignore = [] # Ignore errors
+lint.ignore = [] # Ignore errors
 
 exclude = []

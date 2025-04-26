@@ -5,8 +5,9 @@ from database.postgres.postgres_db import gen_db
 from database.postgres.postgres_schema import Account, Institution
 from utils.logger import log
 from utils.core_utils import invert_amount
+from typing import Generator, Any
 
-def get_transactions(access_token: str):
+def get_transactions(access_token: str) -> Generator[Any, None]:
   client = create_plaid_client()
   has_more: bool = True
   cursor = ""
@@ -23,7 +24,7 @@ def get_transactions(access_token: str):
     has_more = response['has_more']
     cursor = response['next_cursor']
 
-def generate_transaction(transactions):
+def generate_transaction(transactions) -> Generator[Transaction, None]:
   """
   Generates Transaction objects from the transactions gotten from plaid
   and yields a single transaction at a time
@@ -37,6 +38,8 @@ def generate_transaction(transactions):
   if db is None: return None
 
   print("transaction length: ", len(transactions))
+
+  # TODO: Convert transactions to a list following the headers format
 
   for t in transactions:
     try: acc = db.get(Account, t.account_id)
@@ -55,7 +58,7 @@ def generate_transaction(transactions):
 
     if ins is None:
       log.error("Institution not found in database")
-      return False
+      return None
 
     merchant_name = t.merchant_name
     if t.merchant_name is None: merchant_name = t.name

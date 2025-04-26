@@ -13,11 +13,11 @@ if POSTGRES_URL is not None:  engine = create_engine(POSTGRES_URL, echo=False)
 else: sys.exit("Could not get postgres url from env variables")
 
 # Dependency to get DB session
-def get_db():
+def get_db() -> Any:
     with Session(engine) as session: yield session
 
 # Function to create all tables
-def create_db_and_tables(): SQLModel.metadata.create_all(engine)
+def create_db_and_tables() -> None: SQLModel.metadata.create_all(engine)
 
 # Generate postgres db engine
 def gen_db(db_gen:Callable[..., Generator[Session, Any, None]] = get_db) -> Optional[Session]:

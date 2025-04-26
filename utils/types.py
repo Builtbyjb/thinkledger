@@ -1,10 +1,10 @@
 from pydantic import BaseModel
-from datetime import date as Date
+from datetime import date as dt
 from typing import Optional
 
 class Transaction(BaseModel):
   id: str
-  date: Date
+  date: dt
   amount: float
   institution: str
   institution_account_name: str
@@ -14,4 +14,4 @@ class Transaction(BaseModel):
   merchant_name: str
   currency_code: str
   pending: bool
-  authorized_date: Optional[Date]
+  authorized_date: Optional[dt]

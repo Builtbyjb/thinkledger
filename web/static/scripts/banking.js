@@ -9,7 +9,7 @@ import { setActiveLink, handleSidebar } from "./utils.min.js";
   // Get plaid link token
   connectBankBtn.addEventListener("click", async () => {
     try {
-      const response = await fetch("/plaid-link-token", {method: "GET"});
+      const response = await fetch("/plaid/link-token", {method: "GET"});
       const data = await response.json();
       const linkToken = data.linkToken;
       // Get plaid access token
@@ -20,7 +20,7 @@ import { setActiveLink, handleSidebar } from "./utils.min.js";
             console.log("Account metadata: ", metadata.accounts);
             console.log("Institution metadata: ", metadata.institution);
             try {
-              const response = await fetch("/plaid-access-token", {
+              const response = await fetch("/plaid/access-token", {
                 method: "POST",
                 headers: {"Content-Type": "application/json"},
                 body: JSON.stringify({

@@ -9,7 +9,7 @@ from concurrent.futures import ThreadPoolExecutor
 from core.celery import add_transaction
 
 
-def handle_high_task(redis, user_id: str):
+async def handle_high_task(redis, user_id: str) -> None:
   # Check for tasks of High level priority
   try: h_len = redis.llen(f"tasks:{TaskPriority.HIGH}:{user_id}")
   except Exception as e:
@@ -32,13 +32,12 @@ def handle_high_task(redis, user_id: str):
       for t in get_transactions(access_token):
         if t is None: continue
         for g in generate_transaction(t):
-          if g is None: continue
-          add_transaction(g, user_id)
+          await add_transaction(g, user_id)
   else:
     print("No tasks")
   return
 
-def handle_low_task(redis, user_id: str):
+def handle_low_task(redis, user_id: str) -> None:
   # Check for tasks of low level priority
   try: l_len = redis.llen(f"tasks:{TaskPriority.LOW}:{user_id}")
   except Exception as e:
@@ -54,15 +53,15 @@ def handle_low_task(redis, user_id: str):
     print(task)
   return
 
-def handle_task(redis, user_id: str):
-  handle_high_task(redis, user_id)
+async def handle_task(redis, user_id: str) -> None:
+  await handle_high_task(redis, user_id)
   handle_low_task(redis, user_id)
 
 MAX_WORKERS = 5
 INTERVAL = 60
 
-def core(exit_thread):
-  """ 
+def core(exit_thread) -> None:
+  """
   Gets users from the database and creates a new thread for each user to handle their tasks.
   """
   log.info("Print starting core thread...")
@@ -78,7 +77,7 @@ def core(exit_thread):
       # time.sleep(60)
       users = db.exec(select(User)).all()
       if users:
-        futures = {executor.submit(handle_task, redis, u.id): u for u in users}
+        _ = {executor.submit(handle_task, redis, u.id): u for u in users}
         # Wait for all tasks to complete
         # for future in futures:
         #     try:

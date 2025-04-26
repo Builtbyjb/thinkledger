@@ -51,7 +51,7 @@ async def plaid_link_token(request: Request, redis=Depends(get_redis)) -> JSONRe
   """
     Get plaid link token to start the institution linking process
   """
-  SERVER_URL = os.getenv("SERVER_URL")
+  server_url = os.getenv("SERVER_URL")
 
   session_id = request.cookies.get('session_id')
   if session_id is None:
@@ -71,7 +71,7 @@ async def plaid_link_token(request: Request, redis=Depends(get_redis)) -> JSONRe
     transactions=LinkTokenTransactions(days_requested=50),
     country_codes=[CountryCode('US'), CountryCode('CA')],
     language='en',
-    webhook=f"{SERVER_URL}/plaid/webhooks",
+    webhook=f"{server_url}/plaid/webhooks",
     # redirect_uri=f"{SERVER_URL}/plaid/auth/callback",
     account_filters=LinkTokenAccountFilters(
       depository=DepositoryFilter(
@@ -93,9 +93,9 @@ async def plaid_link_token(request: Request, redis=Depends(get_redis)) -> JSONRe
   # print(response['link_token'])
   return JSONResponse(content={"linkToken": response["link_token"]}, status_code=200)
 
-def add_institutions_to_db(db: Session, data, access_token: str, user_id: str):
+def add_institutions_to_db(db: Session, data, access_token: str, user_id: str) -> None:
   """
-    Check if institution already exists before adding a new institutions; 
+    Check if institution already exists before adding a new institutions;
     if it does, update the access token and remove old accounts information associated
     with the institution.
   """
@@ -125,7 +125,7 @@ def add_institutions_to_db(db: Session, data, access_token: str, user_id: str):
   except Exception as e:
     log.error(f"Error saving institution: {e}")
 
-def add_accounts_to_db(db: Session, data, user_id: str):
+def add_accounts_to_db(db: Session, data, user_id: str) -> None:
   """
     Save accounts to the database
   """
@@ -148,7 +148,11 @@ def add_accounts_to_db(db: Session, data, user_id: str):
 
 @router.post("/access-token")
 async def plaid_access_token(
-  request: Request, data: PlaidResponse, bg: BackgroundTasks, db = Depends(get_db), redis= Depends(get_redis)
+  request: Request,
+  data: PlaidResponse,
+  bg: BackgroundTasks,
+  db = Depends(get_db),
+  redis= Depends(get_redis)
 ) -> JSONResponse:
   """
     Get an institution's access token with a public token,
@@ -163,8 +167,12 @@ async def plaid_access_token(
     log.error(f"Error exchanging public token: {e}")
     return JSONResponse(content={"error": "Internal Server Error"}, status_code=500)
 
-  session_id = request.cookies.get("session_id")
-  user_id = str(redis.get(session_id))
+  session_id: Optional[str] = request.cookies.get("session_id")
+  if session_id is None:
+    log.error("Session ID not found")
+    return JSONResponse(content={"error": "Session ID not found"}, status_code=400)
+
+  user_id: Optional[str] = redis.get(session_id)
   if user_id is None:
     log.error("User not found")
     return JSONResponse(content={"error": "User not found"},status_code=404)
@@ -176,7 +184,8 @@ async def plaid_access_token(
   bg.add_task(add_accounts_to_db, db, data, user_id)
 
   # Add transaction sync to user task queue
-  value = f"{Tasks.trans_sync.value}:{access_token}" # access token holds the institution information
+  # access token holds the institution information
+  value = f"{Tasks.trans_sync.value}:{access_token}"
   is_added = add_tasks(value, user_id, TaskPriority.HIGH)
   if is_added is False:
     log.error("Error adding tasks @plaid-access-token > plaid.py")
@@ -185,18 +194,18 @@ async def plaid_access_token(
   return JSONResponse(content={"message": "Institution and Accounts linked"}, status_code=200)
 
 @router.post("/webhooks")
-async def plaid_webhooks(request: Request):
+async def plaid_webhooks(request: Request) -> Response:
   print(request.body())
   return Response(status_code=200)
 
 @router.get("/callback")
-async def plaid_callback():
+async def plaid_callback() -> bool:
   return True
 
 @router.delete("/account-remove/{account_id}")
-async def plaid_account_remove():
-  pass
+async def plaid_account_remove() -> None:
+  return None
 
 @router.delete("/account-remove/all")
-async def plaid_account_remove_all():
-  pass
+async def plaid_account_remove_all() -> None:
+  return None
