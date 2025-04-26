@@ -25,7 +25,6 @@ jobs:
         run: |
           uv tool install ruff
           uv tool install mypy
-          uv tool install types-
 
       - name: Run ruff
         run: ruff check .
