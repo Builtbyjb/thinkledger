@@ -5,26 +5,25 @@ import os
 import sys
 from dotenv import load_dotenv
 
-def delete():
+def delete() -> None:
   """
     Deletes a postgres table. The script takes in a table
     as command line arguments
 
     chmod +x delscript.py to create an executable script
   """
-  POSTGRES_URL = os.getenv("POSTGRES_URL")
-  if POSTGRES_URL is not None: engine = create_engine(POSTGRES_URL)
+  postgres_url = os.getenv("POSTGRES_URL")
+  if postgres_url is not None: engine = create_engine(postgres_url)
   else: sys.exit("Could not get postgres url from env variables")
   if len(sys.argv) != 2: sys.exit("Usage: ./delscript.py <table_name>")
   table_name = sys.argv[1]
   print(f"Deleting {table_name} table")
   try:
     with engine.connect() as db:
-      db.exec_driver_sql(f"DROP TABLE IF EXISTS {table_name}")
+      db.exec_driver_sql(f"DROP TABLE {table_name}")
       db.commit()
-  except Exception as e: return f"Error deleting table: {e}"
-  print("Table deleted successfully")
-
+  except Exception as e: sys.exit(f"Error deleting table: {e}")
+  sys.exit(f"Deleted {table_name} table")
 
 if __name__ == "__main__":
   load_dotenv()

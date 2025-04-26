@@ -1,6 +1,6 @@
 import time
 # from functools import wraps
-from fastapi import Request
+from fastapi import Request, Response
 from starlette.middleware.base import BaseHTTPMiddleware
 from collections import defaultdict
 from typing import Dict
@@ -13,7 +13,7 @@ class RateLimiter(BaseHTTPMiddleware):
         super().__init__(app)
         self.rate_limit_records: Dict[str, int] = defaultdict(int)
 
-    async def dispatch(self, request: Request, call_next):
+    async def dispatch(self, request: Request, call_next) -> Response:
         client_ip = request.client.host # type: ignore
 
         if self.rate_limit_records[client_ip] >= MAX_CALLS:
