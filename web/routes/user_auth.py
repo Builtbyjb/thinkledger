@@ -5,6 +5,7 @@ from utils.auth_utils import sign_in_auth_config
 
 router = APIRouter()
 
+
 @router.get("/sign-in")
 async def sign_in(request: Request) -> RedirectResponse:
   config = sign_in_auth_config()
@@ -26,6 +27,7 @@ async def sign_in(request: Request) -> RedirectResponse:
     samesite="lax"
   )
   return response
+
 
 @router.get("/sign-out")
 async def sign_out(request: Request) -> RedirectResponse:

@@ -7,6 +7,7 @@ from core.plaid_core import get_transactions, generate_transaction
 from utils.logger import log
 from concurrent.futures import ThreadPoolExecutor
 from core.celery import add_transaction
+import asyncio
 
 
 async def handle_high_task(redis, user_id: str) -> None:
@@ -37,6 +38,7 @@ async def handle_high_task(redis, user_id: str) -> None:
     print("No tasks")
   return
 
+
 def handle_low_task(redis, user_id: str) -> None:
   # Check for tasks of low level priority
   try: l_len = redis.llen(f"tasks:{TaskPriority.LOW}:{user_id}")
@@ -53,6 +55,7 @@ def handle_low_task(redis, user_id: str) -> None:
     print(task)
   return
 
+
 async def handle_task(redis, user_id: str) -> None:
   await handle_high_task(redis, user_id)
   handle_low_task(redis, user_id)
@@ -60,7 +63,8 @@ async def handle_task(redis, user_id: str) -> None:
 MAX_WORKERS = 5
 INTERVAL = 60
 
-def core(exit_thread) -> None:
+
+async def core(exit_thread) -> None:
   """
   Gets users from the database and creates a new thread for each user to handle their tasks.
   """
@@ -77,7 +81,9 @@ def core(exit_thread) -> None:
       # time.sleep(60)
       users = db.exec(select(User)).all()
       if users:
-        _ = {executor.submit(handle_task, redis, u.id): u for u in users}
+        tasks = [asyncio.create_task(handle_task(redis, u.id)) for u in users]
+        await asyncio.gather(*tasks)
+        # _ = {executor.submit(handle_task, redis, u.id): u for u in users}
         # Wait for all tasks to complete
         # for future in futures:
         #     try:

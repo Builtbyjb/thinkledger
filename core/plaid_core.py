@@ -8,7 +8,7 @@ from utils.core_utils import invert_amount
 from typing import Generator, Any
 
 
-def get_transactions(access_token: str) -> Generator[Any, None]:
+def get_transactions(access_token: str) -> Generator[Any, Any, None]:
   client = create_plaid_client()
   has_more: bool = True
   cursor = ""
@@ -21,11 +21,13 @@ def get_transactions(access_token: str) -> Generator[Any, None]:
       print("Error getting transactions: ", e)
       yield  None
     response = client.transactions_sync(request)
+    # TODO: Create response type
     yield response['added']
     has_more = response['has_more']
     cursor = response['next_cursor']
 
-def generate_transaction(transactions) -> Generator[Transaction, None]:
+
+def generate_transaction(transactions) -> Generator[Transaction, Any, None]:
   """
   Generates Transaction objects from the transactions gotten from plaid
   and yields a single transaction at a time

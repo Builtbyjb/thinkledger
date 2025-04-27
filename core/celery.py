@@ -1,3 +1,4 @@
+from celery import Celery
 from core.google_core import (
   create_service,
   create_folder,
@@ -8,8 +9,12 @@ from core.google_core import (
 from utils.logger import log
 from database.redis.redis import gen_redis
 from typing import Optional
+import os
 
 
+c = Celery("tasks", broker=os.getenv("REDIS_URL"))
+
+@c.task
 async def add_transaction(transaction, user_id: str) -> None:
   s_service, d_service = await create_service(user_id)
   if s_service is None or d_service is None:

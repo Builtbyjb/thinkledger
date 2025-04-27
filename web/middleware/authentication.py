@@ -11,6 +11,7 @@ from typing import Any
 # Authentication mode options
 AuthMode = Literal["strict", "lax"]
 
+
 def get_name(session_id: str, redis: Redis) -> Optional[str]:
   try:
     user_id = str(redis.get(session_id))
@@ -19,6 +20,7 @@ def get_name(session_id: str, redis: Redis) -> Optional[str]:
     print(f"Error fetching user name or user id: {e}")
     return None
   return username
+
 
 def auth_required(mode: AuthMode = "strict") -> Any:
   def decorator(func: Callable):

@@ -8,6 +8,7 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from utils.plaid_utils import create_plaid_client
 from plaid.model.item_remove_request import ItemRemoveRequest # type: ignore
 
+
 def unlink_plaid_account() -> None:
   if len(sys.argv) != 2:
     print("Usage: python unlink.py <access_token>")

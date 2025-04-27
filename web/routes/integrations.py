@@ -8,6 +8,7 @@ from utils.styles import BTN_STYLE_FULL
 router = APIRouter(tags=["Integrations"])
 templates = Jinja2Templates(directory="web/templates")
 
+
 @router.get("/banking", status_code=status.HTTP_200_OK)
 @auth_required(mode="strict")
 async def banking(request: Request) -> HTMLResponse:
@@ -17,6 +18,7 @@ async def banking(request: Request) -> HTMLResponse:
     name="auth/banking.html",
     context={"username": username, "btn_style_full": BTN_STYLE_FULL}
   )
+
 
 @router.get("/google", status_code=status.HTTP_200_OK)
 @auth_required(mode="strict")

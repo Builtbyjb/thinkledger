@@ -6,6 +6,7 @@ from utils.logger import log
 
 router = APIRouter()
 
+
 @router.post("/join-waitlist")
 async def join_waitlist(
   firstname: Annotated[str, Form()],

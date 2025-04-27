@@ -2,6 +2,7 @@ from pydantic import BaseModel
 from datetime import date as dt
 from typing import Optional
 
+
 class Transaction(BaseModel):
   id: str
   date: dt

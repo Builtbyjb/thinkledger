@@ -11,18 +11,29 @@ from core.core import core
 from typing import Any
 from contextlib import asynccontextmanager
 from utils.logger import log
+import asyncio
 
 # Load .env file
 load_dotenv()
 exit_thread = threading.Event()
 core_thread = None
 
+def run_core(exit_thread: Any) -> None:
+  """
+  Run the core function in a separate thread.
+  """
+  loop = asyncio.new_event_loop()
+  asyncio.set_event_loop(loop)
+  try: loop.run_until_complete(core(exit_thread))
+  except Exception as e: log.error(f"Error in core thread: {e}")
+  finally: loop.close()
+
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> Any:
   global core_thread
   create_db_and_tables()
   exit_thread.clear() # Ensure the exit thread is cleared before starting the core thread
-  core_thread = threading.Thread(target=core, args=(exit_thread,), daemon=True)
+  core_thread = threading.Thread(target=run_core, args=(exit_thread,), daemon=True)
   core_thread.start()
   yield
   exit_thread.set()
@@ -47,6 +58,7 @@ app.include_router(join_waitlist.router)
 app.mount("/static", StaticFiles(directory="web/static"), name="static")
 templates = Jinja2Templates(directory="web/templates")
 
+
 # Health check
 @app.get("/ping")
 async def ping() -> JSONResponse:
@@ -59,6 +71,7 @@ async def ping() -> JSONResponse:
   },
   status_code=200
   )
+
 
 # Handles page not found
 @app.exception_handler(404)

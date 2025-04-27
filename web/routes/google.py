@@ -16,11 +16,13 @@ from enum import Enum
 from utils.auth_utils import service_auth_config
 from utils.constants import TOKEN_URL
 from utils.logger import log
+from fastapi import BackgroundTasks
 
 
 router = APIRouter(prefix="/google", tags=["Google"])
 
-def add_user_pg(db: Session, user_info) -> bool:
+
+def add_user_pg(db: Session, user_info) -> None:
   """
     Save user info to postgres database
   """
@@ -36,10 +38,10 @@ def add_user_pg(db: Session, user_info) -> bool:
     db.add(new_user)
     db.commit()
     db.refresh(new_user)
+    log.info("User added to postgres database")
   except Exception as e:
     log.error(e)
-    return False
-  return True
+
 
 def add_user_redis(
   redis: Redis,
@@ -48,10 +50,11 @@ def add_user_redis(
   username: str,
   access_token: str,
   refresh_token: Optional[str] = None
-) -> bool:
+) -> None:
   """
     Save user info to redis database
   """
+  # result = redis.delete("username:123")
   try:
     redis.set(session_id, user_id, ex=3600 * 24 * 7) # set expire data to one week
     redis.set(f"user_id:{user_id}", user_id) # For use later
@@ -59,14 +62,15 @@ def add_user_redis(
     redis.set(f"access_token:{user_id}", access_token)
     if refresh_token is not None:
       redis.set(f"refresh_token:{user_id}", refresh_token)
+    log.info("User added to redis")
   except Exception as e:
     log.error(e)
-    return False
-  return True
+
 
 @router.get("/callback/sign-in", response_model=None)
 async def google_sign_in_callback(
   request: Request,
+  bg: BackgroundTasks,
   db: Session = Depends(get_db),
   redis: Redis = Depends(get_redis)
 ) -> Union[JSONResponse, RedirectResponse]:
@@ -118,16 +122,13 @@ async def google_sign_in_callback(
   session_id: str = generate_crypto_string()
 
   # Check if the user exists before adding to database
-  # TODO: Use background tasks to add user to database and redis
   user = db.get(User, user_id)
   if user is None:
-    is_added = add_user_pg(db, user_info)
-    if not is_added: return JSONResponse(content={"error":"Internal server error"}, status_code=500)
+    # Add user to database
+    bg.add_task(add_user_pg, db, user_info)
 
-  is_added = add_user_redis(redis, user_id, session_id, username, access_token, refresh_token)
-  if not is_added: return JSONResponse(content={"error":"Internal server error"}, status_code=500)
-
-  # result = redis.delete("username:123")
+  # Add user to redis
+  bg.add_task(add_user_redis, redis, user_id, session_id, username, access_token, refresh_token)
 
   # Set user authentication cookie
   response: RedirectResponse = RedirectResponse(url="/home", status_code=302)
@@ -143,7 +144,8 @@ async def google_sign_in_callback(
   )
   return response
 
-@router.get("/callback/services")
+
+@router.get("/callback/services", response_model=None)
 async def google_service_callback(
   request: Request, redis = Depends(get_redis)
   ) -> Union[JSONResponse, RedirectResponse]:
@@ -175,6 +177,7 @@ async def google_service_callback(
 
   session_id: Optional[str] = request.cookies.get("session_id")
   if session_id is None:
+    # TODO: Redirect to sign-in page
     log.error("Session ID not found")
     return JSONResponse(content={"error":"Session ID not found"}, status_code=400)
 
@@ -198,9 +201,11 @@ async def google_service_callback(
   log.info("tokens gotten")
   return RedirectResponse("/google", status_code=302)
 
+
 class GoogleScopes(Enum):
   sheets = "https://www.googleapis.com/auth/spreadsheets"
   drive = "https://www.googleapis.com/auth/drive.file"
+
 
 @router.get("/services")
 async def google_service_token(request: Request) -> JSONResponse:

@@ -41,6 +41,7 @@ async def create_service(user_id: str) -> Tuple[Optional[object], Optional[objec
     return None, None
   return sheets_service, drive_service
 
+
 def create_folder(drive_service, name: str, user_id: str, parent_id: str="root") -> Optional[str]:
   """
   Create a folder in the user's google drive.
@@ -79,6 +80,7 @@ def create_folder(drive_service, name: str, user_id: str, parent_id: str="root")
     log.error("Error storing folder id in redis: ", e)
     return None
   return folder_id
+
 
 def create_spreadsheet(
     d_service, s_service, name: str, folder_id: str, user_id: str
@@ -123,6 +125,7 @@ def create_spreadsheet(
     return None
   return spreadsheet_id
 
+
 def create_transaction_sheet(s_service, spreadsheet_id: str) -> None:
   """
   Create a sheet in the spreadsheet file
@@ -143,6 +146,7 @@ def create_transaction_sheet(s_service, spreadsheet_id: str) -> None:
       body={'values': headers}
   ).execute()
   return None
+
 
 def append_to_sheet(transaction, s_service, spreadsheet_id: str, name) -> bool:
   """

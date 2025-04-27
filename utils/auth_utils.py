@@ -31,6 +31,7 @@ def sign_in_auth_config() -> Flow:
   }
   return Flow.from_client_config(client_config, scopes=scopes, redirect_uri=redirect_url)
 
+
 def service_auth_config(scopes: List[str]) -> Flow:
   """
     Takes in a list of user selected scopes
@@ -53,6 +54,7 @@ def service_auth_config(scopes: List[str]) -> Flow:
   }
   return Flow.from_client_config(client_config, scopes=scopes, redirect_uri=redirect_url)
 
+
 def verify_access_token(access_token: str) -> bool:
   """
     Verify google access token.
@@ -65,6 +67,7 @@ def verify_access_token(access_token: str) -> bool:
     print("Error verifying access token")
     return False
   return True
+
 
 def refresh_access_token(
     refresh_token: str, client_id: str, client_secret: str
@@ -90,6 +93,7 @@ def refresh_access_token(
   except requests.exceptions.Timeout:
     print("Token Refresh Error: Request timed out.")
     return None, False
+
 
 async def auth_session(session_id: str) -> bool:
   """

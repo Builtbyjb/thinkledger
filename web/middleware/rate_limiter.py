@@ -7,6 +7,7 @@ from typing import Dict
 
 MAX_CALLS = 20
 
+
 # Rate limiter
 class RateLimiter(BaseHTTPMiddleware):
     def __init__(self, app):
