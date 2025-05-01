@@ -1,4 +1,5 @@
 from celery import Celery
+from plaid.model.sandbox_payment_simulate_request import sys
 from core.google_core import (
   create_service,
   create_folder,
@@ -11,6 +12,7 @@ from database.redis.redis import gen_redis
 import os
 
 REDIS_URL = os.getenv("REDIS_URL")
+if REDIS_URL is None: sys.exit("REDIS_URL environment variable is not set")
 
 c = Celery("tasks", broker=REDIS_URL, backend=REDIS_URL)
 

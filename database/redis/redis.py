@@ -1,16 +1,15 @@
 import redis
 import os
 import sys
+from dotenv import load_dotenv
 from typing import Generator, Any, Callable, Optional
 
-
-REDIS_URL = os.getenv("REDIS_URL")
-
-if REDIS_URL is None: sys.exit("REDIS_URL environment variable is not set")
-redis_client = redis.Redis.from_url(REDIS_URL, decode_responses=True)
-
+load_dotenv()
 
 def get_redis() -> Any:
+  redis_url = os.getenv("REDIS_URL")
+  if redis_url is None: sys.exit("REDIS_URL environment variable is not set")
+  redis_client = redis.Redis.from_url(redis_url, decode_responses=True)
   try: yield redis_client
   finally: redis_client.close()
 

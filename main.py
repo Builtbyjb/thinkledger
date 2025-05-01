@@ -52,6 +52,7 @@ templates = Jinja2Templates(directory="web/templates")
 # Health check
 @app.get("/ping")
 async def ping() -> JSONResponse:
+  # TODO: Check for env variables
   thread_alive = core_thread.is_alive() if core_thread else False
   return JSONResponse(
     content={
