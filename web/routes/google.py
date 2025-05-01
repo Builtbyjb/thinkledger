@@ -177,9 +177,8 @@ async def google_service_callback(
 
   session_id: Optional[str] = request.cookies.get("session_id")
   if session_id is None:
-    # TODO: Redirect to sign-in page
     log.error("Session ID not found")
-    return JSONResponse(content={"error":"Session ID not found"}, status_code=400)
+    return RedirectResponse(url="/", status_code=302)
 
   user_id: Optional[str] = redis.get(session_id)
   if user_id is None:

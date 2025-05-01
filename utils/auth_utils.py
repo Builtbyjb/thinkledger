@@ -4,6 +4,7 @@ import requests
 from typing import Optional, List
 from database.redis.redis import gen_redis
 from utils.constants import TOKEN_INFO_URL, TOKEN_URL
+from utils.logger import log
 
 
 def sign_in_auth_config() -> Flow:
@@ -18,6 +19,10 @@ def sign_in_auth_config() -> Flow:
   client_secret = os.getenv("GOOGLE_SIGNIN_CLIENT_SECRET")
   redirect_url = os.getenv("GOOGLE_SIGNIN_REDIRECT_URL")
   # SERVER_URL = os.getenv("SERVER_URL")
+
+  assert client_id is not None, "GOOGLE_SIGNIN_CLIENT_ID is not set"
+  assert client_secret is not None, "GOOGLE_SIGNIN_CLIENT_SECRET is not set"
+  assert redirect_url is not None, "GOOGLE_SIGNIN_REDIRECT_URL is not set"
 
   client_config = {
     "web": {
@@ -42,6 +47,11 @@ def service_auth_config(scopes: List[str]) -> Flow:
   redirect_url = os.getenv("GOOGLE_SERVICE_REDIRECT_URL")
   # SERVER_URL = os.getenv("SERVER_URL")
 
+  assert client_id is not None, "GOOGLE_SERVICE_CLIENT_ID is not set"
+  assert client_secret is not None, "GOOGLE_SERVICE_CLIENT_SECRET is not set"
+  assert redirect_url is not None, "GOOGLE_SERVICE_REDIRECT_URL is not set"
+  assert len(scopes) > 0, "Scopes list is empty"
+
   client_config = {
     "web": {
       "client_id": client_id,
@@ -61,10 +71,11 @@ def verify_access_token(access_token: str) -> bool:
   """
   try: response = requests.get(TOKEN_INFO_URL, params={'access_token': access_token}, timeout=10)
   except Exception as e:
-      print(f"Error verifying access token: {e}")
+      log.error(f"Error verifying access token: {e}")
       return False
+
   if response.status_code != 200:
-    print("Error verifying access token")
+    log.error("Error verifying access token")
     return False
   return True
 
@@ -88,14 +99,14 @@ def refresh_access_token(
       token_json = response.json()
       new_access_token = str(token_json["access_token"])
       return new_access_token, True
-    print(f"Token Refresh Error: {response.status_code} : {response.text}")
+    log.error(f"Token Refresh Error: {response.status_code} : {response.text}")
     return None, False
   except requests.exceptions.Timeout:
-    print("Token Refresh Error: Request timed out.")
+    log.error("Token Refresh Error: Request timed out.")
     return None, False
 
 
-async def auth_session(session_id: str) -> bool:
+def auth_session(session_id: str) -> bool:
   """
     Authenticates a user by verifying their access token and refreshing it if necessary.
   """
@@ -103,24 +114,29 @@ async def auth_session(session_id: str) -> bool:
   if redis is None: return False
 
   try:
-    user_id: Optional[str] = await redis.get(session_id)
-    access_token: Optional[str]  = await redis.get(f"access_token:{user_id}")
+    user_id = redis.get(session_id)
+    access_token = redis.get(f"access_token:{user_id}")
   except Exception as e:
-    print(f"Error fetching user data or access token: {e}")
+    log.error(f"Error fetching user data or access token: {e}")
     return False
 
   if user_id is None: return False
   if access_token is None: return False
+  assert isinstance(user_id, str), "User ID is not a string"
+  assert isinstance(access_token, str), "Access token is not a string"
 
   # Verify access token
   if not verify_access_token(access_token):
     # If access token verification fails, try refreshing the token
-    try: refresh_token: Optional[str] = await redis.get(f"refresh_token:{user_id}")
+    try: refresh_token = redis.get(f"refresh_token:{user_id}")
     except Exception as e:
-      print(f"Error fetching refresh token: {e}")
+      log.error(f"Error fetching refresh token: {e}")
       return False
 
-    if refresh_token is None: return False
+    if refresh_token is None:
+      log.error("No refresh token found")
+      return False
+    assert isinstance(refresh_token, str), "Refresh token is not a string"
 
     client_id = os.getenv("GOOGLE_SIGNIN_CLIENT_ID")
     client_secret = os.getenv("GOOGLE_SIGNIN_CLIENT_SECRET")
@@ -129,11 +145,13 @@ async def auth_session(session_id: str) -> bool:
     if client_secret is None: return False
 
     new_access_token, is_refreshed = refresh_access_token(refresh_token, client_id, client_secret)
-    if not is_refreshed or new_access_token is None: return False
+    if not is_refreshed or new_access_token is None:
+      log.error("Error refreshing access token")
+      return False
 
     try: redis.set(f"access_token:{user_id}", new_access_token)
     except Exception as e:
-      print(f"Error setting new access token: {e}")
+      log.error(f"Error setting new access token: {e}")
       return False
 
   return True

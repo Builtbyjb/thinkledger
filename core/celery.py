@@ -8,15 +8,16 @@ from core.google_core import (
 )
 from utils.logger import log
 from database.redis.redis import gen_redis
-from typing import Optional
 import os
 
+REDIS_URL = os.getenv("REDIS_URL")
 
-c = Celery("tasks", broker=os.getenv("REDIS_URL"))
+c = Celery("tasks", broker=REDIS_URL, backend=REDIS_URL)
+
 
 @c.task
-async def add_transaction(transaction, user_id: str) -> None:
-  s_service, d_service = await create_service(user_id)
+def add_transaction(transaction, user_id: str) -> None:
+  s_service, d_service = create_service(user_id)
   if s_service is None or d_service is None:
     log.error("Error creating Google Sheets or Google Drive service")
     return
@@ -27,23 +28,25 @@ async def add_transaction(transaction, user_id: str) -> None:
     return
 
   # Get parent folder id or create it if it doesn't exist
-  parent_id: Optional[str] = await redis.get(f"thinkledger:{user_id}")
+  parent_id = redis.get(f"thinkledger:{user_id}")
   if parent_id is None:
     parent_id = create_folder(d_service, "thinkledger", user_id)
     if parent_id is None:
       log.error("Error creating thinkledger folder")
       return
+  assert isinstance(parent_id, str)
 
   # Get general ledger folder id or create it if it doesn't exist
-  general_ledger_id: Optional[str] = await redis.get(f"general_ledger:{user_id}")
+  general_ledger_id = redis.get(f"general_ledger:{user_id}")
   if general_ledger_id is None:
     general_ledger_id = create_folder(d_service, "general_ledger", user_id, parent_id)
     if general_ledger_id is None:
       log.error("Error creating general ledger folder")
       return
+  assert isinstance(general_ledger_id, str)
 
   # Get spreadsheet file id or create it if it doesn't exist
-  spreadsheet_id: Optional[str] = await redis.get(f"spreadsheet:{user_id}")
+  spreadsheet_id = redis.get(f"spreadsheet:{user_id}")
   if spreadsheet_id is None:
     spreadsheet_id = create_spreadsheet(
       d_service,
@@ -55,6 +58,7 @@ async def add_transaction(transaction, user_id: str) -> None:
     if spreadsheet_id is None:
       log.error("Error creating spreadsheet file")
       return
+  assert isinstance(spreadsheet_id, str)
 
   # Create a transaction sheet in the spreadsheet file if it doesn't exist
   try: create_transaction_sheet(s_service, spreadsheet_id)
