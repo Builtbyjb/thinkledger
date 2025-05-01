@@ -1,6 +1,5 @@
 from utils.plaid_utils import create_plaid_client
 from plaid.model.transactions_sync_request import TransactionsSyncRequest # type: ignore
-from utils.types import Transaction
 from database.postgres.postgres_db import gen_db
 from database.postgres.postgres_schema import Account, Institution
 from utils.logger import log
