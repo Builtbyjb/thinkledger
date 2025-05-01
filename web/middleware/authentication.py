@@ -11,14 +11,20 @@ from typing import Any
 # Authentication mode options
 AuthMode = Literal["strict", "lax"]
 
+
 def get_name(session_id: str, redis: Redis) -> Optional[str]:
   try:
-    user_id = str(redis.get(session_id))
-    username = str(redis.get(f"username:{user_id}"))
+    user_id = redis.get(session_id)
+    if user_id is None: return None
+    assert isinstance(user_id, str), "User ID should be a string"
+    username = redis.get(f"username:{user_id}")
   except Exception as e:
     print(f"Error fetching user name or user id: {e}")
     return None
+  if username is None: return None
+  assert isinstance(username, str), "Username should be a string"
   return username
+
 
 def auth_required(mode: AuthMode = "strict") -> Any:
   def decorator(func: Callable):

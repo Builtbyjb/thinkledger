@@ -6,6 +6,7 @@ from fastapi.templating import Jinja2Templates
 router = APIRouter(tags=["Legal"])
 templates = Jinja2Templates(directory="web/templates")
 
+
 @router.get("/privacy-policy", status_code=status.HTTP_200_OK)
 async def privacy_policy(request: Request) -> HTMLResponse:
   last_updated = "March 8, 2025"
@@ -14,6 +15,7 @@ async def privacy_policy(request: Request) -> HTMLResponse:
     name="guest/privacy_policy.html",
     context={ "last_updated": last_updated }
   )
+
 
 @router.get("/terms-of-service", status_code=status.HTTP_200_OK)
 async def terms_of_service(request: Request) -> HTMLResponse:

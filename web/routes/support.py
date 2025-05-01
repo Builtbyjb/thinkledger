@@ -9,6 +9,7 @@ from utils.styles import BTN_STYLE_FULL, LINK_TEXT_STYLE, LINK_ICON_STYLE
 router = APIRouter(prefix="/support", tags=["Support"])
 templates = Jinja2Templates(directory="web/templates")
 
+
 @router.get("/", status_code=status.HTTP_200_OK, response_model=None)
 async def support(request: Request) -> HTMLResponse:
   return templates.TemplateResponse(
@@ -22,6 +23,7 @@ async def support(request: Request) -> HTMLResponse:
     }
   )
 
+
 @router.get("/bookkeeping", status_code=status.HTTP_200_OK)
 async def support_bookkeeping(request: Request) -> HTMLResponse:
   return templates.TemplateResponse(
@@ -30,6 +32,7 @@ async def support_bookkeeping(request: Request) -> HTMLResponse:
     context={"link_icon_style": LINK_ICON_STYLE}
   )
 
+
 @router.get("/financial-reports", status_code=status.HTTP_200_OK)
 async def support_financial_reports(request: Request) -> HTMLResponse:
   return templates.TemplateResponse(
@@ -37,6 +40,7 @@ async def support_financial_reports(request: Request) -> HTMLResponse:
     name="guest/support_financial_reports.html",
     context={"link_icon_style": LINK_ICON_STYLE}
   )
+
 
 @router.get("/analytics-insights", status_code=status.HTTP_200_OK)
 async def support_analytics_insights(request: Request) -> HTMLResponse:

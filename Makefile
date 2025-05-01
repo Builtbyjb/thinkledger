@@ -13,3 +13,6 @@ css:
 push:
 	npx @tailwindcss/cli -i ./static/input.css -o ./static/style.css --minify \
 	&& npm run minify
+
+celery:
+	celery -A core.celery worker --loglevel=info

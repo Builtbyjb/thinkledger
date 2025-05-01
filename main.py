@@ -17,6 +17,7 @@ load_dotenv()
 exit_thread = threading.Event()
 core_thread = None
 
+
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> Any:
   global core_thread
@@ -47,6 +48,7 @@ app.include_router(join_waitlist.router)
 app.mount("/static", StaticFiles(directory="web/static"), name="static")
 templates = Jinja2Templates(directory="web/templates")
 
+
 # Health check
 @app.get("/ping")
 async def ping() -> JSONResponse:
@@ -59,6 +61,7 @@ async def ping() -> JSONResponse:
   },
   status_code=200
   )
+
 
 # Handles page not found
 @app.exception_handler(404)

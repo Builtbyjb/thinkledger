@@ -1,6 +1,5 @@
 from utils.plaid_utils import create_plaid_client
 from plaid.model.transactions_sync_request import TransactionsSyncRequest # type: ignore
-from utils.types import Transaction
 from database.postgres.postgres_db import gen_db
 from database.postgres.postgres_schema import Account, Institution
 from utils.logger import log
@@ -8,7 +7,7 @@ from utils.core_utils import invert_amount
 from typing import Generator, Any
 
 
-def get_transactions(access_token: str) -> Generator[Any, None]:
+def get_transactions(access_token: str) -> Generator[Any, Any, None]:
   client = create_plaid_client()
   has_more: bool = True
   cursor = ""
@@ -18,14 +17,16 @@ def get_transactions(access_token: str) -> Generator[Any, None]:
     request = TransactionsSyncRequest(access_token=access_token,cursor=cursor)
     try: response = client.transactions_sync(request)
     except Exception as e:
-      print("Error getting transactions: ", e)
+      log.error("Error getting transactions: ", e)
       yield  None
     response = client.transactions_sync(request)
+    # TODO: Create response type
     yield response['added']
     has_more = response['has_more']
     cursor = response['next_cursor']
 
-def generate_transaction(transactions) -> Generator[Transaction, None]:
+
+def generate_transaction(transactions) -> Generator[list, Any, None]:
   """
   Generates Transaction objects from the transactions gotten from plaid
   and yields a single transaction at a time
@@ -39,8 +40,6 @@ def generate_transaction(transactions) -> Generator[Transaction, None]:
   if db is None: return None
 
   print("transaction length: ", len(transactions))
-
-  # TODO: Convert transactions to a list following the headers format
 
   for t in transactions:
     try: acc = db.get(Account, t.account_id)
@@ -66,19 +65,8 @@ def generate_transaction(transactions) -> Generator[Transaction, None]:
 
     amount = invert_amount(t.amount)
 
-    transaction = Transaction(
-      id=t.transaction_id,
-      date=t.date,
-      amount=amount,
-      institution=ins.name,
-      institution_account_name=acc.name,
-      institution_account_type=acc.subtype,
-      category=t.category,
-      payment_channel=t.payment_channel,
-      merchant_name=merchant_name,
-      currency_code=t.iso_currency_code,
-      pending=t.pending,
-      authorized_date=t.authorized_date
-    )
+    transaction = [t.transaction_id, t.date, amount, ins.name, acc.name, acc.subtype,
+                  t.category, t.payment_channel, merchant_name, t.iso_currency_code,
+                  t.pending, t.authorized_date]
 
     yield transaction

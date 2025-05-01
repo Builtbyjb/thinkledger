@@ -1,5 +1,6 @@
 from sqlmodel import Field, SQLModel
 
+
 class User(SQLModel, table=True):
     __tablename__ = "users" #type: ignore
     id: str = Field(primary_key=True)
@@ -9,6 +10,7 @@ class User(SQLModel, table=True):
     family_name: str
     picture: str
 
+
 class Account(SQLModel, table=True):
     __tablename__ = "accounts" #type: ignore
     id: str = Field(primary_key=True)
@@ -17,6 +19,7 @@ class Account(SQLModel, table=True):
     name: str
     subtype: str
     type: str
+
 
 class Institution(SQLModel, table=True):
     __tablename__ = "institutions" #type: ignore

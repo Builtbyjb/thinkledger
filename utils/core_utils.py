@@ -5,6 +5,7 @@ from database.redis.redis import gen_redis
 class Tasks(Enum):
   trans_sync = "transaction_sync"
 
+
 class TaskPriority(Enum):
   """
     HIGH priority tasks are tasks that require immediate user feedback.
@@ -12,6 +13,7 @@ class TaskPriority(Enum):
   """
   HIGH = "HIGH"
   LOW = "LOW"
+
 
 def add_tasks(value: str, user_id: str, priority: TaskPriority) -> bool:
   """
@@ -31,6 +33,7 @@ def add_tasks(value: str, user_id: str, priority: TaskPriority) -> bool:
     return False
 
   return True
+
 
 def invert_amount(amount: float) -> float:
   """

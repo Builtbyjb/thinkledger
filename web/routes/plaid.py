@@ -28,6 +28,7 @@ from utils.logger import log
 
 router = APIRouter(prefix="/plaid", tags=["Plaid"])
 
+
 class AccountResponse(BaseModel):
   id: str
   name: str
@@ -37,14 +38,17 @@ class AccountResponse(BaseModel):
   class_type: Optional[str]
   verification_status: Optional[str]
 
+
 class InstitutionResponse(BaseModel):
   institution_id: str
   name: str
+
 
 class PlaidResponse(BaseModel):
   public_token: str
   accounts: list[AccountResponse]
   institution: InstitutionResponse
+
 
 @router.get("/link-token")
 async def plaid_link_token(request: Request, redis=Depends(get_redis)) -> JSONResponse:
@@ -55,7 +59,7 @@ async def plaid_link_token(request: Request, redis=Depends(get_redis)) -> JSONRe
 
   session_id = request.cookies.get('session_id')
   if session_id is None:
-    # Should redirect user to the home page
+    # TODO: Should redirect user to the home page
     log.error("Session ID not found")
     return JSONResponse(content={"error": "Session ID not found"}, status_code=400)
 
@@ -93,6 +97,7 @@ async def plaid_link_token(request: Request, redis=Depends(get_redis)) -> JSONRe
   # print(response['link_token'])
   return JSONResponse(content={"linkToken": response["link_token"]}, status_code=200)
 
+
 def add_institutions_to_db(db: Session, data, access_token: str, user_id: str) -> None:
   """
     Check if institution already exists before adding a new institutions;
@@ -125,6 +130,7 @@ def add_institutions_to_db(db: Session, data, access_token: str, user_id: str) -
   except Exception as e:
     log.error(f"Error saving institution: {e}")
 
+
 def add_accounts_to_db(db: Session, data, user_id: str) -> None:
   """
     Save accounts to the database
@@ -145,6 +151,7 @@ def add_accounts_to_db(db: Session, data, user_id: str) -> None:
     log.info("Accounts added")
   except Exception as e:
     log.error(f"Error saving accounts: {e}")
+
 
 @router.post("/access-token")
 async def plaid_access_token(
@@ -193,18 +200,22 @@ async def plaid_access_token(
 
   return JSONResponse(content={"message": "Institution and Accounts linked"}, status_code=200)
 
+
 @router.post("/webhooks")
 async def plaid_webhooks(request: Request) -> Response:
   print(request.body())
   return Response(status_code=200)
 
+
 @router.get("/callback")
 async def plaid_callback() -> bool:
   return True
 
+
 @router.delete("/account-remove/{account_id}")
 async def plaid_account_remove() -> None:
   return None
+
 
 @router.delete("/account-remove/all")
 async def plaid_account_remove_all() -> None:

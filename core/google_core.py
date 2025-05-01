@@ -1,4 +1,4 @@
-from googleapiclient.discovery import build # type: ignore
+from googleapiclient.discovery import build
 from google.oauth2.credentials import Credentials
 from database.redis.redis import gen_redis
 from typing import Optional, Tuple
@@ -7,7 +7,7 @@ from utils.constants import TOKEN_URL
 from utils.logger import log
 
 
-async def create_service(user_id: str) -> Tuple[Optional[object], Optional[object]]:
+def create_service(user_id: str) -> Tuple[Optional[object], Optional[object]]:
   """
   Create a google sheet service and a google drive service; returns None if failed
   """
@@ -18,12 +18,13 @@ async def create_service(user_id: str) -> Tuple[Optional[object], Optional[objec
   client_secret = os.getenv("GOOGLE_SERVICE_CLIENT_SECRET")
 
   # Verify access token; and if expired, use refresh token to get new access token
-  access_token: Optional[str] = await redis.get(f"access_token:{user_id}")
+  access_token = redis.get(f"access_token:{user_id}")
   if access_token is None:
     log.error("Access token not found in redis")
     return None, None
+  assert isinstance(access_token, str), "Access token is not a string"
 
-  refresh_token: Optional[str] = await redis.get(f"refresh_token:{user_id}")
+  refresh_token = redis.get(f"refresh_token:{user_id}")
 
   credentials = Credentials(
     token=access_token,
@@ -40,6 +41,7 @@ async def create_service(user_id: str) -> Tuple[Optional[object], Optional[objec
     log.error("Error creating Google Sheets service or Google Drive service: ", e)
     return None, None
   return sheets_service, drive_service
+
 
 def create_folder(drive_service, name: str, user_id: str, parent_id: str="root") -> Optional[str]:
   """
@@ -80,6 +82,7 @@ def create_folder(drive_service, name: str, user_id: str, parent_id: str="root")
     return None
   return folder_id
 
+
 def create_spreadsheet(
     d_service, s_service, name: str, folder_id: str, user_id: str
     ) -> Optional[str]:
@@ -107,10 +110,10 @@ def create_spreadsheet(
     # Move to correct folder
     spreadsheet_id = spreadsheet.get('spreadsheetId')
     d_service.files().update(
-        fileId=spreadsheet_id,
-        addParents=folder_id,
-        removeParents='root',
-        fields='id, parents'
+      fileId=spreadsheet_id,
+      addParents=folder_id,
+      removeParents='root',
+      fields='id, parents'
     ).execute()
   except Exception as e:
     log.error(f'Google Sheets API error: {e}')
@@ -123,26 +126,29 @@ def create_spreadsheet(
     return None
   return spreadsheet_id
 
+
 def create_transaction_sheet(s_service, spreadsheet_id: str) -> None:
   """
   Create a sheet in the spreadsheet file
   """
   # TODO: Check if sheet exists and if header exists
+
   # Add headers
-  # TODO: Edit the headers to match the transaction format
   headers = [
-    ['Date', 'Amount', 'Institution', 'Account', 'Account Type',
-     'Category', 'Payment Channel', 'Merchant', 'Currency',
-     'Pending', 'Authorized Date', 'Transaction ID']
+    [
+      'ID', 'Date', 'Amount', 'Institution', 'Institution Account Name', 'Institution Account Type',
+      'Category', 'Payment Channel', 'Merchant Name', 'Currency', 'Pending', 'Authorized Date'
+     ]
   ]
 
   s_service.spreadsheets().values().update(
-      spreadsheetId=spreadsheet_id,
-      range='Transactions!A1:L1',
-      valueInputOption='RAW',
-      body={'values': headers}
+    spreadsheetId=spreadsheet_id,
+    range='Transactions!A1:L1',
+    valueInputOption='RAW',
+    body={'values': headers}
   ).execute()
   return None
+
 
 def append_to_sheet(transaction, s_service, spreadsheet_id: str, name) -> bool:
   """

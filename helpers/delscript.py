@@ -5,6 +5,7 @@ import os
 import sys
 from dotenv import load_dotenv
 
+
 def delete() -> None:
   """
     Deletes a postgres table. The script takes in a table

@@ -11,6 +11,7 @@ from typing import Union
 router = APIRouter()
 templates = Jinja2Templates(directory="web/templates")
 
+
 @router.get("/", response_model=None)
 async def index(request: Request) -> Union[HTMLResponse, RedirectResponse]:
   session_id = request.cookies.get("session_id")
@@ -28,6 +29,7 @@ async def index(request: Request) -> Union[HTMLResponse, RedirectResponse]:
       "btn_style_outline": BTN_STYLE_OUTLINE
     }
   )
+
 
 @router.get("/home")
 @auth_required(mode="strict")
