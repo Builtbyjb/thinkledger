@@ -6,6 +6,7 @@ from typing import Generator, Any, Callable, Optional
 
 load_dotenv()
 
+
 def get_redis() -> Any:
   redis_url = os.getenv("REDIS_URL")
   if redis_url is None: sys.exit("REDIS_URL environment variable is not set")
