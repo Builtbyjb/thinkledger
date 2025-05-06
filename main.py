@@ -12,6 +12,7 @@ from typing import Any
 from contextlib import asynccontextmanager
 from utils.logger import log
 
+
 # Load .env file
 load_dotenv()
 exit_process = multiprocessing.Event()
@@ -22,13 +23,13 @@ core_process = None
 async def lifespan(app: FastAPI) -> Any:
   global core_process
   create_db_and_tables()
-  exit_process.clear() # Ensure the exit thread is cleared before starting the core thread
-  # TODO: Switch from threading to multiprocess
+  exit_process.clear() # Ensure the exit process is cleared before starting a new core process
   core_process = multiprocessing.Process(target=core, args=(exit_process,), daemon=True)
   core_process.start()
   yield
+  # TODO: Shutdown core process gracefully
   exit_process.set()
-  core_process.join()
+  core_process.join(timeout=5) # Allow time for core process to exit
   log.info("Shutdown core process...")
 
 app = FastAPI(lifespan=lifespan)

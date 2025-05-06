@@ -25,27 +25,28 @@ def handle_high_task(redis: Redis, user_id: str) -> None:
     return None
   assert isinstance(h_len, int)
 
-  if h_len != 0:
+  if h_len == 0:
+    log.info("No high priority tasks")
+    return None
+
+  for _ in range(h_len):
     try: value = redis.rpop(f"tasks:{TaskPriority.HIGH}:{user_id}")
     except Exception as e:
       log.error(f"Error popping high priority task from redis: {e}")
       return None
 
-    if value is None: pass
-    assert isinstance(value, str)
-
-    task, access_token = value.split(":")
-    # print("value: ", value)
-    # print("task: ", task)
-    # print("access_token: ", access_token)
-    if task == Tasks.trans_sync.value:
-      for t in get_transactions(access_token):
-        if t is None: continue
-        for g in generate_transaction(t):
-          add_transaction.delay(g, user_id)
-  else:
-    log.info("No tasks")
-  return None
+    if value is not None:
+      assert isinstance(value, str)
+      # Note: Rethink how value is handled
+      task, access_token = value.split(":")
+      # print("value: ", value)
+      # print("task: ", task)
+      # print("access_token: ", access_token)
+      if task == Tasks.trans_sync.value:
+        for t in get_transactions(access_token):
+          if t is None: continue
+          for g in generate_transaction(t):
+            add_transaction.delay(g, user_id)
 
 
 def handle_low_task(redis: Redis, user_id: str) -> None:
@@ -120,6 +121,7 @@ def check_requirements(db: Session, redis: Redis, user_id: str) -> bool:
 
 def handle_task(db: Session, redis: Redis, user_id: str) -> None:
   is_passed =  check_requirements(db, redis, user_id)
+  # TODO: Alert user to complete requirements
   if not is_passed: return
   handle_high_task(redis, user_id)
   handle_low_task(redis, user_id)
