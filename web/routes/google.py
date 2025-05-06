@@ -85,8 +85,8 @@ async def google_sign_in_callback(
   client_secret = os.getenv("GOOGLE_SIGNIN_CLIENT_SECRET")
   server_url = os.getenv("SERVER_URL")
 
-  assert client_id is not None, "Client ID is not set"
-  assert client_secret is not None, "Client Secret is not set"
+  assert client_id is not None, "Google sign client ID is not set"
+  assert client_secret is not None, "Google sign client secret is not set"
   assert server_url is not None, "Server URL is not set"
 
   redirect_url = f"{server_url}/google/callback/sign-in"
@@ -246,12 +246,12 @@ async def google_service_token(request: Request) -> JSONResponse:
   response = JSONResponse(content={"url": url}, status_code=200)
   expires = datetime.now(timezone.utc) + timedelta(minutes=5)
   response.set_cookie(
-      key="state",
-      value=state,
-      expires=expires,
-      path="/",
-      secure=True,
-      httponly=True,
-      samesite="lax"
+    key="state",
+    value=state,
+    expires=expires,
+    path="/",
+    secure=True,
+    httponly=True,
+    samesite="lax"
   )
   return response

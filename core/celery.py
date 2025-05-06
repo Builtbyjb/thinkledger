@@ -1,12 +1,7 @@
 from celery import Celery
 from plaid.model.sandbox_payment_simulate_request import sys
-from core.google_core import (
-  create_service,
-  create_folder,
-  create_spreadsheet,
-  create_transaction_sheet,
-  append_to_sheet
-)
+from core.google_core import create_service, create_folder, create_spreadsheet, \
+                            create_transaction_sheet, append_to_sheet
 from utils.logger import log
 from database.redis.redis import gen_redis
 import os

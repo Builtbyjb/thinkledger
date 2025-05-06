@@ -8,9 +8,12 @@ from core.plaid_core import get_transactions, generate_transaction
 from utils.logger import log
 from core.celery import add_transaction
 from redis import Redis
-from threading import Event
 from concurrent.futures import ThreadPoolExecutor
 import os
+import typing
+
+if typing.TYPE_CHECKING:
+  from multiprocessing.synchronize import Event
 
 
 MAX_WORKERS = 5
@@ -21,16 +24,14 @@ def handle_high_task(redis: Redis, user_id: str) -> None:
   # Check for tasks of High level priority
   try: h_len = redis.llen(f"tasks:{TaskPriority.HIGH}:{user_id}")
   except Exception as e:
-    log.error(e)
+    log.error(f"Error getting high priority tasks length from redis: {e}")
     return None
   assert isinstance(h_len, int)
 
   if h_len != 0:
-    # ? Handle all high priority tasks,
-    try:
-      value = redis.rpop(f"tasks:{TaskPriority.HIGH}:{user_id}")
+    try: value = redis.rpop(f"tasks:{TaskPriority.HIGH}:{user_id}")
     except Exception as e:
-      log.error(e)
+      log.error(f"Error popping high priority task from redis: {e}")
       return None
 
     if value is None: pass
@@ -54,7 +55,7 @@ def handle_low_task(redis: Redis, user_id: str) -> None:
   # Check for tasks of low level priority
   try: l_len = redis.llen(f"tasks:{TaskPriority.LOW}:{user_id}")
   except Exception as e:
-    log.error(e)
+    log.error(f"Error getting low priority tasks from redis: {e}")
     return
 
   if l_len != 0:
@@ -100,10 +101,13 @@ def check_requirements(db: Session, redis: Redis, user_id: str) -> bool:
       return False
     if refresh_token is None: return False
     assert isinstance(refresh_token, str)
+
     client_id = os.getenv("GOOGLE_SERVICE_CLIENT_ID")
     client_secret = os.getenv("GOOGLE_SERVICE_CLIENT_SECRET")
-    assert client_secret is not None, "GOOGLE_SERVICE_CLIENT_SECRET environment variable is not set"
-    assert client_id is not None, "GOOGLE_SERVICE_CLIENT_ID environment variable is not set"
+
+    assert client_secret is not None, "Google service client ID is not set"
+    assert client_id is not None, "Google service client secret is not set"
+
     new_access_token, is_refreshed = refresh_access_token(refresh_token, client_id, client_secret)
     if not is_refreshed or new_access_token is None:
       log.error("Failed to refresh access token")
@@ -124,31 +128,24 @@ def handle_task(db: Session, redis: Redis, user_id: str) -> None:
   handle_low_task(redis, user_id)
 
 
-def core(exit_thread: Event) -> None:
+def core(exit_process: Event) -> None:
   """
   Gets users from the database and creates a new thread for each user to handle their tasks.
   """
-  log.info("Print starting core thread...")
+  log.info("Print starting core process...")
 
-  while not exit_thread.is_set():
+  while not exit_process.is_set():
     # Get a fresh DB connection each time through the loop
     db = gen_db()
-    if db is None:
-      log.error("Failed to get database connection")
-      exit_thread.wait(INTERVAL)
-      continue
+    if db is None: raise Exception("Failed to get database connection")
 
     # Get a fresh Redis connection each time through the loop
     redis = gen_redis()
-    if redis is None:
-      log.error("Failed to get Redis connection")
-      exit_thread.wait(INTERVAL)
-      continue
+    if redis is None: raise Exception("Failed to get Redis connection")
 
     # time.sleep(60)
     users = db.exec(select(User)).all()
-    if len(users) == 0:
-      log.info("No users found in database")
+    if len(users) == 0: log.info("No users found in database")
     else:
       with ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
         _ = {executor.submit(handle_task, db, redis, u.id): u for u in users}
@@ -160,4 +157,4 @@ def core(exit_thread: Event) -> None:
         #     except Exception as e:
         #         user = futures[future]
         #         print(f"Task for user {user.id} generated an exception: {e}")
-    exit_thread.wait(INTERVAL)
+    exit_process.wait(INTERVAL)

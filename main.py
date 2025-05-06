@@ -6,7 +6,7 @@ from dotenv import load_dotenv
 from database.postgres.postgres_db import create_db_and_tables
 from web.middleware.rate_limiter import RateLimiter
 from fastapi.templating import Jinja2Templates
-import threading
+import multiprocessing
 from core.core import core
 from typing import Any
 from contextlib import asynccontextmanager
@@ -14,20 +14,21 @@ from utils.logger import log
 
 # Load .env file
 load_dotenv()
-exit_thread = threading.Event()
-core_thread = None
+exit_process = multiprocessing.Event()
+core_process = None
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> Any:
-  global core_thread
+  global core_process
   create_db_and_tables()
-  exit_thread.clear() # Ensure the exit thread is cleared before starting the core thread
-  core_thread = threading.Thread(target=core, args=(exit_thread,), daemon=True)
-  core_thread.start()
+  exit_process.clear() # Ensure the exit thread is cleared before starting the core thread
+  # TODO: Switch from threading to multiprocess
+  core_process = multiprocessing.Process(target=core, args=(exit_process,), daemon=True)
+  core_process.start()
   yield
-  exit_thread.set()
-  core_thread.join()
+  exit_process.set()
+  core_process.join()
   log.info("Shutdown core thread...")
 
 app = FastAPI(lifespan=lifespan)
@@ -53,11 +54,11 @@ templates = Jinja2Templates(directory="web/templates")
 @app.get("/ping")
 async def ping() -> JSONResponse:
   # TODO: Check for env variables
-  thread_alive = core_thread.is_alive() if core_thread else False
+  thread_alive = core_process.is_alive() if core_process else False
   return JSONResponse(
     content={
     "thread_running": thread_alive,
-    "shutdown_signal_set": exit_thread.is_set(),
+    "shutdown_signal_set": exit_process.is_set(),
     "response": "pong"
   },
   status_code=200
