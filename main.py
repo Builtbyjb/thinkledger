@@ -29,7 +29,7 @@ async def lifespan(app: FastAPI) -> Any:
   yield
   exit_process.set()
   core_process.join()
-  log.info("Shutdown core thread...")
+  log.info("Shutdown core process...")
 
 app = FastAPI(lifespan=lifespan)
 

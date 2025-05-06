@@ -10,10 +10,7 @@ from core.celery import add_transaction
 from redis import Redis
 from concurrent.futures import ThreadPoolExecutor
 import os
-import typing
-
-if typing.TYPE_CHECKING:
-  from multiprocessing.synchronize import Event
+from multiprocessing.synchronize import Event
 
 
 MAX_WORKERS = 5
