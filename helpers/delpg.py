@@ -28,7 +28,8 @@ def delete() -> None:
       db.exec_driver_sql(f"DROP TABLE {table_name}")
       db.commit()
   except Exception as e: sys.exit(f"Error deleting table: {e}")
-  sys.exit(f"Deleted {table_name} table")
+  print(f"Deleted {table_name} table")
+  return None
 
 if __name__ == "__main__":
   load_dotenv()

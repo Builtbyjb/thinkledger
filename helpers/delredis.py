@@ -1,0 +1,23 @@
+#!/usr/bin/env python3
+
+import os
+import sys
+
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+from dotenv import load_dotenv
+import redis
+
+
+def delete() -> None:
+  redis_url = os.getenv("REDIS_URL")
+  if redis_url is None: sys.exit("REDIS_URL environment variable is not set")
+  redis_client = redis.Redis.from_url(redis_url)
+  redis_client.flushall()
+  print("Redis database cleared successfully")
+  return None
+
+
+if __name__ == "__main__":
+  load_dotenv()
+  delete()
