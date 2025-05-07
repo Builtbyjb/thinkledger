@@ -17,12 +17,13 @@ def sign_in_auth_config() -> Flow:
   ]
   client_id = os.getenv("GOOGLE_SIGNIN_CLIENT_ID")
   client_secret = os.getenv("GOOGLE_SIGNIN_CLIENT_SECRET")
-  redirect_url = os.getenv("GOOGLE_SIGNIN_REDIRECT_URL")
-  # SERVER_URL = os.getenv("SERVER_URL")
+  server_url = os.getenv("SERVER_URL")
 
   assert client_id is not None, "GOOGLE_SIGNIN_CLIENT_ID is not set"
   assert client_secret is not None, "GOOGLE_SIGNIN_CLIENT_SECRET is not set"
-  assert redirect_url is not None, "GOOGLE_SIGNIN_REDIRECT_URL is not set"
+  assert server_url is not None, "GOOGLE_SIGNIN_REDIRECT_URL is not set"
+
+  redirect_url = f"{server_url}/google/callback/sign-in"
 
   client_config = {
     "web": {
@@ -30,7 +31,7 @@ def sign_in_auth_config() -> Flow:
       "client_secret": client_secret,
       "auth_uri": "https://accounts.google.com/o/oauth2/auth",
       "token_uri": "https://oauth2.googleapis.com/token",
-       "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+      "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
       "redirect_uris": [redirect_url],
     }
   }
@@ -44,13 +45,14 @@ def service_auth_config(scopes: List[str]) -> Flow:
   """
   client_id = os.getenv("GOOGLE_SERVICE_CLIENT_ID")
   client_secret = os.getenv("GOOGLE_SERVICE_CLIENT_SECRET")
-  redirect_url = os.getenv("GOOGLE_SERVICE_REDIRECT_URL")
-  # SERVER_URL = os.getenv("SERVER_URL")
+  server_url = os.getenv("SERVER_URL")
 
   assert client_id is not None, "GOOGLE_SERVICE_CLIENT_ID is not set"
   assert client_secret is not None, "GOOGLE_SERVICE_CLIENT_SECRET is not set"
-  assert redirect_url is not None, "GOOGLE_SERVICE_REDIRECT_URL is not set"
+  assert server_url is not None, "GOOGLE_SERVICE_REDIRECT_URL is not set"
   assert len(scopes) > 0, "Scopes list is empty"
+
+  redirect_url = f"{server_url}/google/callback/services"
 
   client_config = {
     "web": {
@@ -58,7 +60,7 @@ def service_auth_config(scopes: List[str]) -> Flow:
       "client_secret": client_secret,
       "auth_uri": "https://accounts.google.com/o/oauth2/auth",
       "token_uri": "https://oauth2.googleapis.com/token",
-       "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+      "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
       "redirect_uris": [redirect_url],
     }
   }
@@ -132,18 +134,14 @@ def auth_session(session_id: str) -> bool:
     except Exception as e:
       log.error(f"Error fetching refresh token: {e}")
       return False
-
     if refresh_token is None:
       log.error("No refresh token found")
       return False
     assert isinstance(refresh_token, str), "Refresh token is not a string"
-
     client_id = os.getenv("GOOGLE_SIGNIN_CLIENT_ID")
     client_secret = os.getenv("GOOGLE_SIGNIN_CLIENT_SECRET")
-
     if client_id is None: return False
     if client_secret is None: return False
-
     new_access_token, is_refreshed = refresh_access_token(refresh_token, client_id, client_secret)
     if not is_refreshed or new_access_token is None:
       log.error("Error refreshing access token")

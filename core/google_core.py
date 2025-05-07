@@ -18,13 +18,13 @@ def create_service(user_id: str) -> Tuple[Optional[object], Optional[object]]:
   client_secret = os.getenv("GOOGLE_SERVICE_CLIENT_SECRET")
 
   # Verify access token; and if expired, use refresh token to get new access token
-  access_token = redis.get(f"access_token:{user_id}")
+  access_token = redis.get(f"service_access_token:{user_id}")
   if access_token is None:
-    log.error("Access token not found in redis")
+    log.error("Service access token not found in redis")
     return None, None
   assert isinstance(access_token, str), "Access token is not a string"
 
-  refresh_token = redis.get(f"refresh_token:{user_id}")
+  refresh_token = redis.get(f"service_refresh_token:{user_id}")
 
   credentials = Credentials(
     token=access_token,
@@ -38,7 +38,10 @@ def create_service(user_id: str) -> Tuple[Optional[object], Optional[object]]:
     sheets_service = build("sheets", "v4", credentials=credentials)
     drive_service = build("drive", "v3", credentials=credentials)
   except Exception as e:
-    log.error("Error creating Google Sheets service or Google Drive service: ", e)
+    log.error(f"Error creating Google Sheets service or Google Drive service: {e}")
+    # Add more detailed error information
+    import traceback
+    log.error(f"Detailed error: {traceback.format_exc()}")
     return None, None
   return sheets_service, drive_service
 
@@ -131,22 +134,56 @@ def create_transaction_sheet(s_service, spreadsheet_id: str) -> None:
   """
   Create a sheet in the spreadsheet file
   """
-  # TODO: Check if sheet exists and if header exists
+  # First, check if the Transactions sheet already exists
+  try:
+    # Get spreadsheet information to check for existing sheets
+    spreadsheet = s_service.spreadsheets().get(spreadsheetId=spreadsheet_id).execute()
 
-  # Add headers
-  headers = [
-    [
-      'ID', 'Date', 'Amount', 'Institution', 'Institution Account Name', 'Institution Account Type',
-      'Category', 'Payment Channel', 'Merchant Name', 'Currency', 'Pending', 'Authorized Date'
-     ]
-  ]
+    # Check if Transactions sheet already exists
+    sheet_exists = False
+    for sheet in spreadsheet.get('sheets', []):
+      if sheet.get('properties', {}).get('title') == 'Transactions':
+        sheet_exists = True
+        break
 
-  s_service.spreadsheets().values().update(
-    spreadsheetId=spreadsheet_id,
-    range='Transactions!A1:L1',
-    valueInputOption='RAW',
-    body={'values': headers}
-  ).execute()
+    # If the sheet doesn't exist, create it
+    if not sheet_exists:
+      # Create a new Transactions sheet
+      body = {
+        'requests': [{
+          'addSheet': {
+            'properties': {
+              'title': 'Transactions'
+            }
+          }
+        }]
+      }
+      s_service.spreadsheets().batchUpdate(spreadsheetId=spreadsheet_id, body=body).execute()
+      log.info("Created new Transactions sheet")
+
+    # Add headers
+    headers = [
+      [
+        'ID', 'Date', 'Amount', 'Institution', 'Institution Account Name',
+        'Institution Account Type', 'Category', 'Payment Channel', 'Merchant Name', 'Currency',
+        'Pending', 'Authorized Date'
+      ]
+    ]
+
+    # Update the sheet with headers
+    s_service.spreadsheets().values().update(
+      spreadsheetId=spreadsheet_id,
+      range='Transactions!A1:L1',
+      valueInputOption='RAW',
+      body={'values': headers}
+    ).execute()
+    log.info("Added headers to Transactions sheet")
+
+  except Exception as e:
+    log.error(f"Error creating transaction sheet: {e}")
+    import traceback
+    log.error(f"Detailed error: {traceback.format_exc()}")
+
   return None
 
 
@@ -160,7 +197,7 @@ def append_to_sheet(transaction, s_service, spreadsheet_id: str, name) -> bool:
       range=name,
       valueInputOption='USER_ENTERED',
       insertDataOption='INSERT_ROWS',
-      body={'values': transaction}
+      body={'values': [transaction]}
     ).execute()
   except Exception as e:
     log.error(f"Error appending to sheet: {e}")

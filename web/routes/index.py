@@ -15,7 +15,7 @@ templates = Jinja2Templates(directory="web/templates")
 @router.get("/", response_model=None)
 async def index(request: Request) -> Union[HTMLResponse, RedirectResponse]:
   session_id = request.cookies.get("session_id")
-  if session_id:
+  if session_id and len(session_id) > 0:
     is_auth = auth_session(session_id)
     if is_auth: return RedirectResponse(url="/home", status_code=302)
 

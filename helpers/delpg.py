@@ -20,6 +20,7 @@ def delete() -> None:
   postgres_url = os.getenv("POSTGRES_URL")
   if postgres_url is not None: engine = create_engine(postgres_url)
   else: sys.exit("Could not get postgres url from env variables")
+  # TODO: Add ability to delete multiple tables
   if len(sys.argv) != 2: sys.exit("Usage: ./delscript.py <table_name>")
   table_name = sys.argv[1]
   print(f"Deleting {table_name} table")
@@ -28,7 +29,8 @@ def delete() -> None:
       db.exec_driver_sql(f"DROP TABLE {table_name}")
       db.commit()
   except Exception as e: sys.exit(f"Error deleting table: {e}")
-  sys.exit(f"Deleted {table_name} table")
+  print(f"Deleted {table_name} table")
+  return None
 
 if __name__ == "__main__":
   load_dotenv()

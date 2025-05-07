@@ -9,11 +9,7 @@ router = APIRouter()
 @router.get("/sign-in")
 async def sign_in(request: Request) -> RedirectResponse:
   config = sign_in_auth_config()
-  url, state = config.authorization_url(
-    #  access_type="offline",
-    # include_granted_scopes="true",
-    # prompt="consent"
-  )
+  url, state = config.authorization_url(access_type="offline", prompt="consent")
 
   response = RedirectResponse(url=url, status_code=302)
   expires = datetime.now(timezone.utc) + timedelta(minutes=5)

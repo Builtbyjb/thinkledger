@@ -1,20 +1,19 @@
 from celery import Celery
-from core.google_core import (
-  create_service,
-  create_folder,
-  create_spreadsheet,
-  create_transaction_sheet,
-  append_to_sheet
-)
+from plaid.model.sandbox_payment_simulate_request import sys
+from core.google_core import create_service, create_folder, create_spreadsheet, \
+                            create_transaction_sheet, append_to_sheet
 from utils.logger import log
 from database.redis.redis import gen_redis
 import os
 
 REDIS_URL = os.getenv("REDIS_URL")
+if REDIS_URL is None: sys.exit("REDIS_URL environment variable is not set")
 
 c = Celery("tasks", broker=REDIS_URL, backend=REDIS_URL)
 
 
+# TODO: Refactor creating folders and spreadsheets should be done once, while appending to
+# to a sheet can e done multiple times
 @c.task
 def add_transaction(transaction, user_id: str) -> None:
   s_service, d_service = create_service(user_id)

@@ -40,7 +40,7 @@ def add_user_pg(db: Session, user_info) -> None:
     db.refresh(new_user)
     log.info("User added to postgres database")
   except Exception as e:
-    log.error(e)
+    log.error(f"Error adding user to postgres database: {e}")
 
 
 def add_user_redis(
@@ -60,11 +60,10 @@ def add_user_redis(
     redis.set(f"user_id:{user_id}", user_id) # For use later
     redis.set(f"username:{user_id}", username)
     redis.set(f"access_token:{user_id}", access_token)
-    if refresh_token is not None:
-      redis.set(f"refresh_token:{user_id}", refresh_token)
+    if refresh_token is not None: redis.set(f"refresh_token:{user_id}", refresh_token)
     log.info("User added to redis")
   except Exception as e:
-    log.error(e)
+    log.error(f"Error adding user to redis: {e}")
 
 
 @router.get("/callback/sign-in", response_model=None)
@@ -84,7 +83,13 @@ async def google_sign_in_callback(
 
   client_id = os.getenv("GOOGLE_SIGNIN_CLIENT_ID")
   client_secret = os.getenv("GOOGLE_SIGNIN_CLIENT_SECRET")
-  redirect_url = os.getenv("GOOGLE_SIGNIN_REDIRECT_URL")
+  server_url = os.getenv("SERVER_URL")
+
+  assert client_id is not None, "Google sign client ID is not set"
+  assert client_secret is not None, "Google sign client secret is not set"
+  assert server_url is not None, "Server URL is not set"
+
+  redirect_url = f"{server_url}/google/callback/sign-in"
 
   # Get authorization tokens
   try:
@@ -118,8 +123,10 @@ async def google_sign_in_callback(
   user_id = user_info.get("sub")
   username = user_info.get("name")
   access_token = token["access_token"]
-  refresh_token: Optional[str] = token["refresh_token"]
   session_id: str = generate_crypto_string()
+  refresh_token: Optional[str] = None
+  try: refresh_token = token["refresh_token"]
+  except KeyError: log.info("Refresh token not found")
 
   # Check if the user exists before adding to database
   user = db.get(User, user_id)
@@ -128,10 +135,10 @@ async def google_sign_in_callback(
     bg.add_task(add_user_pg, db, user_info)
 
   # Add user to redis
-  bg.add_task(add_user_redis, redis, user_id, session_id, username, access_token, refresh_token)
+  add_user_redis(redis, user_id, session_id, username, access_token, refresh_token)
 
   # Set user authentication cookie
-  response: RedirectResponse = RedirectResponse(url="/home", status_code=302)
+  response = RedirectResponse(url="/home", status_code=302)
   expires = datetime.now(timezone.utc) + timedelta(days=7)
   response.set_cookie(
     key="session_id",
@@ -157,7 +164,13 @@ async def google_service_callback(
 
   client_id = os.getenv("GOOGLE_SERVICE_CLIENT_ID")
   client_secret = os.getenv("GOOGLE_SERVICE_CLIENT_SECRET")
-  redirect_url = os.getenv("GOOGLE_SERVICE_REDIRECT_URL")
+  server_url = os.getenv("SERVER_URL")
+
+  assert client_id is not None, "Client ID is not set"
+  assert client_secret is not None, "Client Secret is not set"
+  assert server_url is not None, "Server URL is not set"
+
+  redirect_url = f"{server_url}/google/callback/services"
 
   # Get authorization tokens
   try:
@@ -188,6 +201,7 @@ async def google_service_callback(
   # print(token)
   access_token: str = token.get("access_token")
   assert isinstance(access_token, str), "Access token is not a string"
+
   refresh_token: Optional[str] = token.get("refresh_token")
 
   try:
@@ -223,21 +237,17 @@ async def google_service_token(request: Request) -> JSONResponse:
 
   # Get oauth service config
   config = service_auth_config(scopes)
-  url, state = config.authorization_url(
-     #  access_type="offline",
-     # include_granted_scopes="true",
-     # prompt="consent"
-  )
+  url, state = config.authorization_url(access_type="offline", prompt="consent")
 
   response = JSONResponse(content={"url": url}, status_code=200)
   expires = datetime.now(timezone.utc) + timedelta(minutes=5)
   response.set_cookie(
-      key="state",
-      value=state,
-      expires=expires,
-      path="/",
-      secure=True,
-      httponly=True,
-      samesite="lax"
+    key="state",
+    value=state,
+    expires=expires,
+    path="/",
+    secure=True,
+    httponly=True,
+    samesite="lax"
   )
   return response
