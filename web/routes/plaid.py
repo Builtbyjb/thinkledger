@@ -203,7 +203,7 @@ async def plaid_access_token(
 
 @router.post("/webhooks")
 async def plaid_webhooks(request: Request) -> Response:
-  print(request.body())
+  print(await request.body())
   return Response(status_code=200)
 
 

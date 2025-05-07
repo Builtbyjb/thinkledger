@@ -75,6 +75,6 @@ def add_transaction(transaction, user_id: str) -> None:
     log.error("Error appending transaction to sheet: ", e)
     return
 
-  print(transaction)
+  # print(transaction)
   log.info("Transaction added successfully")
   return

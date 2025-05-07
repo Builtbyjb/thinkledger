@@ -18,6 +18,9 @@ INTERVAL = 60
 
 
 def handle_high_task(redis: Redis, user_id: str) -> None:
+  db = gen_db()
+  if db is None: return None
+
   # Check for tasks of High level priority
   try: h_len = redis.llen(f"tasks:{TaskPriority.HIGH}:{user_id}")
   except Exception as e:
@@ -42,7 +45,12 @@ def handle_high_task(redis: Redis, user_id: str) -> None:
 
       if task == Tasks.trans_sync.value:
         for t in get_transactions(access_token):
-          for g in generate_transaction(t): add_transaction(g, user_id)
+          # c = 0
+          for g in generate_transaction(t, db):
+            # print(g)
+            # c += 1
+            add_transaction(g, user_id)
+          # print("Generated transactions: ", c)
 
 
 def handle_low_task(redis: Redis, user_id: str) -> None:

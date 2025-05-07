@@ -138,16 +138,11 @@ def create_transaction_sheet(s_service, spreadsheet_id: str, user_id: str) -> No
   if redis is None: return None
 
   try:
-    # Get spreadsheet information to check for existing sheets
-    spreadsheet = s_service.spreadsheets().get(spreadsheetId=spreadsheet_id).execute()
-
     # Create a new Transactions sheet
     body = {
       'requests': [{
         'addSheet': {
-          'properties': {
-            'title': 'Transactions'
-          }
+          'properties': { 'title': 'Transactions'}
         }
       }]
     }
