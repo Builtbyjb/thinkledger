@@ -8,11 +8,7 @@ minify:
 	npm run minify
 
 css:
-	npx tailwindcss -i ./static/input.css -o ./static/style.css --minify
-
-push:
-	npx @tailwindcss/cli -i ./static/input.css -o ./static/style.css --minify \
-	&& npm run minify
+	npx tailwindcss -i ./web/static/input.css -o ./web/static/style.css --minify
 
 celery:
 	celery -A core.celery worker --loglevel=info

@@ -68,5 +68,5 @@ async def ping() -> JSONResponse:
 
 # Handles page not found
 @app.exception_handler(404)
-async def not_found(request: Request) -> HTMLResponse:
+async def not_found(request: Request, exc: Exception) -> HTMLResponse:
   return templates.TemplateResponse(request=request, name="not_found.html")

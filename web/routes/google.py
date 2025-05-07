@@ -237,11 +237,7 @@ async def google_service_token(request: Request) -> JSONResponse:
 
   # Get oauth service config
   config = service_auth_config(scopes)
-  url, state = config.authorization_url(
-     #  access_type="offline",
-     # include_granted_scopes="true",
-     # prompt="consent"
-  )
+  url, state = config.authorization_url(access_type="offline")
 
   response = JSONResponse(content={"url": url}, status_code=200)
   expires = datetime.now(timezone.utc) + timedelta(minutes=5)

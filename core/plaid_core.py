@@ -70,3 +70,22 @@ def generate_transaction(transactions) -> Generator[list, Any, None]:
                   t.pending, t.authorized_date]
 
     yield transaction
+
+
+def get_balance() -> None:
+  """
+  Gets all the balances of accounts associated with a users connected insitution
+  """
+  client =  create_plaid_client()
+  # Make the request to get the account balance
+  try:
+      response = client.Accounts.balance.get('your_access_token')
+      accounts = response['accounts']
+      for account in accounts:
+          print(f"Account ID: {account['account_id']}")
+          print(f"Available Balance: {account['balances']['available']}")
+          print(f"Current Balance: {account['balances']['current']}")
+  except Exception as e:
+      print(f"An error occurred: {e}")
+
+  return None

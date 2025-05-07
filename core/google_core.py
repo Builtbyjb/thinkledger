@@ -18,13 +18,13 @@ def create_service(user_id: str) -> Tuple[Optional[object], Optional[object]]:
   client_secret = os.getenv("GOOGLE_SERVICE_CLIENT_SECRET")
 
   # Verify access token; and if expired, use refresh token to get new access token
-  access_token = redis.get(f"access_token:{user_id}")
+  access_token = redis.get(f"service_access_token:{user_id}")
   if access_token is None:
-    log.error("Access token not found in redis")
+    log.error("Service access token not found in redis")
     return None, None
   assert isinstance(access_token, str), "Access token is not a string"
 
-  refresh_token = redis.get(f"refresh_token:{user_id}")
+  refresh_token = redis.get(f"service_refresh_token:{user_id}")
 
   credentials = Credentials(
     token=access_token,
@@ -38,7 +38,10 @@ def create_service(user_id: str) -> Tuple[Optional[object], Optional[object]]:
     sheets_service = build("sheets", "v4", credentials=credentials)
     drive_service = build("drive", "v3", credentials=credentials)
   except Exception as e:
-    log.error("Error creating Google Sheets service or Google Drive service: ", e)
+    log.error(f"Error creating Google Sheets service or Google Drive service: {e}")
+    # Add more detailed error information
+    import traceback
+    log.error(f"Detailed error: {traceback.format_exc()}")
     return None, None
   return sheets_service, drive_service
 
@@ -141,6 +144,7 @@ def create_transaction_sheet(s_service, spreadsheet_id: str) -> None:
      ]
   ]
 
+  # TODO: Adding addition values to the header affected the spreadsheet range
   s_service.spreadsheets().values().update(
     spreadsheetId=spreadsheet_id,
     range='Transactions!A1:L1',

@@ -46,7 +46,7 @@ def handle_high_task(redis: Redis, user_id: str) -> None:
         for t in get_transactions(access_token):
           if t is None: continue
           for g in generate_transaction(t):
-            add_transaction.delay(g, user_id)
+            if g: add_transaction.delay(g, user_id)
 
 
 def handle_low_task(redis: Redis, user_id: str) -> None:

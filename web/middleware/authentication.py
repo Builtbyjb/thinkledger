@@ -31,7 +31,7 @@ def auth_required(mode: AuthMode = "strict") -> Any:
     @wraps(func)
     async def wrapper(request: Request, *args, **kwargs):
       session_id = request.cookies.get("session_id")
-      if session_id is None:
+      if session_id is None or len(session_id) == 0:
         if mode == "strict": return RedirectResponse("/")
       else:
         redis = gen_redis()
