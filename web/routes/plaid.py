@@ -1,21 +1,21 @@
 from fastapi import APIRouter, Response, Request, Depends
 from fastapi.responses import JSONResponse
 from utils.plaid_utils import create_plaid_client
-from plaid.model.link_token_create_request import LinkTokenCreateRequest # type: ignore
-from plaid.model.link_token_create_request_user import LinkTokenCreateRequestUser # type: ignore
-from plaid.model.products import Products # type: ignore
-from plaid.model.link_token_transactions import LinkTokenTransactions # type: ignore
-from plaid.model.link_token_account_filters import LinkTokenAccountFilters # type: ignore
-from plaid.model.depository_filter import DepositoryFilter # type: ignore
-from plaid.model.credit_filter import CreditFilter # type: ignore
-from plaid.model.country_code import CountryCode # type: ignore
-from plaid.model.depository_account_subtype import DepositoryAccountSubtype # type: ignore
-from plaid.model.depository_account_subtypes import DepositoryAccountSubtypes # type: ignore
-from plaid.model.credit_account_subtypes import CreditAccountSubtypes # type: ignore
-from plaid.model.credit_account_subtype import CreditAccountSubtype # type: ignore
+from plaid.model.link_token_create_request import LinkTokenCreateRequest
+from plaid.model.link_token_create_request_user import LinkTokenCreateRequestUser
+from plaid.model.products import Products
+from plaid.model.link_token_transactions import LinkTokenTransactions
+from plaid.model.link_token_account_filters import LinkTokenAccountFilters
+from plaid.model.depository_filter import DepositoryFilter
+from plaid.model.credit_filter import CreditFilter
+from plaid.model.country_code import CountryCode
+from plaid.model.depository_account_subtype import DepositoryAccountSubtype
+from plaid.model.depository_account_subtypes import DepositoryAccountSubtypes
+from plaid.model.credit_account_subtypes import CreditAccountSubtypes
+from plaid.model.credit_account_subtype import CreditAccountSubtype
 import os
 from database.redis.redis import get_redis
-from plaid.model.item_public_token_exchange_request import ItemPublicTokenExchangeRequest  # type: ignore
+from plaid.model.item_public_token_exchange_request import ItemPublicTokenExchangeRequest
 from pydantic import BaseModel
 from typing import Optional
 from database.postgres.postgres_db import get_db
@@ -59,7 +59,7 @@ async def plaid_link_token(request: Request, redis=Depends(get_redis)) -> JSONRe
 
   session_id = request.cookies.get('session_id')
   if session_id is None:
-    # TODO: Should redirect user to the home page
+    # TODO: Should redirect user to the home page gracefully
     log.error("Session ID not found")
     return JSONResponse(content={"error": "Session ID not found"}, status_code=400)
 

@@ -31,8 +31,6 @@ def get_transactions(access_token: str) -> Generator[List[PlaidTransaction], Non
     except Exception as e:
       log.error(e)
       return None
-
-    print(converted_response)
     has_more = converted_response.has_more
     cursor = converted_response.next_cursor
     yield converted_response.added
