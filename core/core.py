@@ -39,14 +39,13 @@ def handle_high_task(redis: Redis, user_id: str) -> None:
       assert isinstance(value, str)
       # Note: Rethink how value is handled
       task, access_token = value.split(":")
-      # print("value: ", value)
-      # print("task: ", task)
-      # print("access_token: ", access_token)
+
       if task == Tasks.trans_sync.value:
         for t in get_transactions(access_token):
           if t is None: continue
           for g in generate_transaction(t):
-            if g: add_transaction.delay(g, user_id)
+            if isinstance(g, list):
+              add_transaction(g, user_id)
 
 
 def handle_low_task(redis: Redis, user_id: str) -> None:

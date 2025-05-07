@@ -134,23 +134,56 @@ def create_transaction_sheet(s_service, spreadsheet_id: str) -> None:
   """
   Create a sheet in the spreadsheet file
   """
-  # TODO: Check if sheet exists and if header exists
+  # First, check if the Transactions sheet already exists
+  try:
+    # Get spreadsheet information to check for existing sheets
+    spreadsheet = s_service.spreadsheets().get(spreadsheetId=spreadsheet_id).execute()
 
-  # Add headers
-  headers = [
-    [
-      'ID', 'Date', 'Amount', 'Institution', 'Institution Account Name', 'Institution Account Type',
-      'Category', 'Payment Channel', 'Merchant Name', 'Currency', 'Pending', 'Authorized Date'
-     ]
-  ]
+    # Check if Transactions sheet already exists
+    sheet_exists = False
+    for sheet in spreadsheet.get('sheets', []):
+      if sheet.get('properties', {}).get('title') == 'Transactions':
+        sheet_exists = True
+        break
 
-  # TODO: Adding addition values to the header affected the spreadsheet range
-  s_service.spreadsheets().values().update(
-    spreadsheetId=spreadsheet_id,
-    range='Transactions!A1:L1',
-    valueInputOption='RAW',
-    body={'values': headers}
-  ).execute()
+    # If the sheet doesn't exist, create it
+    if not sheet_exists:
+      # Create a new Transactions sheet
+      body = {
+        'requests': [{
+          'addSheet': {
+            'properties': {
+              'title': 'Transactions'
+            }
+          }
+        }]
+      }
+      s_service.spreadsheets().batchUpdate(spreadsheetId=spreadsheet_id, body=body).execute()
+      log.info("Created new Transactions sheet")
+
+    # Add headers
+    headers = [
+      [
+        'ID', 'Date', 'Amount', 'Institution', 'Institution Account Name',
+        'Institution Account Type', 'Category', 'Payment Channel', 'Merchant Name', 'Currency',
+        'Pending', 'Authorized Date'
+      ]
+    ]
+
+    # Update the sheet with headers
+    s_service.spreadsheets().values().update(
+      spreadsheetId=spreadsheet_id,
+      range='Transactions!A1:L1',
+      valueInputOption='RAW',
+      body={'values': headers}
+    ).execute()
+    log.info("Added headers to Transactions sheet")
+
+  except Exception as e:
+    log.error(f"Error creating transaction sheet: {e}")
+    import traceback
+    log.error(f"Detailed error: {traceback.format_exc()}")
+
   return None
 
 
@@ -164,7 +197,7 @@ def append_to_sheet(transaction, s_service, spreadsheet_id: str, name) -> bool:
       range=name,
       valueInputOption='USER_ENTERED',
       insertDataOption='INSERT_ROWS',
-      body={'values': transaction}
+      body={'values': [transaction]}
     ).execute()
   except Exception as e:
     log.error(f"Error appending to sheet: {e}")

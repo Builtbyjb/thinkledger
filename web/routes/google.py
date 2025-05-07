@@ -135,10 +135,10 @@ async def google_sign_in_callback(
     bg.add_task(add_user_pg, db, user_info)
 
   # Add user to redis
-  bg.add_task(add_user_redis, redis, user_id, session_id, username, access_token, refresh_token)
+  add_user_redis(redis, user_id, session_id, username, access_token, refresh_token)
 
   # Set user authentication cookie
-  response: RedirectResponse = RedirectResponse(url="/home", status_code=302)
+  response = RedirectResponse(url="/home", status_code=302)
   expires = datetime.now(timezone.utc) + timedelta(days=7)
   response.set_cookie(
     key="session_id",
@@ -237,7 +237,7 @@ async def google_service_token(request: Request) -> JSONResponse:
 
   # Get oauth service config
   config = service_auth_config(scopes)
-  url, state = config.authorization_url(access_type="offline")
+  url, state = config.authorization_url(access_type="offline", prompt="consent")
 
   response = JSONResponse(content={"url": url}, status_code=200)
   expires = datetime.now(timezone.utc) + timedelta(minutes=5)

@@ -17,16 +17,16 @@ def get_transactions(access_token: str) -> Generator[Any, Any, None]:
     request = TransactionsSyncRequest(access_token=access_token,cursor=cursor)
     try: response = client.transactions_sync(request)
     except Exception as e:
-      log.error("Error getting transactions: ", e)
-      yield  None
-    response = client.transactions_sync(request)
+      log.error(f"Error getting transactions: {e}")
+      yield None
+      break  # Exit the loop if there's an error
     # TODO: Create response type
     yield response['added']
     has_more = response['has_more']
     cursor = response['next_cursor']
 
 
-def generate_transaction(transactions) -> Generator[list, Any, None]:
+def generate_transaction(transactions) -> Generator[list[str], Any, None]:
   """
   Generates Transaction objects from the transactions gotten from plaid
   and yields a single transaction at a time
@@ -60,14 +60,15 @@ def generate_transaction(transactions) -> Generator[list, Any, None]:
       log.error("Institution not found in database")
       return None
 
-    merchant_name = t.merchant_name
-    if t.merchant_name is None: merchant_name = t.name
+    merchant_name: str = t.merchant_name or t.name
 
-    amount = invert_amount(t.amount)
+    amount: str = str(invert_amount(t.amount))
 
-    transaction = [t.transaction_id, t.date, amount, ins.name, acc.name, acc.subtype,
-                  t.category, t.payment_channel, merchant_name, t.iso_currency_code,
-                  t.pending, t.authorized_date]
+    transaction: list[str] = [
+      str(t.transaction_id), t.date.isoformat(), amount, ins.name, acc.name, acc.subtype,
+      str(t.category), str(t.payment_channel), merchant_name, t.iso_currency_code, str(t.pending),
+      t.authorized_date.isoformat()
+    ]
 
     yield transaction
 
@@ -79,13 +80,13 @@ def get_balance() -> None:
   client =  create_plaid_client()
   # Make the request to get the account balance
   try:
-      response = client.Accounts.balance.get('your_access_token')
-      accounts = response['accounts']
-      for account in accounts:
-          print(f"Account ID: {account['account_id']}")
-          print(f"Available Balance: {account['balances']['available']}")
-          print(f"Current Balance: {account['balances']['current']}")
+    response = client.Accounts.balance.get('your_access_token')
+    accounts = response['accounts']
+    for account in accounts:
+      print(f"Account ID: {account['account_id']}")
+      print(f"Available Balance: {account['balances']['available']}")
+      print(f"Current Balance: {account['balances']['current']}")
   except Exception as e:
-      print(f"An error occurred: {e}")
+    print(f"An error occurred: {e}")
 
   return None
