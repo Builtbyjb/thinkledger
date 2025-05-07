@@ -12,8 +12,6 @@ if REDIS_URL is None: sys.exit("REDIS_URL environment variable is not set")
 c = Celery("tasks", broker=REDIS_URL, backend=REDIS_URL)
 
 
-# TODO: Refactor creating folders and spreadsheets should be done once, while appending to
-# to a sheet can e done multiple times
 @c.task
 def add_transaction(transaction, user_id: str) -> None:
   s_service, d_service = create_service(user_id)
@@ -60,14 +58,16 @@ def add_transaction(transaction, user_id: str) -> None:
   assert isinstance(spreadsheet_id, str)
 
   # Create a transaction sheet in the spreadsheet file if it doesn't exist
-  try: create_transaction_sheet(s_service, spreadsheet_id)
-  except Exception as e:
-    log.error("Error creating transaction sheet: ", e)
-    return
+  transaction_sheet = redis.get(f"sheet:transactions:{user_id}")
+  if transaction_sheet is None:
+    try: create_transaction_sheet(s_service, spreadsheet_id, user_id)
+    except Exception as e:
+      log.error("Error creating transaction sheet: ", e)
+      return
 
   # Append the transaction to the transaction sheet
   try:
-    is_added = append_to_sheet(transaction,s_service,  spreadsheet_id, "Transactions")
+    is_added = append_to_sheet(transaction, s_service,  spreadsheet_id, "Transactions")
     if not is_added:
       log.error("Error appending transaction to sheet")
       return

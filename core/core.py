@@ -42,10 +42,7 @@ def handle_high_task(redis: Redis, user_id: str) -> None:
 
       if task == Tasks.trans_sync.value:
         for t in get_transactions(access_token):
-          if t is None: continue
-          for g in generate_transaction(t):
-            if isinstance(g, list):
-              add_transaction(g, user_id)
+          for g in generate_transaction(t): add_transaction(g, user_id)
 
 
 def handle_low_task(redis: Redis, user_id: str) -> None:

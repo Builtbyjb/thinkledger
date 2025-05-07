@@ -130,36 +130,29 @@ def create_spreadsheet(
   return spreadsheet_id
 
 
-def create_transaction_sheet(s_service, spreadsheet_id: str) -> None:
+def create_transaction_sheet(s_service, spreadsheet_id: str, user_id: str) -> None:
   """
   Create a sheet in the spreadsheet file
   """
-  # First, check if the Transactions sheet already exists
+  redis = gen_redis()
+  if redis is None: return None
+
   try:
     # Get spreadsheet information to check for existing sheets
     spreadsheet = s_service.spreadsheets().get(spreadsheetId=spreadsheet_id).execute()
 
-    # Check if Transactions sheet already exists
-    sheet_exists = False
-    for sheet in spreadsheet.get('sheets', []):
-      if sheet.get('properties', {}).get('title') == 'Transactions':
-        sheet_exists = True
-        break
-
-    # If the sheet doesn't exist, create it
-    if not sheet_exists:
-      # Create a new Transactions sheet
-      body = {
-        'requests': [{
-          'addSheet': {
-            'properties': {
-              'title': 'Transactions'
-            }
+    # Create a new Transactions sheet
+    body = {
+      'requests': [{
+        'addSheet': {
+          'properties': {
+            'title': 'Transactions'
           }
-        }]
-      }
-      s_service.spreadsheets().batchUpdate(spreadsheetId=spreadsheet_id, body=body).execute()
-      log.info("Created new Transactions sheet")
+        }
+      }]
+    }
+    s_service.spreadsheets().batchUpdate(spreadsheetId=spreadsheet_id, body=body).execute()
+    log.info("Created new Transactions sheet")
 
     # Add headers
     headers = [
@@ -178,16 +171,18 @@ def create_transaction_sheet(s_service, spreadsheet_id: str) -> None:
       body={'values': headers}
     ).execute()
     log.info("Added headers to Transactions sheet")
-
   except Exception as e:
     log.error(f"Error creating transaction sheet: {e}")
-    import traceback
-    log.error(f"Detailed error: {traceback.format_exc()}")
+
+  # Store the sheet id in redis
+  try: redis.set(f"sheet:transactions:{user_id}", "transactions")
+  except Exception as e:
+    log.error("Error storing sheet id in redis: ", e)
 
   return None
 
 
-def append_to_sheet(transaction, s_service, spreadsheet_id: str, name) -> bool:
+def append_to_sheet(transaction, s_service, spreadsheet_id: str, name: str) -> bool:
   """
   Append a row to the sheet
   """
