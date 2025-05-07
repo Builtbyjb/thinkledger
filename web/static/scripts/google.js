@@ -1,13 +1,10 @@
 import { setActiveLink, handleSidebar } from "./utils.min.js";
 
-(function () {
+document.addEventListener("DOMContentLoaded", () => {
   setActiveLink();
   handleSidebar();
 
-  const connectGoogleServicesForm = document.querySelector(
-    "#connect-google-services-form",
-  );
-
+  const connectGoogleServicesForm = document.querySelector("#connect-google-services-form");
   connectGoogleServicesForm.addEventListener("submit", async (event) => {
     event.preventDefault();
 
@@ -16,7 +13,7 @@ import { setActiveLink, handleSidebar } from "./utils.min.js";
 
     try {
       const response = await fetch(
-        `/auth-google-service?google_sheet=${googleSheetValue}&google_drive=${googleDriveValue}`,
+        `/google/services?google_sheet=${googleSheetValue}&google_drive=${googleDriveValue}`,
       );
       const data = await response.json();
       if (response.status === 200) {
@@ -28,4 +25,4 @@ import { setActiveLink, handleSidebar } from "./utils.min.js";
       console.log(error);
     }
   });
-})();
+});

@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Request, Depends
-from fastapi.responses import RedirectResponse, Response, JSONResponse
+from fastapi.responses import RedirectResponse, JSONResponse
 from datetime import datetime, timedelta, timezone
 import os
 from redis import Redis
@@ -8,21 +8,23 @@ from google.oauth2 import id_token
 from google.auth.transport import requests as google_requests
 from utils.util import generate_crypto_string
 from sqlmodel import Session
-from database.postgres.postgres_db  import get_db
+from database.postgres.postgres_db import get_db
 from database.redis.redis import get_redis
 from database.postgres.postgres_schema import User
-from typing import Optional
+from typing import Optional, Union
 from enum import Enum
 from utils.auth_utils import service_auth_config
+from utils.constants import TOKEN_URL
+from utils.logger import log
+from fastapi import BackgroundTasks
 
 
-router = APIRouter()
+router = APIRouter(prefix="/google", tags=["Google"])
 
-TOKEN_URL = "https://oauth2.googleapis.com/token"
 
-def add_user_pg(db: Session, user_info) -> bool:
+def add_user_pg(db: Session, user_info) -> None:
   """
-    Save userinfo to postgres database
+    Save user info to postgres database
   """
   new_user = User(
     id=user_info.get("sub"),
@@ -36,102 +38,104 @@ def add_user_pg(db: Session, user_info) -> bool:
     db.add(new_user)
     db.commit()
     db.refresh(new_user)
+    log.info("User added to postgres database")
   except Exception as e:
-    print(e)
-    return False
-  return True
+    log.error(f"Error adding user to postgres database: {e}")
 
-def add_user_redis(redis: Redis,
+
+def add_user_redis(
+  redis: Redis,
   user_id: str,
   session_id: str,
   username: str,
   access_token: str,
   refresh_token: Optional[str] = None
-) -> bool:
+) -> None:
   """
-    Save userinfo to redis database
+    Save user info to redis database
   """
+  # result = redis.delete("username:123")
   try:
     redis.set(session_id, user_id, ex=3600 * 24 * 7) # set expire data to one week
     redis.set(f"user_id:{user_id}", user_id) # For use later
     redis.set(f"username:{user_id}", username)
     redis.set(f"access_token:{user_id}", access_token)
-    if refresh_token is not None:
-      redis.set(f"refresh_token:{user_id}", refresh_token)
+    if refresh_token is not None: redis.set(f"refresh_token:{user_id}", refresh_token)
+    log.info("User added to redis")
   except Exception as e:
-    print(e)
-    return False
-  return True
+    log.error(f"Error adding user to redis: {e}")
 
-@router.get("/auth/google/callback/sign-in")
+
+@router.get("/callback/sign-in", response_model=None)
 async def google_sign_in_callback(
   request: Request,
+  bg: BackgroundTasks,
   db: Session = Depends(get_db),
   redis: Redis = Depends(get_redis)
-) -> Response:
+) -> Union[JSONResponse, RedirectResponse]:
   """
     Completes google sign-in oauth flow
   """
   # Verify state parameter
   if request.query_params.get("state") != request.cookies.get("state"):
-    print("Invalid state parameter")
-    return Response(status_code=400, content="Invalid state parameter")
+    log.error("Invalid state parameter")
+    return JSONResponse(content={"error":"Invalid state parameter"}, status_code=400)
 
-  CLIENT_ID = os.getenv("GOOGLE_SIGNIN_CLIENT_ID")
-  CLIENT_SECRET = os.getenv("GOOGLE_SIGNIN_CLIENT_SECRET")
-  REDIRECT_URL = os.getenv("GOOGLE_SIGNIN_REDIRECT_URL")
+  client_id = os.getenv("GOOGLE_SIGNIN_CLIENT_ID")
+  client_secret = os.getenv("GOOGLE_SIGNIN_CLIENT_SECRET")
+  server_url = os.getenv("SERVER_URL")
+
+  assert client_id is not None, "Google sign client ID is not set"
+  assert client_secret is not None, "Google sign client secret is not set"
+  assert server_url is not None, "Server URL is not set"
+
+  redirect_url = f"{server_url}/google/callback/sign-in"
 
   # Get authorization tokens
   try:
     code = request.query_params.get("code")
     payload = {
       "code": code,
-      "client_id": CLIENT_ID,
-      "client_secret": CLIENT_SECRET,
-      "redirect_uri": REDIRECT_URL,
+      "client_id": client_id,
+      "client_secret": client_secret,
+      "redirect_uri": redirect_url,
       "grant_type": "authorization_code"
     }
-    response = requests.post(TOKEN_URL, data=payload)
-    token = response.json()
+    res = requests.post(TOKEN_URL, data=payload)
+    token = res.json()
   except Exception as e:
-    print("Failed to get authorization tokens")
-    return Response(status_code=500, content=str(e))
+    log.error("Failed to get authorization tokens")
+    return JSONResponse(content=str(e), status_code=500)
 
   # Get user information
   try:
     user_info = id_token.verify_oauth2_token(
       token["id_token"],
       google_requests.Request(),
-      CLIENT_ID
+      client_id
     )
   except Exception as e:
-    print(e)
-    return Response(status_code=400, content=str(e))
+    log.error(e)
+    return JSONResponse(content=str(e), status_code=500)
 
   # print(user_info)
 
-  user_id = str(user_info.get("sub"))
-  username = str(user_info.get("name"))
-  access_token = str(token["access_token"])
-  refresh_token = None
-
-  try: refresh_token = token["refresh_token"]
-  except KeyError: pass
-
+  user_id = user_info.get("sub")
+  username = user_info.get("name")
+  access_token = token["access_token"]
   session_id: str = generate_crypto_string()
+  refresh_token: Optional[str] = None
+  try: refresh_token = token["refresh_token"]
+  except KeyError: log.info("Refresh token not found")
 
   # Check if the user exists before adding to database
   user = db.get(User, user_id)
   if user is None:
-    is_added = add_user_pg(db, user_info)
-    if not is_added:
-      return Response(status_code=500, content="Internal server error")
+    # Add user to database
+    bg.add_task(add_user_pg, db, user_info)
 
-  is_added = add_user_redis(redis, user_id, session_id, username, access_token, refresh_token)
-  if not is_added:
-    return Response(status_code=500, content="Internal server error")
-
-  # result = redis.delete("username:123")
+  # Add user to redis
+  add_user_redis(redis, user_id, session_id, username, access_token, refresh_token)
 
   # Set user authentication cookie
   response = RedirectResponse(url="/home", status_code=302)
@@ -147,64 +151,76 @@ async def google_sign_in_callback(
   )
   return response
 
-@router.get("/auth/google/callback/services")
-async def google_service_callback(request: Request, redis = Depends(get_redis)):
+
+@router.get("/callback/services", response_model=None)
+async def google_service_callback(
+  request: Request, redis = Depends(get_redis)
+  ) -> Union[JSONResponse, RedirectResponse]:
   """
     Completes getting google service tokens oauth flow
   """
   if request.cookies.get("state") != request.query_params.get("state"):
-    return Response(status_code=400, content="Invalid state")
+    return JSONResponse(content={"error":"Invalid state parameter"}, status_code=400)
 
-  CLIENT_ID = os.getenv("GOOGLE_SERVICE_CLIENT_ID")
-  CLIENT_SECRET = os.getenv("GOOGLE_SERVICE_CLIENT_SECRET")
-  REDIRECT_URL = os.getenv("GOOGLE_SERVICE_REDIRECT_URL")
+  client_id = os.getenv("GOOGLE_SERVICE_CLIENT_ID")
+  client_secret = os.getenv("GOOGLE_SERVICE_CLIENT_SECRET")
+  server_url = os.getenv("SERVER_URL")
+
+  assert client_id is not None, "Client ID is not set"
+  assert client_secret is not None, "Client Secret is not set"
+  assert server_url is not None, "Server URL is not set"
+
+  redirect_url = f"{server_url}/google/callback/services"
 
   # Get authorization tokens
   try:
     code = request.query_params.get("code")
     payload = {
       "code": code,
-      "client_id": CLIENT_ID,
-      "client_secret": CLIENT_SECRET,
-      "redirect_uri": REDIRECT_URL,
+      "client_id": client_id,
+      "client_secret": client_secret,
+      "redirect_uri": redirect_url,
       "grant_type": "authorization_code"
     }
     response = requests.post(TOKEN_URL, data=payload)
     token = response.json()
   except Exception as e:
-    print("Failed to get authorization tokens")
-    return Response(status_code=500, content=str(e))
+    log.error("Failed to get authorization tokens")
+    return JSONResponse(content=str(e), status_code=500)
 
-  session_id = request.cookies.get("session_id")
-  user_id = str(redis.get(session_id))
-  if user_id is None: return JSONResponse(
-    content={"error":"Unauthorized"},
-    status_code=401
-  )
+  session_id: Optional[str] = request.cookies.get("session_id")
+  if session_id is None:
+    log.error("Session ID not found")
+    return RedirectResponse(url="/", status_code=302)
+
+  user_id: Optional[str] = redis.get(session_id)
+  if user_id is None:
+    log.error("User not found")
+    return JSONResponse(content={"error":"Unauthorized"}, status_code=401)
 
   # print(token)
-  access_token = token.get("access_token")
-  refresh_token = token.get("refresh_token")
+  access_token: str = token.get("access_token")
+  assert isinstance(access_token, str), "Access token is not a string"
+
+  refresh_token: Optional[str] = token.get("refresh_token")
 
   try:
     redis.set(f"service_access_token:{user_id}", access_token)
-    if refresh_token is not None:
-      redis.set(f"service_refresh_token:{user_id}", refresh_token)
+    if refresh_token is not None: redis.set(f"service_refresh_token:{user_id}", refresh_token)
   except Exception as e:
-    print(e)
-    return JSONResponse(
-      content={"error": "Internal Server Error"},
-      status_code=500
-    )
+    log.error(e)
+    return JSONResponse(content={"error": "Internal Server Error"}, status_code=500)
 
-  print("tokens gotten")
+  log.info("tokens gotten")
   return RedirectResponse("/google", status_code=302)
+
 
 class GoogleScopes(Enum):
   sheets = "https://www.googleapis.com/auth/spreadsheets"
   drive = "https://www.googleapis.com/auth/drive.file"
 
-@router.get("/auth-google-service")
+
+@router.get("/services")
 async def google_service_token(request: Request) -> JSONResponse:
   """
     Starts google service tokens oauth flow
@@ -217,28 +233,21 @@ async def google_service_token(request: Request) -> JSONResponse:
   if google_sheet == "true": scopes.append(GoogleScopes.sheets.value)
   if google_drive == "true": scopes.append(GoogleScopes.drive.value)
 
-  if len(scopes) == 0: return JSONResponse(
-    content={"error": "No scopes provided"},
-    status_code=400,
-  )
+  if len(scopes) == 0: return JSONResponse(content={"error":"No scopes provided"}, status_code=400)
 
   # Get oauth service config
   config = service_auth_config(scopes)
-  url, state = config.authorization_url(
-     #  access_type="offline",
-     # include_granted_scopes="true",
-     # prompt="consent"
-  )
+  url, state = config.authorization_url(access_type="offline", prompt="consent")
 
   response = JSONResponse(content={"url": url}, status_code=200)
   expires = datetime.now(timezone.utc) + timedelta(minutes=5)
   response.set_cookie(
-      key="state",
-      value=state,
-      expires=expires,
-      path="/",
-      secure=True,
-      httponly=True,
-      samesite="lax"
+    key="state",
+    value=state,
+    expires=expires,
+    path="/",
+    secure=True,
+    httponly=True,
+    samesite="lax"
   )
   return response

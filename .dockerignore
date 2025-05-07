@@ -4,3 +4,6 @@ scripts
 input.css
 package.json
 package-lock.json
+.mypy_cache
+.ruff_cache
+.github
