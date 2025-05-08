@@ -45,7 +45,7 @@ def handle_high_task(redis: Redis, user_id: str) -> None:
 
       if task == Tasks.trans_sync.value:
         for t in get_transactions(access_token):
-          for g in generate_transaction(t, db): 
+          for g in generate_transaction(t, db):
             celery_task1 = add_transaction.delay(g, user_id)
             celery_task2 = add_journal_entry.delay(g, user_id)
             # Wait for celery tasks to complete before moving to the next iteration

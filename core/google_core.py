@@ -1,14 +1,15 @@
 from googleapiclient.discovery import build
 from google.oauth2.credentials import Credentials
 from database.redis.redis import gen_redis
-from typing import Optional, Tuple
+from typing import Optional, Tuple, Any, List
 import os
 from utils.constants import TOKEN_URL
 from utils.logger import log
-from utils.types import SheetValue
+from utils.types import SheetValue, Transaction
+from datetime import datetime
 
 
-def create_service(user_id:str) -> Tuple[Optional[object], Optional[object]]:
+def create_service(user_id:str) -> Tuple[Any, Any]:
   """
   Create a google sheet service and a google drive service; returns None if failed
   """
@@ -121,7 +122,7 @@ def create_sheet(s_service, spreadsheet_id:str, sheet_value:SheetValue) -> None:
     sheets = sheet_metadata.get('sheets', [])
 
     # Check if sheet already exists
-    sheet_exists = any( 
+    sheet_exists = any(
       sheet.get('properties', {}).get('title') == sheet_value.name for sheet in sheets
     )
     if not sheet_exists:
@@ -129,13 +130,12 @@ def create_sheet(s_service, spreadsheet_id:str, sheet_value:SheetValue) -> None:
       body = {
         'requests': [{
           'addSheet': {
-            'properties': { 'title': sheet_value.name}
+            'properties': { 'title': sheet_value.name }
           }
         }]
       }
       s_service.spreadsheets().batchUpdate(spreadsheetId=spreadsheet_id, body=body).execute()
       log.info(f"Created new {sheet_value.name} sheet")
-
 
       # Update the sheet with headers
       s_service.spreadsheets().values().update(
@@ -148,6 +148,37 @@ def create_sheet(s_service, spreadsheet_id:str, sheet_value:SheetValue) -> None:
   except Exception as e:
     log.error(f"Error creating {sheet_value.name} sheet: {e}")
   return None
+
+
+def create_deps(user_id:str, sheet_value:SheetValue) -> Tuple[bool, Optional[str], Any]:
+  """
+  Creates or ensures the dependencies (thinkledger folder, general ledger folder, ledger file, the
+  sheet storing the values that is going to be added) are available.
+  """
+  s_service, d_service = create_service(user_id)
+  if s_service is None or d_service is None:
+    log.error("Error creating Google Sheets or Google Drive service")
+    return False, None, None
+
+  # Get parent folder id or create it if it doesn't exist
+  parent_id = create_folder(d_service, "thinkledger")
+  assert isinstance(parent_id, str), "Error creating thinkledger folder"
+
+  # Get general ledger folder id or create it if it doesn't exist
+  general_ledger_id = create_folder(d_service, "general_ledger", parent_id)
+  assert isinstance(general_ledger_id, str), "Error creating general ledger folder"
+
+  # Get spreadsheet file id or create it if it doesn't exist
+  file_name = f"ledger_{datetime.now().year}"
+  spreadsheet_id = create_spreadsheet(d_service, s_service, file_name, general_ledger_id)
+  assert isinstance(spreadsheet_id, str), "Error creating spreadsheet file"
+
+  try: create_sheet(s_service, spreadsheet_id, sheet_value)
+  except Exception as e:
+    log.error(f"Error creating {sheet_value.name} sheet: {e}")
+    return False, None, None
+
+  return True, spreadsheet_id, s_service
 
 
 def append_to_sheet(transaction, s_service, spreadsheet_id:str, name:str) -> bool:
@@ -167,3 +198,38 @@ def append_to_sheet(transaction, s_service, spreadsheet_id:str, name:str) -> boo
     return False
   return True
 
+
+def generate_journal_entry(t:List[str]) -> List[str]:
+  """
+  * convert gemini response to a list of str.
+  """
+  transaction = Transaction(
+    id=t[0],
+    date=datetime.strptime(t[1], "%Y-%m-%d").date(),
+    amount=float(t[2]),
+    institution=t[3],
+    institution_account_name=t[4],
+    institution_account_type=t[5],
+    category=t[6],
+    payment_channel=t[7],
+    merchant_name=t[8],
+    currency_code=t[9],
+    pending=bool(t[10]),
+    authorized_date=datetime.strptime(t[11], "%Y-%m-%d").date()
+  )
+  print(transaction)
+
+  # Generate prompt
+  # Get gemini response
+  # Sanitize gemini response
+  # Use sanitized response to create journal entry list
+
+  return []
+
+
+def spreadsheet_setup() -> None:
+  """
+  * Creates the other sheets and configures them so they are automatically update when when a new
+  journal entry is added.
+  """
+  return
