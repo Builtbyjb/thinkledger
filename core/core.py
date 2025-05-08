@@ -45,12 +45,8 @@ def handle_high_task(redis: Redis, user_id: str) -> None:
 
       if task == Tasks.trans_sync.value:
         for t in get_transactions(access_token):
-          # c = 0
-          for g in generate_transaction(t, db):
-            # print(g)
-            # c += 1
-            add_transaction(g, user_id)
-          # print("Generated transactions: ", c)
+          for g in generate_transaction(t, db): add_transaction(g, user_id)
+          # TODO: Add a high priority task too create journal entries for added transactions
 
 
 def handle_low_task(redis: Redis, user_id: str) -> None:

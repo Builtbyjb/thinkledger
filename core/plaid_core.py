@@ -10,12 +10,12 @@ from utils.types import PlaidTransaction
 from utils.plaid_utils import convert_plaid_response
 
 
-def get_transactions(access_token: str) -> Generator[List[PlaidTransaction], None, None]:
+def get_transactions(access_token:str) -> Generator[List[PlaidTransaction], None, None]:
   """
   Get transactions from Plaid API, and validates the response
   """
   client = create_plaid_client()
-  has_more: bool = True
+  has_more:bool = True
   cursor = ""
   # TODO: Save cursor to institutions table; since access token is associated with institution
   while has_more:
@@ -36,7 +36,7 @@ def get_transactions(access_token: str) -> Generator[List[PlaidTransaction], Non
     yield converted_response.added
 
 
-def generate_transaction(transactions, db: Session) -> Generator[List[str], None, None]:
+def generate_transaction(transactions, db:Session) -> Generator[List[str], None, None]:
   """
   Generates Transaction objects from the transactions gotten from plaid
   and yields a single transaction at a time
@@ -48,7 +48,6 @@ def generate_transaction(transactions, db: Session) -> Generator[List[str], None
   """
   print("transaction length: ", len(transactions))
 
-  # c = 0
   for t in transactions:
     try: acc = db.get(Account, t.account_id)
     except Exception as e:
@@ -78,12 +77,7 @@ def generate_transaction(transactions, db: Session) -> Generator[List[str], None
       str(t.transaction_id), date, amount, ins.name, acc.name, acc.subtype, category,
       str(t.payment_channel), merchant_name, t.iso_currency_code, str(t.pending), authorized_date
     ]
-    # c += 1
-    # print(transaction)
-
     yield transaction
-
-  # print("Yielded transactions: ", c)
 
 
 def get_balance() -> None:

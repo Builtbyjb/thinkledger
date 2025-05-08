@@ -7,7 +7,7 @@ from utils.constants import TOKEN_URL
 from utils.logger import log
 
 
-def create_service(user_id: str) -> Tuple[Optional[object], Optional[object]]:
+def create_service(user_id:str) -> Tuple[Optional[object], Optional[object]]:
   """
   Create a google sheet service and a google drive service; returns None if failed
   """
@@ -16,6 +16,8 @@ def create_service(user_id: str) -> Tuple[Optional[object], Optional[object]]:
 
   client_id = os.getenv("GOOGLE_SERVICE_CLIENT_ID")
   client_secret = os.getenv("GOOGLE_SERVICE_CLIENT_SECRET")
+  assert client_id is not None, "Client ID is not set"
+  assert client_secret is not None, "Client secret is not set"
 
   # Verify access token; and if expired, use refresh token to get new access token
   access_token = redis.get(f"service_access_token:{user_id}")
@@ -39,22 +41,15 @@ def create_service(user_id: str) -> Tuple[Optional[object], Optional[object]]:
     drive_service = build("drive", "v3", credentials=credentials)
   except Exception as e:
     log.error(f"Error creating Google Sheets service or Google Drive service: {e}")
-    # Add more detailed error information
-    import traceback
-    log.error(f"Detailed error: {traceback.format_exc()}")
     return None, None
   return sheets_service, drive_service
 
 
-def create_folder(drive_service, name: str, user_id: str, parent_id: str="root") -> Optional[str]:
+def create_folder(drive_service, name:str, user_id:str, parent_id:str="root") -> Optional[str]:
   """
-  Create a folder in the user's google drive.
-  The parent_id specifies the parent folder id; if it is "root", the folder will be created
-  in the root directory.
+  Create a folder in the user's google drive. The parent_id specifies the parent folder id; if it
+  is "root", the folder will be created in the root directory.
   """
-  redis = gen_redis()
-  if redis is None: return None
-
   try:
     # Check if parent folder exists
     query = f"""
@@ -77,24 +72,15 @@ def create_folder(drive_service, name: str, user_id: str, parent_id: str="root")
   except Exception as e:
     log.error("Error creating folder: ", e)
     return None
-
-  # Store the folder id in redis
-  try: redis.set(f"{name}:{user_id}", folder_id)
-  except Exception as e:
-    log.error("Error storing folder id in redis: ", e)
-    return None
   return folder_id
 
 
 def create_spreadsheet(
-    d_service, s_service, name: str, folder_id: str, user_id: str
+    d_service, s_service, name:str, folder_id:str, user_id:str
     ) -> Optional[str]:
   """
   Create a spreadsheet file in a folder
   """
-  redis = gen_redis()
-  if redis is None: return None
-
   try:
     # Check if spreadsheet exists
     query = f"""
@@ -103,7 +89,6 @@ def create_spreadsheet(
     """
     results = d_service.files().list(q=query).execute()
     files = results.get('files', [])
-
     if files: return files[0].get('id')
 
     # Create new spreadsheet
@@ -121,63 +106,56 @@ def create_spreadsheet(
   except Exception as e:
     log.error(f'Google Sheets API error: {e}')
     return None
-
-  # Store the spreadsheet id in redis
-  try: redis.set(f"{name}:{user_id}", spreadsheet_id)
-  except Exception as e:
-    log.error("Error storing spreadsheet id in redis: ", e)
-    return None
   return spreadsheet_id
 
 
-def create_transaction_sheet(s_service, spreadsheet_id: str, user_id: str) -> None:
+def create_transaction_sheet(s_service, spreadsheet_id:str, user_id:str) -> None:
   """
   Create a sheet in the spreadsheet file
   """
-  redis = gen_redis()
-  if redis is None: return None
-
   try:
-    # Create a new Transactions sheet
-    body = {
-      'requests': [{
-        'addSheet': {
-          'properties': { 'title': 'Transactions'}
-        }
-      }]
-    }
-    s_service.spreadsheets().batchUpdate(spreadsheetId=spreadsheet_id, body=body).execute()
-    log.info("Created new Transactions sheet")
+    # First, get all sheets in the spreadsheet
+    sheet_metadata = s_service.spreadsheets().get(spreadsheetId=spreadsheet_id).execute()
+    sheets = sheet_metadata.get('sheets', [])
 
-    # Add headers
-    headers = [
-      [
+    # Check if Transactions sheet already exists
+    sheet_exists = any(
+      sheet.get('properties', {}).get('title') == 'Transactions'
+      for sheet in sheets
+    )
+    if not sheet_exists:
+      # Create a new Transactions sheet
+      body = {
+        'requests': [{
+          'addSheet': {
+            'properties': { 'title': 'Transactions'}
+          }
+        }]
+      }
+      s_service.spreadsheets().batchUpdate(spreadsheetId=spreadsheet_id, body=body).execute()
+      log.info("Created new Transactions sheet")
+
+      # Add headers
+      header = [
         'ID', 'Date', 'Amount', 'Institution', 'Institution Account Name',
         'Institution Account Type', 'Category', 'Payment Channel', 'Merchant Name', 'Currency',
         'Pending', 'Authorized Date'
       ]
-    ]
 
-    # Update the sheet with headers
-    s_service.spreadsheets().values().update(
-      spreadsheetId=spreadsheet_id,
-      range='Transactions!A1:L1',
-      valueInputOption='RAW',
-      body={'values': headers}
-    ).execute()
-    log.info("Added headers to Transactions sheet")
+      # Update the sheet with headers
+      s_service.spreadsheets().values().update(
+        spreadsheetId=spreadsheet_id,
+        range='Transactions!A1:L1',
+        valueInputOption='RAW',
+        body={'values':[header]}
+      ).execute()
+      log.info("Added headers to Transactions sheet")
   except Exception as e:
     log.error(f"Error creating transaction sheet: {e}")
-
-  # Store the sheet id in redis
-  try: redis.set(f"sheet:transactions:{user_id}", "transactions")
-  except Exception as e:
-    log.error("Error storing sheet id in redis: ", e)
-
   return None
 
 
-def append_to_sheet(transaction, s_service, spreadsheet_id: str, name: str) -> bool:
+def append_to_sheet(transaction, s_service, spreadsheet_id:str, name:str) -> bool:
   """
   Append a row to the sheet
   """
@@ -195,7 +173,7 @@ def append_to_sheet(transaction, s_service, spreadsheet_id: str, name: str) -> b
   return True
 
 
-def add_transaction(transaction, user_id: str) -> None:
+def add_transaction(transaction, user_id:str) -> None:
   """
   Add transactions to google sheet
   """
@@ -204,58 +182,29 @@ def add_transaction(transaction, user_id: str) -> None:
     log.error("Error creating Google Sheets or Google Drive service")
     return
 
-  redis = gen_redis()
-  if redis is None:
-    log.error("Error getting redis instance")
-    return
-
   # Get parent folder id or create it if it doesn't exist
-  parent_id = redis.get(f"thinkledger:{user_id}")
-  if parent_id is None:
-    parent_id = create_folder(d_service, "thinkledger", user_id)
-    if parent_id is None:
-      log.error("Error creating thinkledger folder")
-      return
-  assert isinstance(parent_id, str)
+  parent_id = create_folder(d_service, "thinkledger", user_id)
+  assert isinstance(parent_id, str), "Error creating thinkledger folder"
 
   # Get general ledger folder id or create it if it doesn't exist
-  general_ledger_id = redis.get(f"general_ledger:{user_id}")
-  if general_ledger_id is None:
-    general_ledger_id = create_folder(d_service, "general_ledger", user_id, parent_id)
-    if general_ledger_id is None:
-      log.error("Error creating general ledger folder")
-      return
-  assert isinstance(general_ledger_id, str)
+  general_ledger_id = create_folder(d_service, "general_ledger", user_id, parent_id)
+  assert isinstance(general_ledger_id, str), "Error creating general ledger folder"
 
   # Get spreadsheet file id or create it if it doesn't exist
-  spreadsheet_id = redis.get(f"spreadsheet:{user_id}")
-  if spreadsheet_id is None:
-    spreadsheet_id = create_spreadsheet(
-      d_service,
-      s_service,
-      "ledger_2025",
-      general_ledger_id,
-      user_id
-    )
-    if spreadsheet_id is None:
-      log.error("Error creating spreadsheet file")
-      return
-  assert isinstance(spreadsheet_id, str)
+  file_name = "ledger_2025" # TODO: Dynamically change year
+  spreadsheet_id = create_spreadsheet(d_service, s_service, file_name, general_ledger_id, user_id)
+  assert isinstance(spreadsheet_id, str), "Error creating spreadsheet file"
 
   # Create a transaction sheet in the spreadsheet file if it doesn't exist
-  transaction_sheet = redis.get(f"sheet:transactions:{user_id}")
-  if transaction_sheet is None:
-    try: create_transaction_sheet(s_service, spreadsheet_id, user_id)
-    except Exception as e:
-      log.error("Error creating transaction sheet: ", e)
-      return
+  try: create_transaction_sheet(s_service, spreadsheet_id, user_id)
+  except Exception as e:
+    log.error("Error creating transaction sheet: ", e)
+    return
 
   # Append the transaction to the transaction sheet
   try:
     is_added = append_to_sheet(transaction, s_service,  spreadsheet_id, "Transactions")
-    if not is_added:
-      log.error("Error appending transaction to sheet")
-      return
+    assert is_added is True, "Error appending transaction to sheet"
   except Exception as e:
     log.error("Error appending transaction to sheet: ", e)
     return
