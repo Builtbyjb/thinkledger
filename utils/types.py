@@ -106,16 +106,22 @@ class Account(BaseModel):
 
 
 class RemovedTransaction(BaseModel):
-  account_id: str
-  transaction_id: str
+  account_id:str
+  transaction_id:str
 
 
 class PlaidResponse(BaseModel):
-  accounts: List[Account]
-  added: List[PlaidTransaction]
-  has_more: bool
-  modified: List[PlaidTransaction]
-  next_cursor: str
-  removed: List[RemovedTransaction]
-  request_id: str
-  transactions_update_status: str
+  accounts:List[Account]
+  added:List[PlaidTransaction]
+  has_more:bool
+  modified:List[PlaidTransaction]
+  next_cursor:str
+  removed:List[RemovedTransaction]
+  request_id:str
+  transactions_update_status:str
+
+
+class SheetValue(BaseModel):
+  name:str
+  header:List[str]
+  range:str

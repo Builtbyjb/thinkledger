@@ -6,7 +6,7 @@ from utils.auth_utils import refresh_access_token, verify_access_token
 from utils.core_utils import TaskPriority, Tasks
 from core.plaid_core import get_transactions, generate_transaction
 from utils.logger import log
-from core.google_core import add_transaction
+from core.celery import add_transaction, add_journal_entry
 from redis import Redis
 from concurrent.futures import ThreadPoolExecutor
 import os
@@ -40,13 +40,17 @@ def handle_high_task(redis: Redis, user_id: str) -> None:
 
     if value is not None:
       assert isinstance(value, str)
-      # Note: Rethink how value is handled
+      # NOTE: Rethink how value is handled
       task, access_token = value.split(":")
 
       if task == Tasks.trans_sync.value:
         for t in get_transactions(access_token):
-          for g in generate_transaction(t, db): add_transaction(g, user_id)
-          # TODO: Add a high priority task too create journal entries for added transactions
+          for g in generate_transaction(t, db): 
+            celery_task1 = add_transaction.delay(g, user_id)
+            celery_task2 = add_journal_entry.delay(g, user_id)
+            # Wait for celery tasks to complete before moving to the next iteration
+            celery_task1.get()
+            celery_task2.get()
 
 
 def handle_low_task(redis: Redis, user_id: str) -> None:

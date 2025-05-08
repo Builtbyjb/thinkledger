@@ -6,8 +6,7 @@ from utils.logger import log
 from utils.core_utils import invert_amount
 from typing import Generator, List
 from sqlmodel import Session
-from utils.types import PlaidTransaction
-from utils.plaid_utils import convert_plaid_response
+from utils.types import PlaidTransaction, PlaidResponse
 
 
 def get_transactions(access_token:str) -> Generator[List[PlaidTransaction], None, None]:
@@ -26,14 +25,13 @@ def get_transactions(access_token:str) -> Generator[List[PlaidTransaction], None
       log.error(f"Error getting transactions: {e}")
       return None
     assert isinstance(response, TransactionsSyncResponse)
-    # Convert plaid response
-    try: converted_response = convert_plaid_response(response)
+    try: validated_response = PlaidResponse(**response.to_dict())
     except Exception as e:
       log.error(e)
       return None
-    has_more = converted_response.has_more
-    cursor = converted_response.next_cursor
-    yield converted_response.added
+    has_more = validated_response.has_more
+    cursor = validated_response.next_cursor
+    yield validated_response.added
 
 
 def generate_transaction(transactions, db:Session) -> Generator[List[str], None, None]:

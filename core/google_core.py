@@ -5,6 +5,7 @@ from typing import Optional, Tuple
 import os
 from utils.constants import TOKEN_URL
 from utils.logger import log
+from utils.types import SheetValue
 
 
 def create_service(user_id:str) -> Tuple[Optional[object], Optional[object]]:
@@ -45,7 +46,7 @@ def create_service(user_id:str) -> Tuple[Optional[object], Optional[object]]:
   return sheets_service, drive_service
 
 
-def create_folder(drive_service, name:str, user_id:str, parent_id:str="root") -> Optional[str]:
+def create_folder(drive_service, name:str, parent_id:str="root") -> Optional[str]:
   """
   Create a folder in the user's google drive. The parent_id specifies the parent folder id; if it
   is "root", the folder will be created in the root directory.
@@ -75,11 +76,12 @@ def create_folder(drive_service, name:str, user_id:str, parent_id:str="root") ->
   return folder_id
 
 
-def create_spreadsheet(
-    d_service, s_service, name:str, folder_id:str, user_id:str
-    ) -> Optional[str]:
+def create_spreadsheet(d_service, s_service, name:str, folder_id:str) -> Optional[str]:
   """
   Create a spreadsheet file in a folder
+  *** NOTE **
+  if spreadsheet file name changes it means the year has changed, write a function that pulls in
+  all the relevant data from the pervious year.
   """
   try:
     # Check if spreadsheet exists
@@ -109,7 +111,7 @@ def create_spreadsheet(
   return spreadsheet_id
 
 
-def create_transaction_sheet(s_service, spreadsheet_id:str, user_id:str) -> None:
+def create_sheet(s_service, spreadsheet_id:str, sheet_value:SheetValue) -> None:
   """
   Create a sheet in the spreadsheet file
   """
@@ -118,40 +120,33 @@ def create_transaction_sheet(s_service, spreadsheet_id:str, user_id:str) -> None
     sheet_metadata = s_service.spreadsheets().get(spreadsheetId=spreadsheet_id).execute()
     sheets = sheet_metadata.get('sheets', [])
 
-    # Check if Transactions sheet already exists
-    sheet_exists = any(
-      sheet.get('properties', {}).get('title') == 'Transactions'
-      for sheet in sheets
+    # Check if sheet already exists
+    sheet_exists = any( 
+      sheet.get('properties', {}).get('title') == sheet_value.name for sheet in sheets
     )
     if not sheet_exists:
-      # Create a new Transactions sheet
+      # Create a new sheet
       body = {
         'requests': [{
           'addSheet': {
-            'properties': { 'title': 'Transactions'}
+            'properties': { 'title': sheet_value.name}
           }
         }]
       }
       s_service.spreadsheets().batchUpdate(spreadsheetId=spreadsheet_id, body=body).execute()
-      log.info("Created new Transactions sheet")
+      log.info(f"Created new {sheet_value.name} sheet")
 
-      # Add headers
-      header = [
-        'ID', 'Date', 'Amount', 'Institution', 'Institution Account Name',
-        'Institution Account Type', 'Category', 'Payment Channel', 'Merchant Name', 'Currency',
-        'Pending', 'Authorized Date'
-      ]
 
       # Update the sheet with headers
       s_service.spreadsheets().values().update(
         spreadsheetId=spreadsheet_id,
-        range='Transactions!A1:L1',
+        range=sheet_value.range,
         valueInputOption='RAW',
-        body={'values':[header]}
+        body={'values':[sheet_value.header]}
       ).execute()
-      log.info("Added headers to Transactions sheet")
+      log.info(f"Added headers to {sheet_value.name} sheet")
   except Exception as e:
-    log.error(f"Error creating transaction sheet: {e}")
+    log.error(f"Error creating {sheet_value.name} sheet: {e}")
   return None
 
 
@@ -172,43 +167,3 @@ def append_to_sheet(transaction, s_service, spreadsheet_id:str, name:str) -> boo
     return False
   return True
 
-
-def add_transaction(transaction, user_id:str) -> None:
-  """
-  Add transactions to google sheet
-  """
-  s_service, d_service = create_service(user_id)
-  if s_service is None or d_service is None:
-    log.error("Error creating Google Sheets or Google Drive service")
-    return
-
-  # Get parent folder id or create it if it doesn't exist
-  parent_id = create_folder(d_service, "thinkledger", user_id)
-  assert isinstance(parent_id, str), "Error creating thinkledger folder"
-
-  # Get general ledger folder id or create it if it doesn't exist
-  general_ledger_id = create_folder(d_service, "general_ledger", user_id, parent_id)
-  assert isinstance(general_ledger_id, str), "Error creating general ledger folder"
-
-  # Get spreadsheet file id or create it if it doesn't exist
-  file_name = "ledger_2025" # TODO: Dynamically change year
-  spreadsheet_id = create_spreadsheet(d_service, s_service, file_name, general_ledger_id, user_id)
-  assert isinstance(spreadsheet_id, str), "Error creating spreadsheet file"
-
-  # Create a transaction sheet in the spreadsheet file if it doesn't exist
-  try: create_transaction_sheet(s_service, spreadsheet_id, user_id)
-  except Exception as e:
-    log.error("Error creating transaction sheet: ", e)
-    return
-
-  # Append the transaction to the transaction sheet
-  try:
-    is_added = append_to_sheet(transaction, s_service,  spreadsheet_id, "Transactions")
-    assert is_added is True, "Error appending transaction to sheet"
-  except Exception as e:
-    log.error("Error appending transaction to sheet: ", e)
-    return
-
-  # print(transaction)
-  log.info("Transaction added successfully")
-  return
