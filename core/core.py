@@ -6,7 +6,7 @@ from utils.auth_utils import refresh_access_token, verify_access_token
 from utils.core_utils import TaskPriority, Tasks
 from core.plaid_core import get_transactions, generate_transaction
 from utils.logger import log
-from core.celery import add_transaction
+from core.google_core import add_transaction
 from redis import Redis
 from concurrent.futures import ThreadPoolExecutor
 import os
