@@ -5,8 +5,10 @@ from typing import Optional, Tuple, Any, List
 import os
 from utils.constants import TOKEN_URL
 from utils.logger import log
-from utils.types import SheetValue, Transaction
+from utils.types import SheetValue
 from datetime import datetime
+from prompt.journal_entry import generate_prompt
+from agents.gemini import gemini_response, sanitize_gemini_response
 
 
 def create_service(user_id:str) -> Tuple[Any, Any]:
@@ -53,7 +55,7 @@ def create_folder(drive_service, name:str, parent_id:str="root") -> Optional[str
   is "root", the folder will be created in the root directory.
   """
   try:
-    # Check if parent folder exists
+    # Check if folder exists
     query = f"""
     name='{name}' and mimeType='application/vnd.google-apps.folder' and
     '{parent_id}' in parents and trashed=false
@@ -61,7 +63,7 @@ def create_folder(drive_service, name:str, parent_id:str="root") -> Optional[str
     results = drive_service.files().list(q=query).execute()
     items = results.get('files', [])
 
-    # Create parent folder if it doesn't exist
+    # Create folder if it doesn't exist
     if not items:
       metadata = {
         'name': name,
@@ -199,32 +201,30 @@ def append_to_sheet(transaction, s_service, spreadsheet_id:str, name:str) -> boo
   return True
 
 
-def generate_journal_entry(t:List[str]) -> List[str]:
-  """
-  * convert gemini response to a list of str.
-  """
-  transaction = Transaction(
-    id=t[0],
-    date=datetime.strptime(t[1], "%Y-%m-%d").date(),
-    amount=float(t[2]),
-    institution=t[3],
-    institution_account_name=t[4],
-    institution_account_type=t[5],
-    category=t[6],
-    payment_channel=t[7],
-    merchant_name=t[8],
-    currency_code=t[9],
-    pending=bool(t[10]),
-    authorized_date=datetime.strptime(t[11], "%Y-%m-%d").date()
-  )
-  print(transaction)
-
+def generate_journal_entry(t:List[str]) -> Optional[List[List[str]]]:
   # Generate prompt
+  prompt = generate_prompt({
+    "date":str(datetime.strptime(t[1], "%Y-%m-%d").date()),
+    "amount":str(float(t[2])),
+    "detail":str(t[6]),
+    "payment_channel":str(t[7]),
+    "merchant_name":str(t[8]),
+    "pending":str(t[10]),
+  })
   # Get gemini response
+  try: response = gemini_response(prompt)
+  except Exception as e:
+    log.error(f"Error getting gemini response: {e}")
+    return None
   # Sanitize gemini response
+  r = sanitize_gemini_response(response)
   # Use sanitized response to create journal entry list
-
-  return []
+  # log.info(f"Sanitized Response:\n{r}")
+  # TODO: Handle multiple debit and credit amount
+  return [
+    [str(r.date), r.description, r.debit[0].name, r.debit[0].account_id, r.debit[0].amount, ""],
+    ["", "", r.credit[0].name, r.credit[0].account_id, "", r.credit[0].amount]
+  ]
 
 
 def spreadsheet_setup() -> None:
@@ -232,4 +232,5 @@ def spreadsheet_setup() -> None:
   * Creates the other sheets and configures them so they are automatically update when when a new
   journal entry is added.
   """
+  print("Setting up spreadsheet...")
   return

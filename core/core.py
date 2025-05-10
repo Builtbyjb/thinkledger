@@ -47,9 +47,8 @@ def handle_high_task(redis: Redis, user_id: str) -> None:
         for t in get_transactions(access_token):
           for g in generate_transaction(t, db):
             celery_task1 = add_transaction.delay(g, user_id)
+            celery_task1.get() #  Wait for celery tasks
             celery_task2 = add_journal_entry.delay(g, user_id)
-            # Wait for celery tasks to complete before moving to the next iteration
-            celery_task1.get()
             celery_task2.get()
 
 
@@ -119,7 +118,6 @@ def check_requirements(db: Session, redis: Redis, user_id: str) -> bool:
     except Exception as e:
       log.error(f"Error setting service access token in redis: {e}")
       return False
-
   return True
 
 

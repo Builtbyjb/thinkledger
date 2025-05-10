@@ -127,10 +127,14 @@ class SheetValue(BaseModel):
   range:str
 
 
+class JournalAccount(BaseModel):
+  name:str
+  account_id:str
+  amount:str
+
+
 class JournalEntry(BaseModel):
   date:dt
-  descriptions:str
-  journal_id:str
-  amount:str
-  debit:str
-  credit:str
+  description:str
+  debit:List[JournalAccount]
+  credit:List[JournalAccount]

@@ -17,7 +17,8 @@ c = Celery("tasks", broker=REDIS_URL, backend=REDIS_URL)
 @c.task
 def add_transaction(transaction:List[str], user_id:str) -> None:
   """
-  Add transactions to google sheet
+  Add transactions to google sheet.
+  # NOTE: Need to refactor append to sheet function
   """
   # Create a transaction sheet in the spreadsheet file if it doesn't exist
   transaction_sheet_value = TransactionsSheet()
@@ -43,7 +44,7 @@ def add_transaction(transaction:List[str], user_id:str) -> None:
 def add_journal_entry(transaction:List[str], user_id:str) -> None:
   """
   Create journal entries from transactions and adds them to a "Journal Entries" sheet in the
-  spreadsheet file
+  spreadsheet file.
   """
   journal_entry_sheet_value = JournalEntrySheet()
   sheet_value = SheetValue(**journal_entry_sheet_value.model_dump())
@@ -52,9 +53,10 @@ def add_journal_entry(transaction:List[str], user_id:str) -> None:
   assert spreadsheet_id is not None, "Error creating spreadsheet file"
 
   journal_entry = generate_journal_entry(transaction)
+  print(journal_entry)
 
-  is_added = append_to_sheet(journal_entry, s_service, spreadsheet_id, sheet_value.name)
-  assert is_added is True, "Error appending journal entry to sheet"
+  # is_added = append_to_sheet(journal_entry, s_service, spreadsheet_id, sheet_value.name)
+  # assert is_added is True, "Error appending journal entry to sheet"
 
   spreadsheet_setup()
   return
