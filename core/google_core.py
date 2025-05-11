@@ -10,12 +10,6 @@ from datetime import datetime
 from prompt.journal_entry import generate_prompt
 from agents.gemini import gemini_response, sanitize_gemini_response
 
-"""
-NOTE: 
-i might need the journal sheet id
-
-TODO: Early return if the folders, files or sheets exists
-"""
 
 @dataclass
 class GoogleSheet:
@@ -23,25 +17,20 @@ class GoogleSheet:
     self.user_id = user_id
     self.s_service, self.d_service = self.create_service()
     assert self.s_service is not None and self.d_service is not None
-    # Create thinkledger root folder if it doesn't exist
     parent_id = self.create_folder("thinkledger")
     assert isinstance(parent_id, str), "Error creating thinkledger folder"
-    # Create general_ledger folder if it doesn't exist
     general_ledger_id = self.create_folder("general_ledger", parent_id)
     assert isinstance(general_ledger_id, str), "Error creating general ledger folder"
-    # Create spreadsheet file, if it doesn't exist
     file_name = f"ledger_{datetime.now().year}"
     spreadsheet_id = self.create_spreadsheet(file_name, general_ledger_id)
     assert isinstance(spreadsheet_id, str), "Error creating spreadsheet file"
     self.spreadsheet_id = spreadsheet_id
-    # setup transaction sheet
-    self.setup_transaction()
-    # setup journal entry sheet
-    self.setup_journal_entry()
+    self.trans_sheet_id = self.setup_transaction()
+    self.journal_sheet_id = self.setup_journal_entry()
     # setup up  T account sheet
     # setup trial balance sheet
     # setup up financial statements
-  
+
   def create_service(self) -> Tuple[Any, Any]:
     """
     Create a google sheet service and a google drive service; returns None if failed
@@ -74,10 +63,10 @@ class GoogleSheet:
     try:
       sheets_service = build("sheets", "v4", credentials=credentials)
       drive_service = build("drive", "v3", credentials=credentials)
+      return sheets_service, drive_service
     except Exception as e:
       log.error(f"Error creating Google Sheets service or Google Drive service: {e}")
       return None, None
-    return sheets_service, drive_service
 
   def create_folder(self, name:str, parent_id:str="root") -> Optional[str]:
     """
@@ -91,23 +80,21 @@ class GoogleSheet:
       '{parent_id}' in parents and trashed=false
       """
       results = self.d_service.files().list(q=query).execute()
-      items = results.get('files', [])
+      files = results.get('files', [])
+      if files: return files[0].get("id")
 
       # Create folder if it doesn't exist
-      if not items:
-        metadata = {
-          'name': name,
-          'mimeType': 'application/vnd.google-apps.folder',
-          "parents": [parent_id]
-        }
-
-        folder = self.d_service.files().create(body=metadata, fields='id').execute()
-        folder_id = folder.get('id')
-      else: folder_id = items[0].get('id')
+      metadata = {
+        'name': name,
+        'mimeType': 'application/vnd.google-apps.folder',
+        "parents": [parent_id]
+      }
+      folder = self.d_service.files().create(body=metadata, fields='id').execute()
+      log.info("Folder created")
+      return folder.get('id')
     except Exception as e:
       log.error("Error creating folder: ", e)
       return None
-    return folder_id
 
   def create_spreadsheet(self, name:str, folder_id:str) -> Optional[str]:
     """
@@ -138,75 +125,86 @@ class GoogleSheet:
         removeParents='root',
         fields='id, parents'
       ).execute()
+      log.info("Spreadsheet file created")
+      return spreadsheet_id
     except Exception as e:
       log.error(f'Google Sheets API error: {e}')
       return None
-    return spreadsheet_id
 
-  def create_sheet(self, name:str, header:List[str], range:str) -> None:
+  def create_sheet(self, name:str, header:List[str], h_range:str) -> Optional[str]:
     """
     Create a sheet in the spreadsheet file
     """
-    # TODO: Return a sheet id
     try:
-      # First, get all sheets in the spreadsheet
-      sheet_metadata = self.s_service.spreadsheets().get(spreadsheetId=self.spreadsheet_id).execute()
-      sheets = sheet_metadata.get('sheets', [])
+      # Get all sheets in the spreadsheet
+      metadata = self.s_service.spreadsheets().get(spreadsheetId=self.spreadsheet_id).execute()
+      sheets = metadata.get('sheets', [])
 
       # Check if sheet already exists
-      sheet_exists = any(
-        sheet.get('properties', {}).get('title') == name for sheet in sheets
-      )
-      if not sheet_exists:
-        # Create a new sheet
-        body = {
-          'requests': [{
-            'addSheet': {
-              'properties': { 'title': name }
-            }
-          }]
-        }
+      # sheet_exists = any(sheet.get('properties', {}).get('title') == name for sheet in sheets)
+      for s in sheets:
+        if s.get("properties", {}).get("title") == name:
+          return s.get("properties", {}).get("sheetId")
 
-        self.s_service.spreadsheets().batchUpdate(spreadsheetId=self.spreadsheet_id, body=body).execute()
-        log.info(f"Created new {name} sheet")
+      # Create a new sheet
+      body = {
+        'requests': [{
+          'addSheet': {
+            'properties': { 'title': name }
+          }
+        }]
+      }
 
-        # Update the sheet with headers
-        self.s_service.spreadsheets().values().update(
-          spreadsheetId=self.spreadsheet_id,
-          range=range,
-          valueInputOption='RAW',
-          body={'values':[header]}
-        ).execute()
-        log.info(f"Added headers to {name} sheet")
+      response = self.s_service.spreadsheets() \
+        .batchUpdate(spreadsheetId=self.spreadsheet_id, body=body).execute()
+      log.info(f"Created new {name} sheet")
+       # Get the new sheet ID from response
+      sheet_id = response.get('replies', [])[0].get('addSheet', {}).get('properties', {}) \
+        .get('sheetId')
+      if sheet_id is None:
+        log.error("Failed to get sheet ID from response")
+        return None
+
+      # Update the sheet with headers
+      self.s_service.spreadsheets().values().update(
+        spreadsheetId=self.spreadsheet_id,
+        range=h_range,
+        valueInputOption='RAW',
+        body={'values':[header]}
+      ).execute()
+      log.info(f"Added headers to {name} sheet")
+      return str(sheet_id)
     except Exception as e:
       log.error(f"Error creating {name} sheet: {e}")
-    return None
-  
-  def setup_transaction(self):
+      return None
+
+  def setup_transaction(self) -> str:
     name:str = "Transactions"
     header:List[str] = [
       'ID', 'Date', 'Amount', 'Institution', 'Institution Account Name', 'Institution Account Type',
       'Category', 'Payment Channel', 'Merchant Name', 'Currency', 'Pending', 'Authorized Date'
     ]
-    range:str = "Transactions!A1:L1"
-    self.create_sheet(name, header, range)
-    return
+    h_range:str = "Transactions!A1:L1"
+    sheet_id = self.create_sheet(name, header, h_range)
+    assert sheet_id is not None
+    return  sheet_id
 
-  def setup_journal_entry(self):
+  def setup_journal_entry(self) -> str:
     name:str = "Journal Entries"
     header:List[str] = ["Date", "Description", "Account Name", "Account ID", "Debit", "Credit"]
-    range:str = "Journal Entries!A1:F1"
-    self.create_sheet(name, header, range)
-    return
+    h_range:str = "Journal Entries!A1:F1"
+    sheet_id = self.create_sheet(name, header, h_range)
+    assert sheet_id is not None
+    return sheet_id
 
-  def setup_t_account(self):
-    pass
+  def setup_t_account(self) -> None:
+    return None
 
-  def setup_trial_bal(self):
-    pass
+  def setup_trial_bal(self) -> None:
+    return None
 
-  def setup_bal_sheet(self):
-    pass
+  def setup_bal_sheet(self) -> None:
+    return None
 
 
 @dataclass
@@ -227,10 +225,10 @@ class TransactionsSheet(GoogleSheet):
         insertDataOption='INSERT_ROWS',
         body={'values': [transaction]}
       ).execute()
+      return True
     except Exception as e:
       log.error(f"Error appending to sheet: {e}")
       return False
-    return True
 
 
 @dataclass
@@ -276,7 +274,7 @@ class JournalEntrySheet(GoogleSheet):
         insertDataOption='INSERT_ROWS',
         body={'values': [transaction]}
       ).execute()
+      return True
     except Exception as e:
       log.error(f"Error appending to sheet: {e}")
       return False
-    return True

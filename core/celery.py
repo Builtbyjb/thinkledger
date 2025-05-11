@@ -20,7 +20,6 @@ def add_transaction(transaction:List[str], user_id:str) -> None:
   transaction_sheet = TransactionsSheet(user_id)
   is_added = transaction_sheet.append(transaction)
   assert is_added is True, "Error appending transaction to sheet"
-
   # print(transaction)
   log.info("Transaction added successfully")
   return
@@ -36,7 +35,6 @@ def add_journal_entry(transaction:List[str], user_id:str) -> None:
   assert journal_entry is not None
   # is_added = journal_entry_sheet.append(journal_entry)
   # assert is_added is True, "Error appending journal entry to sheet"
-
-  print(journal_entry)
+  # print(journal_entry)
   log.info("Journal entry added successfully")
   return
