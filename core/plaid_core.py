@@ -1,32 +1,40 @@
 from utils.plaid_utils import create_plaid_client
-from plaid.model.transactions_sync_request import TransactionsSyncRequest # type: ignore
-from database.postgres.postgres_db import gen_db
+from plaid.model.transactions_sync_request import TransactionsSyncRequest
+from plaid.model.transactions_sync_response import TransactionsSyncResponse
 from database.postgres.postgres_schema import Account, Institution
 from utils.logger import log
 from utils.core_utils import invert_amount
-from typing import Generator, Any
+from typing import Generator, List
+from sqlmodel import Session
+from utils.types import PlaidTransaction, PlaidResponse
 
 
-def get_transactions(access_token: str) -> Generator[Any, Any, None]:
+def get_transactions(access_token:str) -> Generator[List[PlaidTransaction], None, None]:
+  """
+  Get transactions from Plaid API, and validates the response
+  """
   client = create_plaid_client()
-  has_more: bool = True
+  has_more:bool = True
   cursor = ""
   # TODO: Save cursor to institutions table; since access token is associated with institution
   while has_more:
     # print(cursor)
-    request = TransactionsSyncRequest(access_token=access_token,cursor=cursor)
-    try: response = client.transactions_sync(request)
+    request = TransactionsSyncRequest(access_token=access_token, cursor=cursor)
+    try: response: TransactionsSyncResponse = client.transactions_sync(request)
     except Exception as e:
       log.error(f"Error getting transactions: {e}")
-      yield None
-      break  # Exit the loop if there's an error
-    # TODO: Create response type
-    yield response['added']
-    has_more = response['has_more']
-    cursor = response['next_cursor']
+      return None
+    assert isinstance(response, TransactionsSyncResponse)
+    try: validated_response = PlaidResponse(**response.to_dict())
+    except Exception as e:
+      log.error(e)
+      return None
+    has_more = validated_response.has_more
+    cursor = validated_response.next_cursor
+    yield validated_response.added
 
 
-def generate_transaction(transactions) -> Generator[list[str], Any, None]:
+def generate_transaction(transactions, db:Session) -> Generator[List[str], None, None]:
   """
   Generates Transaction objects from the transactions gotten from plaid
   and yields a single transaction at a time
@@ -36,40 +44,37 @@ def generate_transaction(transactions) -> Generator[list[str], Any, None]:
     Money coming into the account is negative converted to positive
   }
   """
-  db = gen_db()
-  if db is None: return None
-
   print("transaction length: ", len(transactions))
 
   for t in transactions:
     try: acc = db.get(Account, t.account_id)
     except Exception as e:
       log.error(f"Error getting account: {e}")
-      return None
+      continue
 
     if acc is None:
       log.error("Account not found in database")
-      return None
+      continue
 
     try: ins = db.get(Institution, acc.institution_id)
     except Exception as e:
       log.error(f"Error getting institution: {e}")
-      return None
+      continue
 
     if ins is None:
       log.error("Institution not found in database")
-      return None
+      continue
 
     merchant_name: str = t.merchant_name or t.name
-
     amount: str = str(invert_amount(t.amount))
+    date = t.date.isoformat() if t.date else ""
+    authorized_date = t.authorized_date.isoformat() if t.authorized_date else ""
+    category = t.personal_finance_category.detailed or ""
 
     transaction: list[str] = [
-      str(t.transaction_id), t.date.isoformat(), amount, ins.name, acc.name, acc.subtype,
-      str(t.category), str(t.payment_channel), merchant_name, t.iso_currency_code, str(t.pending),
-      t.authorized_date.isoformat()
+      str(t.transaction_id), date, amount, ins.name, acc.name, acc.subtype, category,
+      str(t.payment_channel), merchant_name, t.iso_currency_code, str(t.pending), authorized_date
     ]
-
     yield transaction
 
 
