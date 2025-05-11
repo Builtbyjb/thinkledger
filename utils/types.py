@@ -121,12 +121,6 @@ class PlaidResponse(BaseModel):
   transactions_update_status:str
 
 
-class SheetValue(BaseModel):
-  name:str
-  header:List[str]
-  range:str
-
-
 class JournalAccount(BaseModel):
   name:str
   account_id:str
