@@ -6,9 +6,14 @@ import os
 from dataclasses import dataclass
 from utils.constants import TOKEN_URL
 from utils.logger import log
+from utils.types import JournalEntry
 from datetime import datetime
 from prompt.journal_entry import generate_prompt
 from agents.gemini import gemini_response, sanitize_gemini_response
+
+# TODO: Ability to handle multiple business accounts.
+# TODO: Ability to handle personal accounts .
+# TODO: Handle transaction changes
 
 
 @dataclass
@@ -255,24 +260,43 @@ class JournalEntrySheet(GoogleSheet):
     # Sanitize gemini response
     r = sanitize_gemini_response(response)
     # Use sanitized response to create journal entry list
-    # log.info(f"Sanitized Response:\n{r}")
-    # TODO: Handle multiple debit and credit amount
-    return [
-      [str(r.date), r.description, r.debit[0].name, r.debit[0].account_id, r.debit[0].amount, ""],
-      ["", "", r.credit[0].name, r.credit[0].account_id, "", r.credit[0].amount]
-    ]
+    # print(f"Sanitized Response:\n{r}")
 
-  def append(self, transaction) -> bool:
+    def helper(r:JournalEntry) -> List[List[str]]:
+      """
+      Helps create a journal entry. Accounts for multiple debit and credit account values
+      """
+      m_list:List[List[str]] = []
+
+      # Append first debit value, with date and description
+      m_list.append([str(r.date), r.description, r.debit[0].name, r.debit[0].account_id,
+                     r.debit[0].amount, ""])
+
+      # Append debit values
+      for i in range(len(r.debit)):
+        if i == 0: continue
+        m_list.append(["", "", r.debit[i].name, r.debit[i].account_id, r.debit[i].amount, ""])
+
+      # Append credit values
+      for c in r.credit:
+        m_list.append(["", "", c.name, c.account_id, "", c.amount])
+
+      return m_list
+
+    return helper(r)
+
+  def append(self, journal_entry:List[List[str]]) -> bool:
     """
     Append a row to the sheet
     """
+    # TODO: Add styling
     try:
       self.s_service.spreadsheets().values().append(
         spreadsheetId=self.spreadsheet_id,
         range=self.name,
         valueInputOption='USER_ENTERED',
         insertDataOption='INSERT_ROWS',
-        body={'values': [transaction]}
+        body={'values': journal_entry}
       ).execute()
       return True
     except Exception as e:

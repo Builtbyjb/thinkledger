@@ -33,8 +33,8 @@ def add_journal_entry(transaction:List[str], user_id:str) -> None:
   journal_entry_sheet = JournalEntrySheet(user_id)
   journal_entry = journal_entry_sheet.generate(transaction)
   assert journal_entry is not None
-  # is_added = journal_entry_sheet.append(journal_entry)
-  # assert is_added is True, "Error appending journal entry to sheet"
+  is_added = journal_entry_sheet.append(journal_entry)
+  assert is_added is True, "Error appending journal entry to sheet"
   # print(journal_entry)
   log.info("Journal entry added successfully")
   return
