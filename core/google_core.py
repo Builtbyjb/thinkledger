@@ -14,6 +14,7 @@ from agents.gemini import gemini_response, sanitize_gemini_response
 # TODO: Ability to handle multiple business accounts.
 # TODO: Ability to handle personal accounts .
 # TODO: Handle transaction changes
+# TODO: Update journal entries when a transaction is modified or removed
 
 
 @dataclass
@@ -203,6 +204,15 @@ class GoogleSheet:
     return sheet_id
 
   def setup_t_account(self) -> None:
+    """
+    NOTE: How will i structure the tables
+    * The tables need to created dynamically. In columns
+    * Table values need to update has new journal entries are add
+    * New tables need to created as new accounts appear in journal entries
+    * Seamless integration with google sheet API
+    * This just setups the t-accounts sheet.
+    * If i create a different class for it how do i call it?
+    """
     return None
 
   def setup_trial_bal(self) -> None:
