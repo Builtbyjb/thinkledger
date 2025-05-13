@@ -3,7 +3,7 @@ from google.oauth2.credentials import Credentials
 from database.redis.redis import gen_redis
 from typing import Optional, Tuple, Any, List
 import os
-from dataclasses import dataclass
+from pydantic import BaseModel
 from utils.constants import TOKEN_URL
 from utils.logger import log
 from utils.types import JournalEntry
@@ -15,10 +15,18 @@ from agents.gemini import gemini_response, sanitize_gemini_response
 # TODO: Ability to handle personal accounts .
 # TODO: Handle transaction changes
 # TODO: Update journal entries when a transaction is modified or removed
+# TODO: Charter of accounts?
+# TODO: Auto fill taxes forms
+# TODO: Analyze financial data
+# TODO: Add heading to the sheets
+
+# Current
+# TODO: style tables
+# TODO: character by character value streaming
+# TODO: Get google app script to work
 
 
-@dataclass
-class GoogleSheet:
+class GoogleSheet(BaseModel):
   def __init__(self, user_id:str):
     self.user_id = user_id
     self.s_service, self.d_service = self.create_service()
@@ -137,6 +145,8 @@ class GoogleSheet:
       log.error(f'Google Sheets API error: {e}')
       return None
 
+  def create_app_script(self) -> None: return
+
   def create_sheet(self, name:str, header:List[str], h_range:str) -> Optional[str]:
     """
     Create a sheet in the spreadsheet file
@@ -210,9 +220,20 @@ class GoogleSheet:
     * Table values need to update has new journal entries are add
     * New tables need to created as new accounts appear in journal entries
     * Seamless integration with google sheet API
-    * This just setups the t-accounts sheet.
-    * If i create a different class for it how do i call it?
+    * This just setups the t-accounts sheet:
+      * Creates the sheet
+    * I do not need to create a different class. I will shift all the frontend functionality to
+    googl app script
+
+    Ideas:
+    * I need to link the debit, credit and account ID section of the journal entry.
+    * Create update methods to update sheets when needed.
+    * Create a separate sheet for t-accounts.
+    * The sheets contains a dropdown menu, with all the T-accounts from the journal entry.
+    * Selecting a dropdown value displays the corresponding T-account
+    * Functionality needed can only be achieved with app script
     """
+    # name:str = "T Accounts"
     return None
 
   def setup_trial_bal(self) -> None:
@@ -222,8 +243,7 @@ class GoogleSheet:
     return None
 
 
-@dataclass
-class TransactionsSheet(GoogleSheet):
+class TransactionSheet(GoogleSheet):
   def __init__(self, user_id:str):
     super().__init__(user_id)
     self.name:str = "Transactions"
@@ -246,7 +266,6 @@ class TransactionsSheet(GoogleSheet):
       return False
 
 
-@dataclass
 class JournalEntrySheet(GoogleSheet):
   def __init__(self, user_id:str):
     super().__init__(user_id)
@@ -269,7 +288,6 @@ class JournalEntrySheet(GoogleSheet):
       return None
     # Sanitize gemini response
     r = sanitize_gemini_response(response)
-    # Use sanitized response to create journal entry list
     # print(f"Sanitized Response:\n{r}")
 
     def helper(r:JournalEntry) -> List[List[str]]:
@@ -277,20 +295,15 @@ class JournalEntrySheet(GoogleSheet):
       Helps create a journal entry. Accounts for multiple debit and credit account values
       """
       m_list:List[List[str]] = []
-
       # Append first debit value, with date and description
       m_list.append([str(r.date), r.description, r.debit[0].name, r.debit[0].account_id,
                      r.debit[0].amount, ""])
-
       # Append debit values
       for i in range(len(r.debit)):
         if i == 0: continue
         m_list.append(["", "", r.debit[i].name, r.debit[i].account_id, r.debit[i].amount, ""])
-
       # Append credit values
-      for c in r.credit:
-        m_list.append(["", "", c.name, c.account_id, "", c.amount])
-
+      for c in r.credit: m_list.append(["", "", c.name, c.account_id, "", c.amount])
       return m_list
 
     return helper(r)

@@ -3,7 +3,7 @@ import os
 import sys
 from utils.logger import log
 from typing import List
-from core.google_core import TransactionsSheet, JournalEntrySheet
+from core.google.google_sheet import TransactionSheet, JournalEntrySheet
 
 
 REDIS_URL = os.getenv("REDIS_URL")
@@ -17,7 +17,7 @@ def add_transaction(transaction:List[str], user_id:str) -> None:
   """
   Add transactions to google sheet.
   """
-  transaction_sheet = TransactionsSheet(user_id)
+  transaction_sheet = TransactionSheet(user_id)
   is_added = transaction_sheet.append(transaction)
   assert is_added is True, "Error appending transaction to sheet"
   # print(transaction)

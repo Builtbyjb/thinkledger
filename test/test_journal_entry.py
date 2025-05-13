@@ -22,7 +22,7 @@
 # Answer: Credit cash by $150.
 #         Debit fuel expense by $150 (Owners Equity)
 
-# ** Question 6: Provided landscaping service for 3 customers, $100 each. 2 paid, 
+# ** Question 6: Provided landscaping service for 3 customers, $100 each. 2 paid,
 # one will pay next week.
 # Answer: Debit cash for $200.
 #         Debit account receivable by $100.
@@ -32,7 +32,8 @@
 # Answer: Debit telephone expense by $50 (Owners equity).
 #         Credit accounts payable by $50.
 
-# ** Question 8: Purchased a new piece of landscaping equipment - a line trimmer - for $500 on account.
+# ** Question 8: Purchased a new piece of landscaping equipment - a line trimmer - for $500 on
+# account.
 # Answer: Debit equipment by $500.
 #         Credit account payable by $500.
 
@@ -91,11 +92,13 @@
 # Answer: Debit cash $1800.
 #         Credit landscaping revenue $1800.
 
-# ** Question 22: An upset client threatened to sue - our company paid legal fees of $400 to consult with a lawyer - the client eventually changed their mind about suing.
+# ** Question 22: An upset client threatened to sue - our company paid legal fees of $400 to
+# consult with a lawyer - the client eventually changed their mind about suing.
 # Answer: Credit cash by $400.
 #         Debit legal expense by $400.
 
-# ** Question 23: Took  a local business development training course through the local college - paid $180.
+# ** Question 23: Took  a local business development training course through the local college
+# - paid $180.
 # Answer: Credit cash by $180.
 #         Debit training expense by $180.
 
@@ -103,7 +106,8 @@
 # Answer: Debit equipment by $275.
 #         Credit account payable by $275.
 
-# ** Question 25: Completed lawn mowing work at 8 houses. Billed $50 per house. Received payment from 3 of the 8 clients.
+# ** Question 25: Completed lawn mowing work at 8 houses. Billed $50 per house. Received payment
+# from 3 of the 8 clients.
 # Answer: Debit cash by $150.
 #         Debit account receivable by $250.
 #         Credit landscaping revenue by $400.
