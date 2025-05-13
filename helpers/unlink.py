@@ -1,20 +1,14 @@
 #!/usr/bin/env python3
 
-import sys
-import os
-
+import sys, os
 # Add project root to path
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
 from utils.plaid_utils import create_plaid_client
-from plaid.model.item_remove_request import ItemRemoveRequest # type: ignore
+from plaid.model.item_remove_request import ItemRemoveRequest
 
 
 def unlink_plaid_account() -> None:
-  if len(sys.argv) != 2:
-    print("Usage: python unlink.py <access_token>")
-    return
-
+  if len(sys.argv) != 2: sys.exit("Usage: python unlink.py <access_token>")
   client = create_plaid_client()
   try:
     request = ItemRemoveRequest(access_token=sys.argv[1])
