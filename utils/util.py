@@ -2,11 +2,10 @@ import secrets
 
 
 def generate_crypto_string(length=32) -> str:
-    """Generates a unique URL-safe cryptographic string of the specified length.
-
+    """
+    Generates a unique URL-safe cryptographic string of the specified length.
     Args:
         length (int): Desired length of the output string. Defaults to 32.
-
     Returns:
         str: A cryptographically secure random string.
     """

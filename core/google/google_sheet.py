@@ -113,7 +113,7 @@ class GoogleSheet(BaseModel):
   def create_spreadsheet(self, name:str, folder_id:str) -> Optional[str]:
     """
     Create a spreadsheet file in a folder
-    *** NOTE **
+    NOTE:
     if spreadsheet file name changes it means the year has changed, write a function that pulls in
     all the relevant data from the pervious year.
     """
@@ -159,7 +159,7 @@ class GoogleSheet(BaseModel):
       # Check if sheet already exists
       # sheet_exists = any(sheet.get('properties', {}).get('title') == name for sheet in sheets)
       for s in sheets:
-        if s.get("properties", {}).get("title") == name:
+        if s.get("properties", {}).get("title") == name: 
           return s.get("properties", {}).get("sheetId")
 
       # Create a new sheet

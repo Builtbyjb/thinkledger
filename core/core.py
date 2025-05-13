@@ -17,22 +17,19 @@ MAX_WORKERS = 5
 INTERVAL = 60
 
 
-def handle_high_task(redis: Redis, user_id: str) -> None:
-  db = gen_db()
-  if db is None: return None
-
+def handle_high_task(db: Session, redis: Redis, user_id: str) -> None:
   # Check for tasks of High level priority
-  try: h_len = redis.llen(f"tasks:{TaskPriority.HIGH}:{user_id}")
+  try: len = redis.llen(f"tasks:{TaskPriority.HIGH}:{user_id}")
   except Exception as e:
     log.error(f"Error getting high priority tasks length from redis: {e}")
     return None
-  assert isinstance(h_len, int)
+  assert isinstance(len, int)
 
-  if h_len == 0:
+  if len == 0:
     log.info("No high priority tasks")
     return None
 
-  for _ in range(h_len):
+  for _ in range(len):
     try: value = redis.rpop(f"tasks:{TaskPriority.HIGH}:{user_id}")
     except Exception as e:
       log.error(f"Error popping high priority task from redis: {e}")
@@ -54,12 +51,12 @@ def handle_high_task(redis: Redis, user_id: str) -> None:
 
 def handle_low_task(redis: Redis, user_id: str) -> None:
   # Check for tasks of low level priority
-  try: l_len = redis.llen(f"tasks:{TaskPriority.LOW}:{user_id}")
+  try: len = redis.llen(f"tasks:{TaskPriority.LOW}:{user_id}")
   except Exception as e:
     log.error(f"Error getting low priority tasks from redis: {e}")
     return
 
-  if l_len != 0:
+  if len != 0:
     # Handle low task offload
     try: task = redis.rpop(f"tasks:{TaskPriority.LOW}:{user_id}")
     except Exception as e:
@@ -105,7 +102,6 @@ def check_requirements(db: Session, redis: Redis, user_id: str) -> bool:
 
     client_id = os.getenv("GOOGLE_SERVICE_CLIENT_ID")
     client_secret = os.getenv("GOOGLE_SERVICE_CLIENT_SECRET")
-
     assert client_secret is not None, "Google service client ID is not set"
     assert client_id is not None, "Google service client secret is not set"
 
@@ -125,7 +121,7 @@ def handle_task(db: Session, redis: Redis, user_id: str) -> None:
   is_passed =  check_requirements(db, redis, user_id)
   # TODO: Alert user to complete requirements
   if not is_passed: return
-  handle_high_task(redis, user_id)
+  handle_high_task(db, redis, user_id)
   handle_low_task(redis, user_id)
 
 
@@ -133,8 +129,7 @@ def core(exit_process: Event) -> None:
   """
   Gets users from the database and creates a new thread for each user to handle their tasks.
   """
-  log.info("Print starting core process...")
-
+  log.info("Starting core process...")
   while not exit_process.is_set():
     # Get a fresh DB connection each time through the loop
     db = gen_db()
