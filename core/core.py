@@ -19,17 +19,17 @@ INTERVAL = 60
 
 def handle_high_task(db: Session, redis: Redis, user_id: str) -> None:
   # Check for tasks of High level priority
-  try: len = redis.llen(f"tasks:{TaskPriority.HIGH}:{user_id}")
+  try: l = redis.llen(f"tasks:{TaskPriority.HIGH}:{user_id}")
   except Exception as e:
     log.error(f"Error getting high priority tasks length from redis: {e}")
     return None
-  assert isinstance(len, int)
+  assert isinstance(l, int)
 
-  if len == 0:
+  if l == 0:
     log.info("No high priority tasks")
     return None
 
-  for _ in range(len):
+  for _ in range(l):
     try: value = redis.rpop(f"tasks:{TaskPriority.HIGH}:{user_id}")
     except Exception as e:
       log.error(f"Error popping high priority task from redis: {e}")
@@ -51,12 +51,12 @@ def handle_high_task(db: Session, redis: Redis, user_id: str) -> None:
 
 def handle_low_task(redis: Redis, user_id: str) -> None:
   # Check for tasks of low level priority
-  try: len = redis.llen(f"tasks:{TaskPriority.LOW}:{user_id}")
+  try: l = redis.llen(f"tasks:{TaskPriority.LOW}:{user_id}")
   except Exception as e:
     log.error(f"Error getting low priority tasks from redis: {e}")
     return
 
-  if len != 0:
+  if l != 0:
     # Handle low task offload
     try: task = redis.rpop(f"tasks:{TaskPriority.LOW}:{user_id}")
     except Exception as e:
@@ -110,6 +110,7 @@ def check_requirements(db: Session, redis: Redis, user_id: str) -> bool:
       log.error("Failed to refresh access token")
       return False
 
+    # Save new access token
     try: redis.set(f"service_access_token:{user_id}", new_access_token)
     except Exception as e:
       log.error(f"Error setting service access token in redis: {e}")
@@ -144,13 +145,6 @@ def core(exit_process: Event) -> None:
     if len(users) == 0: log.info("No users found in database")
     else:
       with ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
+        # Returns a list of futures, you then get the result of each threads from each future
         _ = {executor.submit(handle_task, db, redis, u.id): u for u in users}
-        # Wait for all tasks to complete
-        # for future in futures:
-        #     try:
-        #         result = future.result()
-        #         # TODO: Process result
-        #     except Exception as e:
-        #         user = futures[future]
-        #         print(f"Task for user {user.id} generated an exception: {e}")
     exit_process.wait(INTERVAL)

@@ -159,7 +159,7 @@ class GoogleSheet(BaseModel):
       # Check if sheet already exists
       # sheet_exists = any(sheet.get('properties', {}).get('title') == name for sheet in sheets)
       for s in sheets:
-        if s.get("properties", {}).get("title") == name: 
+        if s.get("properties", {}).get("title") == name:
           return s.get("properties", {}).get("sheetId")
 
       # Create a new sheet
@@ -198,8 +198,7 @@ class GoogleSheet(BaseModel):
     name:str = "Transactions"
     header:List[str] = [
       'ID', 'Date', 'Amount', 'Institution', 'Institution Account Name', 'Institution Account Type',
-      'Category', 'Payment Channel', 'Merchant Name', 'Currency', 'Pending', 'Authorized Date'
-    ]
+      'Category', 'Payment Channel', 'Merchant Name', 'Currency', 'Pending', 'Authorized Date']
     h_range:str = "Transactions!A1:L1"
     sheet_id = self.create_sheet(name, header, h_range)
     assert sheet_id is not None
