@@ -17,7 +17,7 @@ MAX_WORKERS = 5
 INTERVAL = 60
 
 
-def handle_high_task(db: Session, redis: Redis, user_id: str) -> None:
+def handle_high_task(db:Session, redis:Redis, user_id:str) -> None:
   # Check for tasks of High level priority
   try: l = redis.llen(f"tasks:{TaskPriority.HIGH}:{user_id}")
   except Exception as e:
@@ -43,13 +43,13 @@ def handle_high_task(db: Session, redis: Redis, user_id: str) -> None:
       if task == Tasks.trans_sync.value:
         for t in get_transactions(access_token):
           for g in generate_transaction(t, db):
-            celery_task1 = add_transaction.delay(g, user_id)
-            celery_task1.get() #  Wait for celery tasks
-            celery_task2 = add_journal_entry.delay(g, user_id)
-            celery_task2.get()
+            c_task1 = add_transaction.delay(g, user_id)
+            c_task1.get() #  Wait for celery task to complete
+            c_task2 = add_journal_entry.delay(g, user_id)
+            c_task2.get()
 
 
-def handle_low_task(redis: Redis, user_id: str) -> None:
+def handle_low_task(redis:Redis, user_id:str) -> None:
   # Check for tasks of low level priority
   try: l = redis.llen(f"tasks:{TaskPriority.LOW}:{user_id}")
   except Exception as e:
@@ -66,12 +66,12 @@ def handle_low_task(redis: Redis, user_id: str) -> None:
   return
 
 
-def check_requirements(db: Session, redis: Redis, user_id: str) -> bool:
+def check_requirements(db:Session, redis:Redis, user_id:str) -> bool:
   """
   For the requirements function to pass a user needs to connect at least one bank, and
   Grant access to google drive and google sheets.
   """
-  # Check Institution
+  # Check for institutions
   try: ins = db.exec(select(Institution)).all()
   except Exception as e:
     log.error(f"Error getting institutions from database: {e}")
@@ -81,47 +81,51 @@ def check_requirements(db: Session, redis: Redis, user_id: str) -> bool:
     log.info("No institutions")
     return False
 
-  # Check Scopes
+  # Check for google workspace access
   try: access_token = redis.get(f"service_access_token:{user_id}")
   except Exception as e:
     log.error(f"Error getting service tokens from redis: {e}")
     return False
 
-  if access_token is None: return False
-  assert isinstance(access_token, str)
-
+  if access_token is None: 
+    log.error("Error getting access token")
+    return False
   # Verify access_token
-  if not verify_access_token(access_token):
+  if not verify_access_token(str(access_token)):
     # Try refreshing access token if verification fails
     try: refresh_token = redis.get(f"service_refresh_token:{user_id}")
     except Exception as e:
       log.error(f"Error getting service refresh token from redis: {e}")
       return False
-    if refresh_token is None: return False
-    assert isinstance(refresh_token, str)
+
+    if refresh_token is None: 
+      log.error("Access token is expired and no refresh token found")
+      return False
 
     client_id = os.getenv("GOOGLE_SERVICE_CLIENT_ID")
     client_secret = os.getenv("GOOGLE_SERVICE_CLIENT_SECRET")
-    assert client_secret is not None, "Google service client ID is not set"
-    assert client_id is not None, "Google service client secret is not set"
+    if client_secret is None: raise ValueError ("Google service client ID not found")
+    if client_id is None: raise ValueError("Google service client secret not found")
 
-    new_access_token, is_refreshed = refresh_access_token(refresh_token, client_id, client_secret)
-    if not is_refreshed or new_access_token is None:
+    new_access_token = refresh_access_token(str(refresh_token), client_id, client_secret)
+    if new_access_token is None:
       log.error("Failed to refresh access token")
       return False
 
     # Save new access token
     try: redis.set(f"service_access_token:{user_id}", new_access_token)
     except Exception as e:
-      log.error(f"Error setting service access token in redis: {e}")
+      log.error(f"Error setting new service access token in redis: {e}")
       return False
   return True
 
 
-def handle_task(db: Session, redis: Redis, user_id: str) -> None:
+def handle_task(db:Session, redis:Redis, user_id:str) -> None:
   is_passed =  check_requirements(db, redis, user_id)
   # TODO: Alert user to complete requirements
-  if not is_passed: return
+  if not is_passed: 
+    log.error("User did not pass requirement check")
+    return
   handle_high_task(db, redis, user_id)
   handle_low_task(redis, user_id)
 

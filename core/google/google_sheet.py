@@ -30,15 +30,19 @@ class GoogleSheet(BaseModel):
   def __init__(self, user_id:str):
     self.user_id = user_id
     self.s_service, self.d_service = self.create_service()
-    assert self.s_service is not None and self.d_service is not None
+    if self.s_service is None or self.d_service is None: raise ValueError("Error creating services")
+
     parent_id = self.create_folder("thinkledger")
-    assert isinstance(parent_id, str), "Error creating thinkledger folder"
+    if parent_id is None: raise ValueError("Error creating thinkledger folder")
+
     general_ledger_id = self.create_folder("general_ledger", parent_id)
-    assert isinstance(general_ledger_id, str), "Error creating general ledger folder"
+    if general_ledger_id is None: raise ValueError("Error creating general ledger folder")
+
     file_name = f"ledger_{datetime.now().year}"
     spreadsheet_id = self.create_spreadsheet(file_name, general_ledger_id)
-    assert isinstance(spreadsheet_id, str), "Error creating spreadsheet file"
+    if spreadsheet_id is None: raise ValueError("Error creating spreadsheet file")
     self.spreadsheet_id = spreadsheet_id
+
     self.trans_sheet_id = self.setup_transaction()
     self.journal_sheet_id = self.setup_journal_entry()
     # setup up  T account sheet
@@ -54,22 +58,25 @@ class GoogleSheet(BaseModel):
 
     client_id = os.getenv("GOOGLE_SERVICE_CLIENT_ID")
     client_secret = os.getenv("GOOGLE_SERVICE_CLIENT_SECRET")
-    assert client_id is not None, "Client ID is not set"
-    assert client_secret is not None, "Client secret is not set"
+    if client_id is None: raise ValueError("Client ID is not found")
+    if client_secret is None: raise ValueError("Client secret is not set")
 
     # Verify access token; and if expired, use refresh token to get new access token
-    access_token = redis.get(f"service_access_token:{self.user_id}")
+    try:
+      access_token = redis.get(f"service_access_token:{self.user_id}")
+      refresh_token = redis.get(f"service_refresh_token:{self.user_id}")
+    except Exception as e:
+      log.error(f"Error getting access token and refresh token: {e}")
+      return None, None
+
     if access_token is None:
       log.error("Service access token not found in redis")
       return None, None
-    assert isinstance(access_token, str), "Access token is not a string"
-
-    refresh_token = redis.get(f"service_refresh_token:{self.user_id}")
 
     credentials = Credentials(
-      token=access_token,
+      token=str(access_token),
       token_uri=TOKEN_URL,
-      refresh_token=refresh_token,
+      refresh_token=str(refresh_token),
       client_id=client_id,
       client_secret=client_secret,
     )
@@ -201,7 +208,7 @@ class GoogleSheet(BaseModel):
       'Category', 'Payment Channel', 'Merchant Name', 'Currency', 'Pending', 'Authorized Date']
     h_range:str = "Transactions!A1:L1"
     sheet_id = self.create_sheet(name, header, h_range)
-    assert sheet_id is not None
+    if sheet_id is None: raise ValueError("Error creating transaction sheet")
     return  sheet_id
 
   def setup_journal_entry(self) -> str:
@@ -209,7 +216,7 @@ class GoogleSheet(BaseModel):
     header:List[str] = ["Date", "Description", "Account Name", "Account ID", "Debit", "Credit"]
     h_range:str = "Journal Entries!A1:F1"
     sheet_id = self.create_sheet(name, header, h_range)
-    assert sheet_id is not None
+    if sheet_id is None: raise ValueError("Error creating journal entry sheet")
     return sheet_id
 
   def setup_t_account(self) -> None:
@@ -286,7 +293,10 @@ class JournalEntrySheet(GoogleSheet):
       log.error(f"Error getting gemini response: {e}")
       return None
     # Sanitize gemini response
-    r = sanitize_gemini_response(response)
+    try: r = sanitize_gemini_response(response)
+    except Exception as e:
+      log.error(f"Error sanitizing gemini response")
+      return None
     # print(f"Sanitized Response:\n{r}")
 
     def helper(r:JournalEntry) -> List[List[str]]:
