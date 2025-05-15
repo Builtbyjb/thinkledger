@@ -1,36 +1,45 @@
 from googleapiclient.discovery import build
 from google.oauth2.credentials import Credentials
 from database.redis.redis import gen_redis
-from typing import Optional, Tuple, Any, List
-import os
-from pydantic import BaseModel
+from typing import Optional, Tuple, Any, List, Dict
+import os, time
 from utils.constants import TOKEN_URL
 from utils.logger import log
 from utils.types import JournalEntry
 from datetime import datetime
 from prompt.journal_entry import generate_prompt
 from agents.gemini import gemini_response, sanitize_gemini_response
+from enum import Enum
 
-# TODO: Ability to handle multiple business accounts.
-# TODO: Ability to handle personal accounts .
-# TODO: Handle transaction changes
-# TODO: Update journal entries when a transaction is modified or removed
-# TODO: Charter of accounts?
-# TODO: Auto fill taxes forms
-# TODO: Analyze financial data
-# TODO: Add heading to the sheets
+"""
+NOTE:
+Ideas:
+* Create the spreadsheet file in python
+* Create a app script file that:
+  * Creates the sheets
+  * Setups the sheets
+"""
 
-# Current
-# TODO: style tables
-# TODO: character by character value streaming
-# TODO: Get google app script to work
+FONT_FAMILY = "Roboto"
 
 
-class GoogleSheet(BaseModel):
-  def __init__(self, user_id:str):
+class SheetId(Enum):
+  # DASHBOARD = 1
+  TRANSACTION = 1
+  JOURNAL_ENTRY = 2
+  # T_ACCOUNT = 4
+  # TRIAL_BALANCE = 5
+  # BALANCE_SHEET = 6
+
+
+class GoogleSheet:
+  def __init__(self, user_id:str, name:str):
     self.user_id = user_id
-    self.s_service, self.d_service = self.create_service()
-    if self.s_service is None or self.d_service is None: raise ValueError("Error creating services")
+    self.name = name
+
+    self.sheet_service, self.drive_service, self.script_service = self.create_service()
+    if self.sheet_service is None or self.drive_service is None or self.script_service is None:
+      raise ValueError("Error creating a service")
 
     parent_id = self.create_folder("thinkledger")
     if parent_id is None: raise ValueError("Error creating thinkledger folder")
@@ -43,18 +52,20 @@ class GoogleSheet(BaseModel):
     if spreadsheet_id is None: raise ValueError("Error creating spreadsheet file")
     self.spreadsheet_id = spreadsheet_id
 
-    self.trans_sheet_id = self.setup_transaction()
-    self.journal_sheet_id = self.setup_journal_entry()
+    self.create_app_script(general_ledger_id)
+
+    # self.trans_sheet_id = self.setup_transaction()
+    # self.journal_sheet_id = self.setup_journal_entry()
     # setup up  T account sheet
     # setup trial balance sheet
     # setup up financial statements
 
-  def create_service(self) -> Tuple[Any, Any]:
+  def create_service(self) -> Tuple[Any, Any, Any]:
     """
     Create a google sheet service and a google drive service; returns None if failed
     """
     redis = gen_redis()
-    if redis is None: return None, None
+    if redis is None: return None, None, None
 
     client_id = os.getenv("GOOGLE_SERVICE_CLIENT_ID")
     client_secret = os.getenv("GOOGLE_SERVICE_CLIENT_SECRET")
@@ -67,11 +78,11 @@ class GoogleSheet(BaseModel):
       refresh_token = redis.get(f"service_refresh_token:{self.user_id}")
     except Exception as e:
       log.error(f"Error getting access token and refresh token: {e}")
-      return None, None
+      return None, None, None
 
     if access_token is None:
       log.error("Service access token not found in redis")
-      return None, None
+      return None, None, None
 
     credentials = Credentials(
       token=str(access_token),
@@ -84,10 +95,11 @@ class GoogleSheet(BaseModel):
     try:
       sheets_service = build("sheets", "v4", credentials=credentials)
       drive_service = build("drive", "v3", credentials=credentials)
-      return sheets_service, drive_service
+      script_service = build('script', 'v1', credentials=credentials)
+      return sheets_service, drive_service, script_service
     except Exception as e:
       log.error(f"Error creating Google Sheets service or Google Drive service: {e}")
-      return None, None
+      return None, None, None
 
   def create_folder(self, name:str, parent_id:str="root") -> Optional[str]:
     """
@@ -100,9 +112,9 @@ class GoogleSheet(BaseModel):
       name='{name}' and mimeType='application/vnd.google-apps.folder' and
       '{parent_id}' in parents and trashed=false
       """
-      results = self.d_service.files().list(q=query).execute()
+      results = self.drive_service.files().list(q=query).execute()
       files = results.get('files', [])
-      if files: return files[0].get("id")
+      if files: return str(files[0].get("id"))
 
       # Create folder if it doesn't exist
       metadata = {
@@ -110,14 +122,14 @@ class GoogleSheet(BaseModel):
         'mimeType': 'application/vnd.google-apps.folder',
         "parents": [parent_id]
       }
-      folder = self.d_service.files().create(body=metadata, fields='id').execute()
+      folder = self.drive_service.files().create(body=metadata, fields='id').execute()
       log.info("Folder created")
-      return folder.get('id')
+      return str(folder.get('id'))
     except Exception as e:
       log.error("Error creating folder: ", e)
       return None
 
-  def create_spreadsheet(self, name:str, folder_id:str) -> Optional[str]:
+  def create_spreadsheet(self, file_name:str, folder_id:str) -> Optional[str]:
     """
     Create a spreadsheet file in a folder
     NOTE:
@@ -127,75 +139,259 @@ class GoogleSheet(BaseModel):
     try:
       # Check if spreadsheet exists
       query = f"""
-      name='{name}' and mimeType='application/vnd.google-apps.spreadsheet'
+      name='{file_name}' and mimeType='application/vnd.google-apps.spreadsheet'
       and '{folder_id}' in parents and trashed=false
       """
-      results = self.d_service.files().list(q=query).execute()
+      results = self.drive_service.files().list(q=query).execute()
       files = results.get('files', [])
-      if files: return files[0].get('id')
+      if files: return str(files[0].get('id'))
 
       # Create new spreadsheet
-      spreadsheet_body = {'properties': {'title': name}}
-      spreadsheet = self.s_service.spreadsheets().create(body=spreadsheet_body).execute()
+      # TODO: Change default spreadsheet name, set default font size
+      body = {
+        "properties": {
+          "title": file_name,
+          "spreadsheetTheme": {
+            "primaryFontFamily": FONT_FAMILY,
+            "themeColors": [
+              # {"colorType": "THEME_COLOR_TYPE_UNSPECIFIED", "color": {}},
+              {
+                "colorType": "TEXT",
+                "color": { "rgbColor": {"red":0.0, "green":0.0, "blue": 0.0} }, # Black
+              },
+              {
+                "colorType": "BACKGROUND",
+                "color": { "rgbColor": {"red":1.0, "green":1.0, "blue":1.0}}, # White
+              },
+              { # A shade of blue
+                "colorType": "ACCENT1",
+                "color": { "rgbColor": {"red":60/255, "green":120/255, "blue":216/255}},
+              },
+              { # A shade of orange/red
+                "colorType": "ACCENT2",
+                "color": { "rgbColor": {"red":221/255, "green":126/255, "blue":107/255}},
+              },
+              { # A shade of purple
+                "colorType": "ACCENT3",
+                "color": { "rgbColor": {"red":152/255, "green":118/255, "blue":170/255} },
+              },
+              { # A shade of teal
+                "colorType": "ACCENT4",
+                "color": { "rgbColor": {"red":109/255, "green":194/255, "blue":202/255} },
+              },
+              { # A shade of yellow
+                "colorType": "ACCENT5",
+                "color": { "rgbColor": {"red":241/255, "green":194/255, "blue":50/255} },
+              },
+              { # A shade of green
+                "colorType": "ACCENT6",
+                "color": { "rgbColor": {"red":127/255, "green":199/255, "blue":132/255} },
+              },
+              { # Standard link blue
+                "colorType": "LINK",
+                "color": { "rgbColor": {"red":17/255, "green":85/255, "blue":204/255} }
+              },
+            ]
+          },
+        },
+      }
+      spreadsheet = self.sheet_service.spreadsheets().create(body=body).execute()
 
       # Move to correct folder
       spreadsheet_id = spreadsheet.get('spreadsheetId')
-      self.d_service.files().update(
+      self.drive_service.files().update(
         fileId=spreadsheet_id,
         addParents=folder_id,
         removeParents='root',
         fields='id, parents'
       ).execute()
+      print(spreadsheet_id)
       log.info("Spreadsheet file created")
-      return spreadsheet_id
+      return str(spreadsheet_id)
     except Exception as e:
       log.error(f'Google Sheets API error: {e}')
       return None
 
-  def create_app_script(self) -> None: return
+  def create_app_script(self, folder_id:str, file_name:str="app_script") -> None:
+    try: # Check if app script exists
+      query = f"""
+      name='{file_name}' and mimeType='application/vnd.google-apps.script'
+      and '{folder_id}' in parents and trashed=false
+      """
+      results = self.drive_service.files().list(q=query).execute()
+      files = results.get('files', [])
+      if files: return None
+    except Exception:
+      log.error("Error occurred while checking if app script file exists")
+      return None
 
-  def create_sheet(self, name:str, header:List[str], h_range:str) -> Optional[str]:
+    try: # Create the script project
+      script_project = self.script_service.projects().create(body={
+        "title": "app_script",
+        "parentId": self.spreadsheet_id  # Binds to the spreadsheet
+      }).execute()
+    except Exception as e:
+      log.error(f"Error creating app script project: {e}")
+      return None
+
+    manifest = """
+    {
+      "timeZone": "America/New_York",
+      "dependencies": {
+      },
+      "exceptionLogging": "STACKDRIVER",
+      "runtimeVersion": "V8",
+      "oauthScopes": [
+        "https://www.googleapis.com/auth/script.container.ui",
+        "https://www.googleapis.com/auth/spreadsheets.currentonly"
+        // "https://www.googleapis.com/auth/spreadsheets" // To access any sheet (openById)
+      ]
+    }
+    """
+
+    # Google app script
+    app_script = """
+    function onOpen() {
+      SpreadsheetApp.getUi()
+        .createMenu('Dynamic Script')
+        .addItem('Show Alert', 'testScript')
+        .addToUi();
+    }
+
+    function testScript() {
+      SpreadsheetApp.getUi().alert('Hello from the scripted menu!');
+    }
+    """
+
+    try:
+      self.script_service.projects().updateContent(
+        scriptId=script_project.get("scriptId"),
+        body={
+          'files': [
+            {'name': 'app_script', 'type': 'SERVER_JS', 'source': app_script},
+            { 'name': 'appsscript', 'type': 'JSON', 'source': manifest }
+          ]
+        }
+      ).execute()
+    except Exception as e:
+      log.error(f"Error updating app script project: {e}")
+      return None
+    return None
+
+  def create_sheet(self, idx:int, name:str, header:List[str], h_range:str) -> Optional[str]:
     """
     Create a sheet in the spreadsheet file
     """
     try:
       # Get all sheets in the spreadsheet
-      metadata = self.s_service.spreadsheets().get(spreadsheetId=self.spreadsheet_id).execute()
+      metadata = self.sheet_service.spreadsheets().get(spreadsheetId=self.spreadsheet_id).execute()
       sheets = metadata.get('sheets', [])
 
       # Check if sheet already exists
       # sheet_exists = any(sheet.get('properties', {}).get('title') == name for sheet in sheets)
       for s in sheets:
         if s.get("properties", {}).get("title") == name:
-          return s.get("properties", {}).get("sheetId")
+          return str(s.get("properties", {}).get("sheetId"))
+
+      def generate_column(header:List[str]) -> List[Dict[str,Any]]:
+        """
+        Generate table columns for header list
+        """
+        column_list = {
+          "ID": "TEXT",
+          "Date": "DATE_TIME",
+          "Amount": "CURRENCY",
+          "Institution": "TEXT",
+          "Institution Account Name": "TEXT",
+          "Institution Account Type": "TEXT",
+          "Category": "TEXT",
+          "Payment Channel": "TEXT",
+          "Merchant Name": "TEXT",
+          "Currency": "TEXT",
+          "Pending": "BOOLEAN",
+          "Authorized Date": "DATE_TIME"
+        }
+
+        l:List[Dict[str,Any]] = []
+        for i, v in enumerate(header):
+          l.append({
+            "columnIndex": i,
+            "columnName": v,
+            "columnType": column_list[v],
+            # "dataValidationRule": {}
+          })
+        return l
+
+      if header: # Create a table heading if a header is provided
+        table = {
+          "tableId": "table",
+          "name": "name",
+          "range": {
+            'sheetId': idx,
+            'startRowIndex': 6,
+            'endRowIndex': 7,
+            'startColumnIndex': 0,
+            'endColumnIndex': len(header)
+          },
+          "rowsProperties": {
+            "headerColorStyle": {
+              "rgba": { "red":0.5, "green": 0.5, "blue": 0.5 } # , "alpha": number }
+            }
+          },
+          "columnProperties": [generate_column(header)]
+        }
+      else: table = {}
 
       # Create a new sheet
       body = {
-        'requests': [{
-          'addSheet': {
-            'properties': { 'title': name }
+        "requests": [{
+          "addSheet": {
+            "properties": { "title": name, "sheetId": idx, "index": idx },
+            "data": [
+              { # Add main header
+                "startRow": 0,
+                "startColumn": 0,
+                "rowData": [{"values":{
+                  "userEnteredValue": {"stringValue": name},
+                  "userEnteredFormat": {
+                    "backgroundColorStyle": { "red": 0.1, "green": 0.1, "blue": 0.1 },
+                    "textFormat": {
+                      "foregroundColor": { "red": 1.0, "green": 1.0, "blue": 1.0 },
+                      'fontSize': 14,
+                      'bold': True,
+                      'fontFamily': FONT_FAMILY
+                    },
+                    'horizontalAlignment': 'CENTER',
+                    'verticalAlignment': 'MIDDLE'
+                  },
+                }}]
+              },
+            ],
+            "tables":[table], # Add table heading
+            "merges": [
+              { # Merge main header cells
+                "sheetId": idx,
+                "startRowIndex": 0,
+                "endRowIndex": 4,
+                "startColumnIndex": 0,
+                "endColumnIndex": 6,
+              }
+            ]
           }
         }]
       }
 
-      response = self.s_service.spreadsheets() \
+      response = self.sheet_service.spreadsheets() \
         .batchUpdate(spreadsheetId=self.spreadsheet_id, body=body).execute()
       log.info(f"Created new {name} sheet")
-       # Get the new sheet ID from response
+
+      # Get the new sheet ID from response
       sheet_id = response.get('replies', [])[0].get('addSheet', {}).get('properties', {}) \
         .get('sheetId')
       if sheet_id is None:
         log.error("Failed to get sheet ID from response")
         return None
-
-      # Update the sheet with headers
-      self.s_service.spreadsheets().values().update(
-        spreadsheetId=self.spreadsheet_id,
-        range=h_range,
-        valueInputOption='RAW',
-        body={'values':[header]}
-      ).execute()
-      log.info(f"Added headers to {name} sheet")
+      print(sheet_id)
       return str(sheet_id)
     except Exception as e:
       log.error(f"Error creating {name} sheet: {e}")
@@ -206,39 +402,22 @@ class GoogleSheet(BaseModel):
     header:List[str] = [
       'ID', 'Date', 'Amount', 'Institution', 'Institution Account Name', 'Institution Account Type',
       'Category', 'Payment Channel', 'Merchant Name', 'Currency', 'Pending', 'Authorized Date']
-    h_range:str = "Transactions!A1:L1"
-    sheet_id = self.create_sheet(name, header, h_range)
+    h_range:str = "Transactions!A4:L4"
+    idx:int = 3
+    sheet_id = self.create_sheet(idx, name, header, h_range)
     if sheet_id is None: raise ValueError("Error creating transaction sheet")
-    return  sheet_id
+    return sheet_id
 
   def setup_journal_entry(self) -> str:
     name:str = "Journal Entries"
     header:List[str] = ["Date", "Description", "Account Name", "Account ID", "Debit", "Credit"]
-    h_range:str = "Journal Entries!A1:F1"
-    sheet_id = self.create_sheet(name, header, h_range)
+    h_range:str = "Journal Entries!A4:F4"
+    idx:int = 4
+    sheet_id = self.create_sheet(idx, name, header, h_range)
     if sheet_id is None: raise ValueError("Error creating journal entry sheet")
     return sheet_id
 
   def setup_t_account(self) -> None:
-    """
-    NOTE: How will i structure the tables
-    * The tables need to created dynamically. In columns
-    * Table values need to update has new journal entries are add
-    * New tables need to created as new accounts appear in journal entries
-    * Seamless integration with google sheet API
-    * This just setups the t-accounts sheet:
-      * Creates the sheet
-    * I do not need to create a different class. I will shift all the frontend functionality to
-    googl app script
-
-    Ideas:
-    * I need to link the debit, credit and account ID section of the journal entry.
-    * Create update methods to update sheets when needed.
-    * Create a separate sheet for t-accounts.
-    * The sheets contains a dropdown menu, with all the T-accounts from the journal entry.
-    * Selecting a dropdown value displays the corresponding T-account
-    * Functionality needed can only be achieved with app script
-    """
     # name:str = "T Accounts"
     return None
 
@@ -248,34 +427,114 @@ class GoogleSheet(BaseModel):
   def setup_bal_sheet(self) -> None:
     return None
 
-
-class TransactionSheet(GoogleSheet):
-  def __init__(self, user_id:str):
-    super().__init__(user_id)
-    self.name:str = "Transactions"
-
-  def append(self, transaction) -> bool:
+  def append_line(self, values:List[List[str]]) -> bool:
     """
-    Append a row to the sheet
+    Append values to a sheet line by line
     """
     try:
-      self.s_service.spreadsheets().values().append(
+      self.sheet_service.spreadsheets().values().append(
         spreadsheetId=self.spreadsheet_id,
         range=self.name,
         valueInputOption='USER_ENTERED',
         insertDataOption='INSERT_ROWS',
-        body={'values': [transaction]}
+        body={'values': values}
       ).execute()
+      # TODO: Add styling
+      return True
+    except Exception:
+      log.error(f"Error appending line to {self.name} sheet")
+      return False
+
+  def append_char(self, values:List[List[str]]) -> bool:
+    """
+    Append values to a sheet character by character
+    """
+    try:
+      # Get last row number
+      result = self.sheet_service.spreadsheets().values().get(
+        spreadsheetId=self.spreadsheet_id,
+        range=f"{self.name}!A:A"
+      ).execute()
+      next_row = len(result.get('values', [])) + 1
+
+      for col_idx, value in enumerate(values):
+        str_value = str(value)
+        # Stream each character of the value
+        for i in range(len(str_value) + 1):
+          partial_value = str_value[:i]
+          request = {
+            'updateCells': {
+              'rows': [{
+                'values': [{
+                  'userEnteredValue': {'stringValue': partial_value },
+                  'userEnteredFormat': {
+                    'textFormat': {
+                      'fontFamily': 'Arial',
+                      'fontSize': 11,
+                      'foregroundColor': { 'red': 0.1, 'green': 0.1, 'blue': 0.1 }
+                    },
+                    'borders': {
+                      'bottom': {
+                        'style': 'SOLID',
+                        'width': 1,
+                        'color': {'red': 0.8, 'green': 0.8, 'blue': 0.8}
+                      },
+                      'right': {
+                        'style': 'SOLID',
+                        'width': 1,
+                        'color': {'red': 0.8, 'green': 0.8, 'blue': 0.8}
+                      }
+                    },
+                    'horizontalAlignment': 'LEFT' if col_idx in [1, 3, 4, 6, 8] else 'RIGHT',
+                    'verticalAlignment': 'MIDDLE',
+                    # Alternate row colors
+                    'backgroundColor': {
+                      'red': 1.0 if next_row % 2 == 0 else 0.95,
+                      'green': 1.0 if next_row % 2 == 0 else 0.95,
+                      'blue': 1.0 if next_row % 2 == 0 else 0.95
+                    }
+                  }
+                }]
+              }],
+              'fields': """userEnteredValue,userEnteredFormat(backgroundColor,textFormat,borders,
+                horizontalAlignment,verticalAlignment)""",
+              'range': {
+                # 'sheetId': self.trans_sheet_id,
+                'startRowIndex': next_row - 1,
+                'endRowIndex': next_row,
+                'startColumnIndex': col_idx,
+                'endColumnIndex': col_idx + 1
+              }
+            }
+          }
+
+          # Execute update for each character
+          self.sheet_service.spreadsheets().batchUpdate(
+            spreadsheetId=self.spreadsheet_id,
+            body={'requests': [request]}
+          ).execute()
+
+          # Add typing delay (adjust for desired speed)
+          time.sleep(0.05)  # 50ms between characters
+
+        # Add delay between cells
+        time.sleep(0.2)  # 200ms between cells
       return True
     except Exception as e:
       log.error(f"Error appending to sheet: {e}")
       return False
 
 
+class TransactionSheet(GoogleSheet):
+  def __init__(self, user_id:str):
+    name:str = "Transactions"
+    super().__init__(user_id, name)
+
+
 class JournalEntrySheet(GoogleSheet):
   def __init__(self, user_id:str):
-    super().__init__(user_id)
-    self.name:str = "Journal Entries"
+    name:str = "Journal Entries"
+    super().__init__(user_id, name)
 
   def generate(self, t:List[str]) -> Optional[List[List[str]]]:
     # Generate prompt
@@ -294,8 +553,8 @@ class JournalEntrySheet(GoogleSheet):
       return None
     # Sanitize gemini response
     try: r = sanitize_gemini_response(response)
-    except Exception as e:
-      log.error(f"Error sanitizing gemini response")
+    except Exception:
+      log.error("Error sanitizing gemini response")
       return None
     # print(f"Sanitized Response:\n{r}")
 
@@ -316,21 +575,3 @@ class JournalEntrySheet(GoogleSheet):
       return m_list
 
     return helper(r)
-
-  def append(self, journal_entry:List[List[str]]) -> bool:
-    """
-    Append a row to the sheet
-    """
-    # TODO: Add styling
-    try:
-      self.s_service.spreadsheets().values().append(
-        spreadsheetId=self.spreadsheet_id,
-        range=self.name,
-        valueInputOption='USER_ENTERED',
-        insertDataOption='INSERT_ROWS',
-        body={'values': journal_entry}
-      ).execute()
-      return True
-    except Exception as e:
-      log.error(f"Error appending to sheet: {e}")
-      return False

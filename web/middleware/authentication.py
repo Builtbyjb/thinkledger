@@ -1,11 +1,10 @@
 from fastapi import Request, HTTPException
 from fastapi.responses import RedirectResponse
-from typing import Literal, Callable, Optional
+from typing import Literal, Callable, Optional, Any, Tuple, Dict
 from functools import wraps
 from redis import Redis
 from database.redis.redis import gen_redis
 from utils.auth_utils import auth_session
-from typing import Any
 
 
 # Authentication mode options
@@ -26,10 +25,10 @@ def get_name(session_id: str, redis: Redis) -> Optional[str]:
   return username
 
 
-def auth_required(mode: AuthMode = "strict") -> Any:
-  def decorator(func: Callable):
+def auth_required(mode: AuthMode = "strict") -> Callable[..., Any]:
+  def decorator(func:Callable[..., Any]) -> Callable[..., Any]:
     @wraps(func)
-    async def wrapper(request: Request, *args, **kwargs):
+    async def wrapper(request:Request, *args:Tuple[Any], **kwargs:Dict[str, Any]) -> Any:
       session_id = request.cookies.get("session_id")
       if session_id is None or len(session_id) == 0:
         if mode == "strict": return RedirectResponse("/")

@@ -1,3 +1,4 @@
+import os
 from fastapi import APIRouter, Response, Request, Depends
 from fastapi.responses import JSONResponse
 from utils.plaid_utils import create_plaid_client
@@ -13,7 +14,6 @@ from plaid.model.depository_account_subtype import DepositoryAccountSubtype
 from plaid.model.depository_account_subtypes import DepositoryAccountSubtypes
 from plaid.model.credit_account_subtypes import CreditAccountSubtypes
 from plaid.model.credit_account_subtype import CreditAccountSubtype
-import os
 from database.redis.redis import get_redis
 from plaid.model.item_public_token_exchange_request import ItemPublicTokenExchangeRequest
 from pydantic import BaseModel
@@ -24,6 +24,7 @@ from utils.core_utils import add_tasks, TaskPriority, Tasks
 from sqlmodel import select, Session
 from fastapi import BackgroundTasks
 from utils.logger import log
+from redis import Redis
 
 
 router = APIRouter(prefix="/plaid", tags=["Plaid"])
@@ -51,7 +52,7 @@ class PlaidResponse(BaseModel):
 
 
 @router.get("/link-token")
-async def plaid_link_token(request: Request, redis=Depends(get_redis)) -> JSONResponse:
+async def plaid_link_token(request: Request, redis:Redis=Depends(get_redis)) -> JSONResponse:
   """
     Get plaid link token to start the institution linking process
   """
@@ -98,7 +99,7 @@ async def plaid_link_token(request: Request, redis=Depends(get_redis)) -> JSONRe
   return JSONResponse(content={"linkToken": response["link_token"]}, status_code=200)
 
 
-def add_institutions_to_db(db: Session, data, access_token: str, user_id: str) -> None:
+def add_institutions_to_db(db:Session, data:PlaidResponse, access_token:str, user_id:str) -> None:
   """
     Check if institution already exists before adding a new institutions;
     if it does, update the access token and remove old accounts information associated
@@ -131,7 +132,7 @@ def add_institutions_to_db(db: Session, data, access_token: str, user_id: str) -
     log.error(f"Error saving institution: {e}")
 
 
-def add_accounts_to_db(db: Session, data, user_id: str) -> None:
+def add_accounts_to_db(db:Session, data:PlaidResponse, user_id:str) -> None:
   """
     Save accounts to the database
   """
@@ -158,8 +159,8 @@ async def plaid_access_token(
   request: Request,
   data: PlaidResponse,
   bg: BackgroundTasks,
-  db = Depends(get_db),
-  redis= Depends(get_redis)
+  db:Session = Depends(get_db),
+  redis:Redis= Depends(get_redis)
 ) -> JSONResponse:
   """
     Get an institution's access token with a public token,
@@ -179,10 +180,11 @@ async def plaid_access_token(
     log.error("Session ID not found")
     return JSONResponse(content={"error": "Session ID not found"}, status_code=400)
 
-  user_id: Optional[str] = redis.get(session_id)
+  user_id = redis.get(session_id)
   if user_id is None:
     log.error("User not found")
     return JSONResponse(content={"error": "User not found"},status_code=404)
+  if not isinstance(user_id, str): raise ValueError("User id must be a string")
   # print(access_token)
 
   # Save Institution

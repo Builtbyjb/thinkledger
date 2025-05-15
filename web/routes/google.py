@@ -11,7 +11,7 @@ from sqlmodel import Session
 from database.postgres.postgres_db import get_db
 from database.redis.redis import get_redis
 from database.postgres.postgres_schema import User
-from typing import Optional, Union
+from typing import Optional, Union, Any
 from enum import Enum
 from utils.auth_utils import service_auth_config
 from utils.constants import TOKEN_URL
@@ -22,7 +22,7 @@ from fastapi import BackgroundTasks
 router = APIRouter(prefix="/google", tags=["Google"])
 
 
-def add_user_pg(db: Session, user_info) -> None:
+def add_user_pg(db: Session, user_info: Any) -> None:
   """
     Save user info to postgres database
   """
@@ -84,11 +84,9 @@ async def google_sign_in_callback(
   client_id = os.getenv("GOOGLE_SIGNIN_CLIENT_ID")
   client_secret = os.getenv("GOOGLE_SIGNIN_CLIENT_SECRET")
   server_url = os.getenv("SERVER_URL")
-
-  assert client_id is not None, "Google sign client ID is not set"
-  assert client_secret is not None, "Google sign client secret is not set"
-  assert server_url is not None, "Server URL is not set"
-
+  if client_id is None: raise ValueError("Google sign client ID is not set")
+  if client_secret is None: raise ValueError("Google sign client secret is not set")
+  if server_url is None: raise ValueError("Server URL is not set")
   redirect_url = f"{server_url}/google/callback/sign-in"
 
   # Get authorization tokens
@@ -154,7 +152,7 @@ async def google_sign_in_callback(
 
 @router.get("/callback/services", response_model=None)
 async def google_service_callback(
-  request: Request, redis = Depends(get_redis)
+  request: Request, redis: Redis = Depends(get_redis)
   ) -> Union[JSONResponse, RedirectResponse]:
   """
     Completes getting google service tokens oauth flow
@@ -165,11 +163,9 @@ async def google_service_callback(
   client_id = os.getenv("GOOGLE_SERVICE_CLIENT_ID")
   client_secret = os.getenv("GOOGLE_SERVICE_CLIENT_SECRET")
   server_url = os.getenv("SERVER_URL")
-
-  assert client_id is not None, "Client ID is not set"
-  assert client_secret is not None, "Client Secret is not set"
-  assert server_url is not None, "Server URL is not set"
-
+  if client_id is None: raise ValueError("Client ID is not set")
+  if client_secret is None: raise ValueError("Client Secret is not set")
+  if server_url is None: raise ValueError("Server URL is not set")
   redirect_url = f"{server_url}/google/callback/services"
 
   # Get authorization tokens
@@ -193,15 +189,15 @@ async def google_service_callback(
     log.error("Session ID not found")
     return RedirectResponse(url="/", status_code=302)
 
-  user_id: Optional[str] = redis.get(session_id)
+  user_id = redis.get(session_id)
   if user_id is None:
     log.error("User not found")
     return JSONResponse(content={"error":"Unauthorized"}, status_code=401)
+  if not isinstance(user_id, str): raise ValueError("User id must be a string")
 
   # print(token)
   access_token: str = token.get("access_token")
-  assert isinstance(access_token, str), "Access token is not a string"
-
+  if access_token is None: raise ValueError("Error getting access token")
   refresh_token: Optional[str] = token.get("refresh_token")
 
   try:
@@ -218,6 +214,7 @@ async def google_service_callback(
 class GoogleScopes(Enum):
   sheets = "https://www.googleapis.com/auth/spreadsheets"
   drive = "https://www.googleapis.com/auth/drive.file"
+  script = "https://www.googleapis.com/auth/script.projects"
 
 
 @router.get("/services")
@@ -232,6 +229,8 @@ async def google_service_token(request: Request) -> JSONResponse:
 
   if google_sheet == "true": scopes.append(GoogleScopes.sheets.value)
   if google_drive == "true": scopes.append(GoogleScopes.drive.value)
+  # TODO: this is a lazy fix. Ask for user consent
+  scopes.append(GoogleScopes.script.value)
 
   if len(scopes) == 0: return JSONResponse(content={"error":"No scopes provided"}, status_code=400)
 

@@ -1,7 +1,7 @@
 import secrets
 
 
-def generate_crypto_string(length=32) -> str:
+def generate_crypto_string(length:int=32) -> str:
     """
     Generates a unique URL-safe cryptographic string of the specified length.
     Args:

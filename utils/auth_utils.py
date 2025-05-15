@@ -1,5 +1,5 @@
 import os
-from google_auth_oauthlib.flow import Flow # type: ignore
+from google_auth_oauthlib.flow import Flow
 import requests
 from typing import Optional, List
 from database.redis.redis import gen_redis
@@ -48,7 +48,7 @@ def service_auth_config(scopes: List[str]) -> Flow:
   if client_id is None: raise ValueError("Google service client id not found")
   if client_secret is None: raise ValueError("Google service client secret not found")
   if server_url is None: raise ValueError("Google server url not found")
-  if len(scopes) > 0: raise Exception("Scopes list can not be empty")
+  if len(scopes) == 0: raise Exception("Scopes list can not be empty")
 
   redirect_url = f"{server_url}/google/callback/services"
 
@@ -95,8 +95,7 @@ def refresh_access_token(refresh_token:str, client_id:str,client_secret:str) -> 
     response = requests.post(TOKEN_URL, data=payload, timeout=15)
     if response.status_code == 200:
       token_json = response.json()
-      new_access_token = str(token_json["access_token"])
-      return new_access_token
+      return  str(token_json["access_token"])
 
     log.error(f"Token Refresh Error: {response.status_code} : {response.text}")
     return None
@@ -119,12 +118,12 @@ def auth_session(session_id: str) -> bool:
     log.error(f"Error fetching user data or access token: {e}")
     return False
 
-  if user_id is None: 
-    log.error("User not found")
+  if user_id is None:
+    log.info("User not found")
     return False
 
-  if access_token is None: 
-    log.error("Not access token")
+  if access_token is None:
+    log.info("Not access token")
     return False
 
   # Verify access token

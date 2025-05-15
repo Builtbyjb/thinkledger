@@ -17,7 +17,7 @@ def gemini_response(prompt: str) -> Any:
   )
 
 
-def sanitize_gemini_response(response) -> JournalEntry:
+def sanitize_gemini_response(response: Any) -> JournalEntry:
   cleaned_response = response.text.strip().strip('`').strip()
   if cleaned_response.lower().startswith("json"):
     cleaned_response = cleaned_response[4:].strip()

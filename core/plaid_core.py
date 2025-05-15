@@ -34,7 +34,9 @@ def get_transactions(access_token:str) -> Generator[List[PlaidTransaction], None
     yield validated_response.added
 
 
-def generate_transaction(transactions, db:Session) -> Generator[List[str], None, None]:
+def generate_transaction(
+    transactions: List[PlaidTransaction], db:Session
+    ) -> Generator[List[str], None, None]:
   """
   Generates Transaction objects from the transactions gotten from plaid
   and yields a single transaction at a time
