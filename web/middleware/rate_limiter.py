@@ -15,14 +15,15 @@ class RateLimiter(BaseHTTPMiddleware):
     self.rate_limit_records: Dict[str, int] = defaultdict(int)
 
   async def dispatch(self, request:Request, c_next:Callable[..., Awaitable[Response]]) -> Response:
-    client_ip = request.client.host # type: ignore
+    if request.client is not None:
+      client_ip = request.client.host
 
-    if self.rate_limit_records[client_ip] >= MAX_CALLS:
-      time.sleep(1)
-      self.rate_limit_records[client_ip] = 0
-      print("slept for 1 sec")
+      if self.rate_limit_records[client_ip] >= MAX_CALLS:
+        time.sleep(1)
+        self.rate_limit_records[client_ip] = 0
+        print("slept for 1 sec")
 
-    self.rate_limit_records[client_ip] += 1
+      self.rate_limit_records[client_ip] += 1
 
     # Process the request
     start_time = time.time()
