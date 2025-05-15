@@ -1,18 +1,16 @@
 {% extends "layout/auth_layout.html" %}
-<!--  -->
+
 {% block title %} Banking {% endblock %}
-<!--  -->
+
 {% block description %}
 <meta name="description" content="Connect bank accounts" />
 {% endblock %}
-<!--  -->
+
 {% block username %} {{ username }} {% endblock %}
-<!--  -->
+
 {% block body %}
 <h1 class="text-2xl font-medium mb-8">Banking</h1>
-<button id="connect-bank-account" class="{{ btn_style_full }}">
-  Connect a bank account
-</button>
+<button id="connect-bank-account" class="{{ btn_style_full }}"> Connect a bank account </button>
 <div class="mt-8">
   <h2 class="text-xl mb-4">Connected Bank Accounts</h2>
   <div class="border-2 border-gray-300 rounded-lg p-4">
@@ -24,7 +22,5 @@
   </div>
 </div>
 {% endblock %}
-<!--  -->
-{% block script %}
-<script type="module" src="/static/dist/banking.min.js"></script>
-{% endblock %}
+
+{% block script %} <script type="module" src="/static/dist/banking.min.js"></script> {% endblock %}

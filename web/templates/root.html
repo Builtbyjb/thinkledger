@@ -1,79 +1,37 @@
 <!doctype html>
 <html lang="en">
-    <head>
-        <meta charset="utf-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <!-- Page description -->
-        {% block description %} {% endblock %}
-        <meta http-equiv="X-UA-Compatible" content="ie=edge" />
-        <link
-            rel="preconnect"
-            href="https://fonts.googleapis.com"
-            crossorigin="anonymous"
-        />
-        <link rel="preconnect" href="https://fonts.gstatic.com" />
-        <link
-            href="https://fonts.googleapis.com/css2?family=Roboto+Slab:wght@100..900&family=Work+Sans:ital,wght@0,100..900;1,100..900&display=swap"
-            rel="stylesheet"
-        />
-        <link
-            rel="apple-touch-icon"
-            sizes="180x180"
-            href="/static/assets/apple-touch-icon.png"
-        />
-        <link
-            rel="icon"
-            type="image/png"
-            sizes="32x32"
-            href="/static/assets/favicon-32x32.png"
-        />
-        <link
-            rel="icon"
-            type="image/png"
-            sizes="16x16"
-            href="/static/assets/favicon-16x16.png"
-        />
-        <link rel="manifest" href="/static/assets/site.webmanifest" />
-        <link rel="stylesheet" href="/static/style.css" type="text/css" />
-        <!-- Page title -->
-        <title>{% block title %}{% endblock %}</title>
-        <script
-            src="https://kit.fontawesome.com/a1ada430a2.js"
-            crossorigin="anonymous"
-        ></script>
-        <script
-            type="text/javascript"
-            src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"
-        ></script>
-        <script src="https://cdn.plaid.com/link/v2/stable/link-initialize.js"></script>
-    </head>
-    <body class="bg-[#0A0A0A] text-white relative">
-        <svg class="absolute inset-0 size-full stroke-[#262626] z-0">
-            <defs>
-                <pattern
-                    id="grid-pattern"
-                    height="150"
-                    width="150"
-                    x="0"
-                    y="0"
-                    patternUnits="userSpaceOnUse"
-                >
-                    <path
-                        d="M -1 50 L 101 50"
-                        fill="#262626"
-                        fill-opacity="0.5"
-                    ></path>
-                    <path
-                        d="M 50 -1 L 50 101"
-                        fill="#262626"
-                        fill-opacity="0.5"
-                    ></path>
-                </pattern>
-            </defs>
-            <rect width="100%" height="100%" fill="url(#grid-pattern)"></rect>
-        </svg>
-        <div class="z-[100]">{% block layout %} {% endblock %}</div>
-        <!-- Script -->
-        {% block script %}{% endblock %}
-    </body>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <!-- Page description -->
+    {% block description %} {% endblock %}
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin="anonymous" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" />
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Slab:wght@100..900&family=Work+Sans:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/static/assets/apple-touch-icon.png" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/static/assets/favicon-32x32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/static/assets/favicon-16x16.png" />
+    <link rel="manifest" href="/static/assets/site.webmanifest" />
+    <link rel="stylesheet" href="/static/style.css" type="text/css" />
+    <!-- Page title -->
+    <title>{% block title %}{% endblock %}</title>
+    <script src="https://kit.fontawesome.com/a1ada430a2.js" crossorigin="anonymous" ></script>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js" ></script>
+    <script src="https://cdn.plaid.com/link/v2/stable/link-initialize.js"></script>
+  </head>
+  <body class="bg-[#0A0A0A] text-white relative">
+    <svg class="absolute inset-0 size-full stroke-[#262626] z-0">
+      <defs>
+        <pattern id="grid-pattern" height="150" width="150" x="0" y="0" patternUnits="userSpaceOnUse" >
+          <path d="M -1 50 L 101 50" fill="#262626" fill-opacity="0.5" ></path>
+          <path d="M 50 -1 L 50 101" fill="#262626" fill-opacity="0.5" ></path>
+        </pattern>
+      </defs>
+      <rect width="100%" height="100%" fill="url(#grid-pattern)"></rect>
+    </svg>
+    <div class="z-[100]">{% block layout %} {% endblock %}</div>
+    <!-- Script -->
+    {% block script %}{% endblock %}
+  </body>
 </html>

@@ -1,18 +1,15 @@
 {% extends "layout/guest_layout.html" %}
-<!--  -->
+
 {% import "guest/call_to_action.html" as cta %}
-<!--  -->
+
 {% block description %}
 <meta name="description" content="Thinkledger home page" />
 {% endblock %}
 
-<!--  -->
 {% block body %}
 <main class="space-y-16">
   <section>
-    <div
-      class="z-20 mb-4 w-[100%] sm:w-[90%] md:w-[90%] lg:w-[80%] 2xl:w-[70%] text-center mx-auto"
-    >
+    <div class="z-20 mb-4 w-[100%] sm:w-[90%] md:w-[90%] lg:w-[80%] 2xl:w-[70%] text-center mx-auto">
       <h1 class="text-4xl font-bold mb-4 leading-[1.2]">
         Keep Track of Your Business's Financial Health.
       </h1>
@@ -51,9 +48,7 @@
       <div class="w-full">
         <h2 class="text-2xl font-medium mb-8">More on what we offer</h2>
       </div>
-      <div
-        class="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-8"
-      >
+      <div class="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-8" >
         {% for f in features %}
         <div class="p-4 border-2 border-gray-300 rounded-lg">
           <div class="flex items-center mb-4">
@@ -72,9 +67,7 @@
       <div class="w-full">
         <h2 class="text-2xl mb-8 font-medium">Why you will love ThinkLedger</h2>
       </div>
-      <div
-        class="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-8"
-      >
+      <div class="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-8" >
         {% for b in benefits %}
         <div class="p-4 border-2 rounded-lg border-gray-300">
           <div class="flex items-center mb-4">
@@ -105,7 +98,5 @@
   </section>
 </main>
 {% endblock %}
-<!--  -->
-{% block script %}
-<script type="module" src="/static/dist/index.min.js"></script>
-{% endblock %}
+
+{% block script %} <script type="module" src="/static/dist/index.min.js"></script> {% endblock %}

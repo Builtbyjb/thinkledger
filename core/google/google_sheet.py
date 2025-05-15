@@ -223,8 +223,8 @@ class GoogleSheet:
       results = self.drive_service.files().list(q=query).execute()
       files = results.get('files', [])
       if files: return None
-    except Exception:
-      log.error("Error occurred while checking if app script file exists")
+    except Exception as e:
+      log.error(f"Error occurred while checking if app script file exists: {e}")
       return None
 
     try: # Create the script project

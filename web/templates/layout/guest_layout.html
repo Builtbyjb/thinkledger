@@ -3,258 +3,79 @@
 {% block description %}{% endblock %}
 <!--  -->
 {% block layout%}
-<div
-    class="w-[90%] py-8 mx-auto sm:w-[90%] md:w-[80%] lg:w-[70%] xl:w-[60%] 2xl:w-[55%] relative z-20"
->
-    <nav>
-        <div class="flex items-center justify-between">
-            <div class="flex">
-                <a href="/">
-                    <div class="flex items-center justify-center">
-                        <div class="flex h-[1rem] items-center">
-                            <svg
-                                viewBox="0 0 128 122"
-                                fill="none"
-                                xmlns="http://www.w3.org/2000/svg"
-                                class="w-auto h-full"
-                            >
-                                <path
-                                    d="M10 0C4.47715 -4.82823e-07 4.82823e-07 4.47715 0 10C-4.82823e-07 15.5228 4.47715 20 10 20L10 0ZM10 20L38.7234 20L38.7234 2.51108e-06L10 0L10 20Z"
-                                    fill="#0065FA"
-                                ></path>
-                                <path
-                                    d="M45.689 10H82.1677"
-                                    stroke="#0065FA"
-                                    stroke-width="20"
-                                ></path>
-                                <path
-                                    d="M65.2925 22.0635V48.489"
-                                    stroke="#0065FA"
-                                    stroke-width="20"
-                                ></path>
-                                <path
-                                    d="M55.2925 111.681C55.2925 117.204 59.7696 121.681 65.2925 121.681C70.8153 121.681 75.2925 117.204 75.2925 111.681H55.2925ZM55.2925 56.6758V111.681H75.2925V56.6758H55.2925Z"
-                                    fill="#0065FA"
-                                ></path>
-                                <path
-                                    d="M31.2554 10.0718H45.7966H60.3378"
-                                    stroke="#0065FA"
-                                    stroke-width="10"
-                                ></path>
-                                <path
-                                    d="M74.4841 10H89.0254H103.567"
-                                    stroke="#0065FA"
-                                    stroke-width="10"
-                                ></path>
-                                <path
-                                    d="M65.3645 13.0161V27.5573V42.0986"
-                                    stroke="#0065FA"
-                                    stroke-width="10"
-                                ></path>
-                                <path
-                                    d="M65.436 42.1699V56.7111V71.2524"
-                                    stroke="#0065FA"
-                                    stroke-width="10"
-                                ></path>
-                                <path
-                                    d="M118 20C123.523 20 128 15.5228 128 10C128 4.47715 123.523 0 118 0V20ZM89.2766 20H118V0H89.2766V20Z"
-                                    fill="#0065FA"
-                                ></path>
-                            </svg>
-                            <h3 class="text-xl ms-2">Thinkledger</h3>
-                        </div>
-                        <div class="ms-2 h-[1rem]">
-                            <svg
-                                viewBox="0 0 240 120"
-                                xmlns="http://www.w3.org/2000/svg"
-                                class="w-auto h-full"
-                            >
-                                <path
-                                    d="M20 80
-							 L40 40
-							 L80 20
-							 L100 60
-							 L120 100
-							 L140 40
-							 L160 20
-							 L180 70
-							 L200 100
-							 L220 30"
-                                    stroke="#0065FA"
-                                    fill="none"
-                                    stroke-width="15"
-                                    stroke-linejoin="miter"
-                                    stroke-dasharray="1000"
-                                    stroke-dashoffset="1000"
-                                >
-                                    <animate
-                                        attributeName="stroke-dashoffset"
-                                        from="1000"
-                                        to="0"
-                                        dur="1.5s"
-                                        fill="freeze"
-                                        begin="0.5s"
-                                        calcMode="spline"
-                                        keySplines="0.4 0 0.2 1"
-                                        repeatCount="indefinite"
-                                    ></animate>
-                                </path>
-                            </svg>
-                        </div>
-                    </div>
-                </a>
-                <!-- Large screen -->
-                <!-- <div className="hidden sm:ml-6 sm:flex sm:space-x-8">
-				   {navItems.map((item) => (
-				     <a
-				       key={item.name}
-				       href={item.href}
-				       className={`inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium ${
-				         currentPath === item.href
-				           ? "border-indigo-500 text-gray-300"
-				           : "border-transparent text-gray-300 hover:border-gray-300 hover:text-gray-700"
-				       }`}
-				     >
-				       {item.name}
-				     </a>
-				   ))}
-				 </div> -->
+<div class="w-[90%] py-8 mx-auto sm:w-[90%] md:w-[80%] lg:w-[70%] xl:w-[60%] 2xl:w-[55%] relative z-20" >
+  <nav>
+    <div class="flex items-center justify-between">
+      <div class="flex">
+        <a href="/">
+          <div class="flex items-center justify-center">
+            <div class="flex h-[1rem] items-center">
+              <svg viewBox="0 0 128 122" fill="none" xmlns="http://www.w3.org/2000/svg" class="w-auto h-full" >
+                <path d="M10 0C4.47715 -4.82823e-07 4.82823e-07 4.47715 0 10C-4.82823e-07 15.5228 4.47715 20 10 20L10 0ZM10 20L38.7234 20L38.7234 2.51108e-06L10 0L10 20Z" fill="#0065FA" ></path>
+                <path d="M45.689 10H82.1677" stroke="#0065FA" stroke-width="20" ></path>
+                <path d="M65.2925 22.0635V48.489" stroke="#0065FA" stroke-width="20" ></path>
+                <path d="M55.2925 111.681C55.2925 117.204 59.7696 121.681 65.2925 121.681C70.8153 121.681 75.2925 117.204 75.2925 111.681H55.2925ZM55.2925 56.6758V111.681H75.2925V56.6758H55.2925Z" fill="#0065FA" ></path>
+                <path d="M31.2554 10.0718H45.7966H60.3378" stroke="#0065FA" stroke-width="10" ></path>
+                <path d="M74.4841 10H89.0254H103.567" stroke="#0065FA" stroke-width="10" ></path>
+                <path d="M65.3645 13.0161V27.5573V42.0986" stroke="#0065FA" stroke-width="10" ></path>
+                <path d="M65.436 42.1699V56.7111V71.2524" stroke="#0065FA" stroke-width="10" ></path>
+                <path d="M118 20C123.523 20 128 15.5228 128 10C128 4.47715 123.523 0 118 0V20ZM89.2766 20H118V0H89.2766V20Z" fill="#0065FA" ></path>
+              </svg>
+              <h3 class="text-xl ms-2">Thinkledger</h3>
             </div>
-            <!-- <div class="hidden sm:ml-6 sm:flex sm:items-center sm:space-x-4">
-			 </div>
-			 Small screen
-			 <div class="flex items-center sm:hidden">
-			 	<button
-			 		class="inline-flex items-center justify-center p-2 rounded-md text-gray-400  focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500"
-			 	>
-			 		<span class="sr-only">Open main menu</span>
-			 		// <Menu className="h-6 w-6" aria-hidden="true" />
-			 	</button>
-			 <div className="pt-2 pb-3 space-y-1">
-			   {navItems.map((item) => (
-			     <a
-			       key={item.name}
-			       href={item.href}
-			       className={`block pl-3 pr-4 py-2 border-l-4 text-base font-medium ${
-			         currentPath === item.href
-			           ? "bg-indigo-50 border-indigo-500 text-indigo-700"
-			           : "border-transparent text-gray-500"
-			       }`}
-			       onClick={() => setIsOpen(false)}
-			     >
-			       {item.name}
-			     </a>
-			   ))}
-			 </div>
-			 <div class="pt-8">
-			 	<a href="/sign-in" class="">
-			 		Sign in
-			 	</a>
-			 </div>
-			 </div> -->
-        </div>
-    </nav>
-    <div class="mt-16 mb-8 min-h-[50vh]">{% block body %} {% endblock %}</div>
-    <!-- Footer -->
-    <footer class="mt-24">
-        <div class="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-8">
-            <!-- <div>
-			            <span className="text-2xl font-outfit">ClosedLedger</span>
-			          </div>
-			 <div>
-			            <h3 className="text-lg font-semibold mb-4">Navigation</h3>
-			            <ul className="space-y-2">
-			              <li>
-			                <a href="#" className="hover:text-gray-300">
-			                  Features
-			                </a>
-			              </li>
-			              <li>
-			                <a href="#" className="hover:text-gray-300">
-			                  Benefits
-			                </a>
-			              </li>
-			              <li>
-			                <a href="#" className="hover:text-gray-300">
-			                  Integrations
-			                </a>
-			              </li>
-			            </ul>
-			          </div> -->
-            <div>
-                <h3 class="text-lg font-semibold mb-4">Contact</h3>
-                <ul class="space-y-2">
-                    <li>
-                        <a
-                            href="/support#contact"
-                            class="flex hover:text-gray-300"
-                        >
-                            <i class="fa-solid fa-envelope me-2 text-2xl"></i>
-                            Email
-                        </a>
-                    </li>
-                    <!--
-                    <li>
-                        <a href="#" className="hover:text-gray-300">  X </a>
-                    </li>
-                    <li>
-                        <a href="#" className="flex hover:text-gray-300">
-                            <Instagram className="me-2" /> Instagram
-                        </a>
-                    </li>
-                    <li>
-                        <a href="#" className="flex hover:text-gray-300">
-                            <Linkedin className="me-2" /> LinkedIn
-                        </a>
-                    </li> -->
-                </ul>
+            <div class="ms-2 h-[1rem]">
+              <svg viewBox="0 0 240 120" xmlns="http://www.w3.org/2000/svg" class="w-auto h-full" >
+                <path d="M20 80 L40 40 L80 20 L100 60 L120 100 L140 40 L160 20 L180 70 L200 100 L220 30" stroke="#0065FA" fill="none" stroke-width="15" stroke-linejoin="miter" stroke-dasharray="1000" stroke-dashoffset="1000" >
+                  <animate attributeName="stroke-dashoffset" from="1000" to="0" dur="1.5s" fill="freeze" begin="0.5s" calcMode="spline" keySplines="0.4 0 0.2 1" repeatCount="indefinite" ></animate>
+                </path>
+              </svg>
             </div>
-            <div>
-                <h3 class="text-lg font-semibold mb-4">Resources</h3>
-                <ul class="space-y-2">
-                    <!--
-                    <li>
-                        <a href="#" className="hover:text-gray-300">  Blog  </a>
-                    </li>
-                    <li>
-                        <a href="#" className="hover:text-gray-300">
-                             Documentation
-                        </a>
-                    </li> -->
-                    <li>
-                        <a href="/support" class="hover:text-gray-300">
-                            Support
-                        </a>
-                    </li>
-                </ul>
-            </div>
-            <div>
-                <h3 class="text-lg font-semibold mb-4">Legal</h3>
-                <ul class="space-y-2">
-                    <li>
-                        <a href="/privacy-policy" class="hover:text-gray-300">
-                            Privacy Policy
-                        </a>
-                    </li>
-                    <li>
-                        <a href="/terms-of-service" class="hover:text-gray-300">
-                            Terms of Service
-                        </a>
-                    </li>
-                    <li>
-                        <a
-                            href="/privacy-policy#cookie-policy"
-                            class="hover:text-gray-300 hover:cursor-pointer"
-                        >
-                            Cookie Policy
-                        </a>
-                    </li>
-                </ul>
-            </div>
-        </div>
-        <div class="mt-8 pt-8 text-center">
-            <p class="text-sm">&copy; 2025 ThinkLedger. All rights reserved.</p>
-        </div>
-    </footer>
+          </div>
+        </a>
+      </div>
+    </div>
+  </nav>
+  <div class="mt-16 mb-8 min-h-[50vh]">{% block body %} {% endblock %}</div>
+  <!-- Footer -->
+  <footer class="mt-24">
+    <div class="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-8">
+      <div>
+        <h3 class="text-lg font-semibold mb-4">Contact</h3>
+        <ul class="space-y-2">
+          <li>
+            <a href="/support#contact" class="flex hover:text-gray-300" >
+              <i class="fa-solid fa-envelope me-2 text-2xl"></i>
+              Email
+            </a>
+          </li>
+        </ul>
+      </div>
+      <div>
+        <h3 class="text-lg font-semibold mb-4">Resources</h3>
+        <ul class="space-y-2">
+          <li>
+            <a href="/support" class="hover:text-gray-300"> Support </a>
+          </li>
+        </ul>
+      </div>
+      <div>
+        <h3 class="text-lg font-semibold mb-4">Legal</h3>
+        <ul class="space-y-2">
+          <li>
+            <a href="/privacy-policy" class="hover:text-gray-300"> Privacy Policy </a>
+          </li>
+          <li>
+            <a href="/terms-of-service" class="hover:text-gray-300"> Terms of Service </a>
+          </li>
+          <li>
+            <a href="/privacy-policy#cookie-policy" class="hover:text-gray-300 hover:cursor-pointer" > Cookie Policy </a>
+          </li>
+        </ul>
+      </div>
+    </div>
+    <div class="mt-8 pt-8 text-center">
+      <p class="text-sm">&copy; 2025 ThinkLedger. All rights reserved.</p>
+    </div>
+  </footer>
 </div>
 {% endblock %}
