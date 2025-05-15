@@ -4,6 +4,7 @@ from fastapi import Request, Response
 from starlette.middleware.base import BaseHTTPMiddleware
 from collections import defaultdict
 from typing import Dict, Any, Callable, Awaitable
+from utils.util import time_format
 
 MAX_CALLS = 20
 
@@ -30,5 +31,5 @@ class RateLimiter(BaseHTTPMiddleware):
     response = await c_next(request)
     process_time = time.time() - start_time
     path = request.url.path
-    print(f"{request.method} request to {path} took {process_time} seconds")
+    print(f"{request.method} request to {path} took {time_format(process_time)}")
     return response

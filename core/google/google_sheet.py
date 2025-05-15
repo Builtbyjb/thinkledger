@@ -10,14 +10,16 @@ from datetime import datetime
 from prompt.journal_entry import generate_prompt
 from agents.gemini import gemini_response, sanitize_gemini_response
 from enum import Enum
+from core.google.app_script import get_app_script
 
 """
-NOTE:
-Ideas:
+WORKFLOW:
 * Create the spreadsheet file in python
 * Create a app script file that:
   * Creates the sheets
   * Setups the sheets
+* Transactions sheet and journal entry sheet are updated with python
+* App script handles the rest
 """
 
 FONT_FAMILY = "Roboto"
@@ -205,7 +207,7 @@ class GoogleSheet:
         removeParents='root',
         fields='id, parents'
       ).execute()
-      print(spreadsheet_id)
+      # print(spreadsheet_id)
       log.info("Spreadsheet file created")
       return str(spreadsheet_id)
     except Exception as e:
@@ -234,36 +236,10 @@ class GoogleSheet:
       log.error(f"Error creating app script project: {e}")
       return None
 
-    manifest = """
-    {
-      "timeZone": "America/New_York",
-      "dependencies": {
-      },
-      "exceptionLogging": "STACKDRIVER",
-      "runtimeVersion": "V8",
-      "oauthScopes": [
-        "https://www.googleapis.com/auth/script.container.ui",
-        "https://www.googleapis.com/auth/spreadsheets.currentonly"
-        // "https://www.googleapis.com/auth/spreadsheets" // To access any sheet (openById)
-      ]
-    }
-    """
+    # Get google app script and manifest file
+    app_script, manifest = get_app_script()
 
-    # Google app script
-    app_script = """
-    function onOpen() {
-      SpreadsheetApp.getUi()
-        .createMenu('Dynamic Script')
-        .addItem('Show Alert', 'testScript')
-        .addToUi();
-    }
-
-    function testScript() {
-      SpreadsheetApp.getUi().alert('Hello from the scripted menu!');
-    }
-    """
-
-    try:
+    try: # Update app script file
       self.script_service.projects().updateContent(
         scriptId=script_project.get("scriptId"),
         body={
@@ -441,8 +417,8 @@ class GoogleSheet:
       ).execute()
       # TODO: Add styling
       return True
-    except Exception:
-      log.error(f"Error appending line to {self.name} sheet")
+    except Exception as e:
+      log.error(f"Error appending line to {self.name} sheet: {e}")
       return False
 
   def append_char(self, values:List[List[str]]) -> bool:
