@@ -20,7 +20,7 @@ jobs:
       - name: Install dependencies
         run: |
           curl -LsSf https://astral.sh/uv/install.sh | sh
-          uv sync
+          uv sync --frozen --no-cache
 
       - name: Install linters
         run: |
@@ -31,4 +31,4 @@ jobs:
         run: ruff check .
 
       - name: Run mypy
-        run: mypy --strict . --allow-untyped-calls --config-file ./mypy.ini
+        run: mypy --strict . --allow-untyped-calls
