@@ -117,15 +117,20 @@ class GoogleSheet:
       results = self.drive_service.files().list(q=query).execute()
       files = results.get('files', [])
       if files: return str(files[0].get("id"))
+    except Exception as e:
+      log.error(f"Error checking if {name} folder exist: {e}")
+      return None
 
-      # Create folder if it doesn't exist
-      metadata = {
-        'name': name,
-        'mimeType': 'application/vnd.google-apps.folder',
-        "parents": [parent_id]
-      }
+    # Create folder if it doesn't exist
+    metadata = {
+      'name': name,
+      'mimeType': 'application/vnd.google-apps.folder',
+      "parents": [parent_id]
+    }
+
+    try:
       folder = self.drive_service.files().create(body=metadata, fields='id').execute()
-      log.info("Folder created")
+      log.info(f"{name} folder created")
       return str(folder.get('id'))
     except Exception as e:
       log.error("Error creating folder: ", e)
@@ -214,7 +219,8 @@ class GoogleSheet:
       log.error(f'Google Sheets API error: {e}')
       return None
 
-  def create_app_script(self, folder_id:str, file_name:str="app_script") -> None:
+  def create_app_script(self, folder_id:str) -> None:
+    file_name = "app_script"
     try: # Check if app script exists
       query = f"""
       name='{file_name}' and mimeType='application/vnd.google-apps.script'
@@ -232,6 +238,7 @@ class GoogleSheet:
         "title": "app_script",
         "parentId": self.spreadsheet_id  # Binds to the spreadsheet
       }).execute()
+      log.info("App script file created")
     except Exception as e:
       log.error(f"Error creating app script project: {e}")
       return None
@@ -244,11 +251,12 @@ class GoogleSheet:
         scriptId=script_project.get("scriptId"),
         body={
           'files': [
-            {'name': 'app_script', 'type': 'SERVER_JS', 'source': app_script},
+            {'name': file_name, 'type': 'SERVER_JS', 'source': app_script},
             { 'name': 'appsscript', 'type': 'JSON', 'source': manifest }
           ]
         }
       ).execute()
+      log.info("App script file updated")
     except Exception as e:
       log.error(f"Error updating app script project: {e}")
       return None

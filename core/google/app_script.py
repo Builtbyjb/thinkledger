@@ -2,17 +2,16 @@ from typing import Tuple
 
 
 def get_app_script() -> Tuple[str, str]:
+    # // "https://www.googleapis.com/auth/spreadsheets"
   manifest = """
   {
-    "timeZone": "Canada/Toronto",
-    "dependencies": {
-    },
+    "timeZone": "America/New_York",
+    "dependencies": {},
     "exceptionLogging": "STACKDRIVER",
     "runtimeVersion": "V8",
     "oauthScopes": [
       "https://www.googleapis.com/auth/script.container.ui",
       "https://www.googleapis.com/auth/spreadsheets.currentonly"
-      // "https://www.googleapis.com/auth/spreadsheets"
     ]
   }
   """

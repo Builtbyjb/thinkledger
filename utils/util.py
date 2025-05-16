@@ -15,8 +15,10 @@ def generate_crypto_string(length:int=32) -> str:
 
 
 def time_format(time:float) -> str:
-  #  time = time.time() - start_time
-
+  """
+  Formats time in seconds to milliseconds(ms), microseconds(us), or seconds(s) to 2 decimals
+  places
+  """
   # Set default to milliseconds
   t = time * 1000
   t_rep = "ms" # milliseconds
