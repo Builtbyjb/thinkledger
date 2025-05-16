@@ -41,11 +41,12 @@ def handle_high_task(db:Session, redis:Redis, user_id:str) -> None:
       task, access_token = value.split(":")
 
       if task == Tasks.trans_sync.value:
-        transaction_sheet = TransactionSheet(user_id)
+        _ = TransactionSheet(user_id)
         for t in get_transactions(access_token):
           for g in generate_transaction(t, db):
-            is_added = transaction_sheet.append_line([g])
-            if not is_added: log.error("Error creating transaction")
+            pass
+            # is_added = transaction_sheet.append_line([g])
+            # if not is_added: log.error("Error creating transaction")
 
 
 def handle_low_task(redis:Redis, user_id:str) -> None:

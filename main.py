@@ -22,15 +22,19 @@ core_process = None
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> Any:
   global core_process
-  create_db_and_tables()
-  exit_process.clear() # Ensure the exit process is cleared before starting a new core process
-  core_process = multiprocessing.Process(target=core, args=(exit_process,), daemon=True)
-  core_process.start()
-  yield
-  # TODO: Shutdown core process gracefully
-  exit_process.set()
-  core_process.join(timeout=5) # Allow time for core process to exit
-  log.info("Shutdown core process...")
+  try:
+    create_db_and_tables()
+    exit_process.clear() # Ensure the exit process is cleared before starting a new core process
+    core_process = multiprocessing.Process(target=core, args=(exit_process,), daemon=True)
+    core_process.start()
+    yield
+  finally:
+    # TODO: Shutdown core process gracefully
+    exit_process.set()
+    exit_process.clear()
+    if core_process:
+      core_process.join(timeout=5) # Allow time for core process to exit
+    log.info("Shutting down gracefully...")
 
 app = FastAPI(lifespan=lifespan)
 

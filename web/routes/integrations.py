@@ -24,7 +24,7 @@ async def banking(request: Request) -> HTMLResponse:
 @auth_required(mode="strict")
 async def google(request: Request) -> HTMLResponse:
   username = request.state.username
-  # TODO: Check for google api scopes
+  # TODO: Check for google api scopes for visually scope grant confirmation
   return templates.TemplateResponse(
     request=request,
     name="auth/google.html",

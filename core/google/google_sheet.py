@@ -12,15 +12,6 @@ from agents.gemini import gemini_response, sanitize_gemini_response
 from enum import Enum
 from core.google.app_script import get_app_script
 
-"""
-WORKFLOW:
-* Create the spreadsheet file in python
-* Create a app script file that:
-  * Creates the sheets
-  * Setups the sheets
-* Transactions sheet and journal entry sheet are updated with python
-* App script handles the rest
-"""
 
 FONT_FAMILY = "Roboto"
 
@@ -35,7 +26,7 @@ class SheetId(Enum):
 
 
 class GoogleSheet:
-  def __init__(self, user_id:str, name:str):
+  def __init__(self, user_id:str, name:str, init:bool=False):
     self.user_id = user_id
     self.name = name
 
@@ -108,8 +99,7 @@ class GoogleSheet:
     Create a folder in the user's google drive. The parent_id specifies the parent folder id; if it
     is "root", the folder will be created in the root directory.
     """
-    try:
-      # Check if folder exists
+    try: # Check if folder exists
       query = f"""
       name='{name}' and mimeType='application/vnd.google-apps.folder' and
       '{parent_id}' in parents and trashed=false
@@ -121,14 +111,13 @@ class GoogleSheet:
       log.error(f"Error checking if {name} folder exist: {e}")
       return None
 
-    # Create folder if it doesn't exist
     metadata = {
       'name': name,
       'mimeType': 'application/vnd.google-apps.folder',
       "parents": [parent_id]
     }
 
-    try:
+    try: # Create folder if it doesn't exist
       folder = self.drive_service.files().create(body=metadata, fields='id').execute()
       log.info(f"{name} folder created")
       return str(folder.get('id'))
@@ -143,8 +132,7 @@ class GoogleSheet:
     if spreadsheet file name changes it means the year has changed, write a function that pulls in
     all the relevant data from the pervious year.
     """
-    try:
-      # Check if spreadsheet exists
+    try: # Check if spreadsheet exists
       query = f"""
       name='{file_name}' and mimeType='application/vnd.google-apps.spreadsheet'
       and '{folder_id}' in parents and trashed=false
@@ -266,8 +254,7 @@ class GoogleSheet:
     """
     Create a sheet in the spreadsheet file
     """
-    try:
-      # Get all sheets in the spreadsheet
+    try: # Get all sheets in the spreadsheet
       metadata = self.sheet_service.spreadsheets().get(spreadsheetId=self.spreadsheet_id).execute()
       sheets = metadata.get('sheets', [])
 

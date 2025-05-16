@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Request, Depends
+from fastapi import APIRouter, Request, Depends, Response
 from fastapi.responses import RedirectResponse, JSONResponse
 from datetime import datetime, timedelta, timezone
 import os
@@ -250,3 +250,11 @@ async def google_service_token(request: Request) -> JSONResponse:
     samesite="lax"
   )
   return response
+
+
+@router.post("/spreadsheet/signal")
+async def google_spreadsheet_signal(request: Request) -> Response:
+  """
+  Handles google spreadsheet signals
+  """
+  return Response(status_code=200)
