@@ -4,13 +4,12 @@ from database.postgres.postgres_schema import User, Institution
 from sqlmodel import select, Session
 from utils.auth_utils import refresh_access_token, verify_access_token
 from utils.core_utils import TaskPriority, Tasks
-from core.plaid_core import get_transactions, generate_transaction
 from utils.logger import log
 from redis import Redis
-from concurrent.futures import ThreadPoolExecutor
 import os
+from concurrent.futures import ThreadPoolExecutor
 from multiprocessing.synchronize import Event
-from core.google.google_sheet import TransactionSheet
+from core.google.google_sheet import GoogleSheet
 
 
 MAX_WORKERS = 5
@@ -41,10 +40,10 @@ def handle_high_task(db:Session, redis:Redis, user_id:str) -> None:
       task, access_token = value.split(":")
 
       if task == Tasks.trans_sync.value:
-        _ = TransactionSheet(user_id)
-        for t in get_transactions(access_token):
-          for g in generate_transaction(t, db):
-            pass
+        GoogleSheet(user_id=user_id, init=True)
+        # for t in get_transactions(access_token):
+        #   for g in generate_transaction(t, db):
+        #     pass
             # is_added = transaction_sheet.append_line([g])
             # if not is_added: log.error("Error creating transaction")
 
@@ -124,12 +123,13 @@ def check_requirements(db:Session, redis:Redis, user_id:str) -> bool:
 
 def handle_task(db:Session, redis:Redis, user_id:str) -> None:
   is_passed =  check_requirements(db, redis, user_id)
-  # TODO: Alert user to complete requirements
-  if not is_passed:
-    log.info("User did not pass requirement check")
-    return
-  handle_high_task(db, redis, user_id)
-  handle_low_task(redis, user_id)
+  if is_passed:
+    handle_high_task(db, redis, user_id)
+    handle_low_task(redis, user_id)
+  else:
+    # TODO: Alert user to complete requirements
+    log.info("User did not pass requirement")
+  return None
 
 
 def core(exit_process: Event) -> None:
@@ -138,19 +138,22 @@ def core(exit_process: Event) -> None:
   """
   log.info("Starting core process...")
   while not exit_process.is_set():
-    # Get a fresh DB connection each time through the loop
-    db = gen_db()
-    if db is None: raise Exception("Failed to get database connection")
+    try:
+      db = gen_db()
+      if db is None: raise Exception("Failed to get database connection")
 
-    # Get a fresh Redis connection each time through the loop
-    redis = gen_redis()
-    if redis is None: raise Exception("Failed to get Redis connection")
+      # Get a fresh Redis connection each time through the loop
+      redis = gen_redis()
+      if redis is None: raise Exception("Failed to get Redis connection")
 
-    # time.sleep(60)
-    users = db.exec(select(User)).all()
-    if len(users) == 0: log.info("No users found in database")
-    else:
-      with ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
-        # Returns a list of futures, you then get the result of each threads from each future
-        _ = {executor.submit(handle_task, db, redis, u.id): u for u in users}
-    exit_process.wait(INTERVAL)
+      users = db.exec(select(User)).all()
+      # Get a fresh DB connection each time through the loop
+      if len(users) == 0: log.info("No users found in database")
+      else:
+        with ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
+          futures = {executor.submit(handle_task, db, redis, u.id): u for u in users}
+          for f in futures: f.result()
+        exit_process.wait(INTERVAL)
+    except KeyboardInterrupt:
+      exit_process.set()
+      break

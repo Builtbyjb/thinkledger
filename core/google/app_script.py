@@ -9,6 +9,9 @@ from typing import Tuple
 # Create endpoint that listens for transaction signals
 # start appending transactions
 # and journal entries
+# setup up  T account sheet
+# setup trial balance sheet
+# setup up other financial statements
 
 def get_app_script() -> Tuple[str, str]:
     # "https://www.googleapis.com/auth/spreadsheets"

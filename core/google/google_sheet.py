@@ -9,24 +9,14 @@ from utils.types import JournalEntry
 from datetime import datetime
 from prompt.journal_entry import generate_prompt
 from agents.gemini import gemini_response, sanitize_gemini_response
-from enum import Enum
 from core.google.app_script import get_app_script
 
 
 FONT_FAMILY = "Roboto"
 
 
-class SheetId(Enum):
-  # DASHBOARD = 1
-  TRANSACTION = 1
-  JOURNAL_ENTRY = 2
-  # T_ACCOUNT = 4
-  # TRIAL_BALANCE = 5
-  # BALANCE_SHEET = 6
-
-
 class GoogleSheet:
-  def __init__(self, user_id:str, name:str, init:bool=False):
+  def __init__(self, user_id:str, name:Optional[str]=None, init:bool=False):
     self.user_id = user_id
     self.name = name
 
@@ -34,24 +24,19 @@ class GoogleSheet:
     if self.sheet_service is None or self.drive_service is None or self.script_service is None:
       raise ValueError("Error creating a service")
 
-    parent_id = self.create_folder("thinkledger")
-    if parent_id is None: raise ValueError("Error creating thinkledger folder")
+    if init:
+      parent_id = self.create_folder("thinkledger")
+      if parent_id is None: raise ValueError("Error creating thinkledger folder")
 
-    general_ledger_id = self.create_folder("general_ledger", parent_id)
-    if general_ledger_id is None: raise ValueError("Error creating general ledger folder")
+      general_ledger_id = self.create_folder("general_ledger", parent_id)
+      if general_ledger_id is None: raise ValueError("Error creating general ledger folder")
 
-    file_name = f"ledger_{datetime.now().year}"
-    spreadsheet_id = self.create_spreadsheet(file_name, general_ledger_id)
-    if spreadsheet_id is None: raise ValueError("Error creating spreadsheet file")
-    self.spreadsheet_id = spreadsheet_id
+      file_name = f"ledger_{datetime.now().year}"
+      spreadsheet_id = self.create_spreadsheet(file_name, general_ledger_id)
+      if spreadsheet_id is None: raise ValueError("Error creating spreadsheet file")
+      self.spreadsheet_id = spreadsheet_id
 
-    self.create_app_script(general_ledger_id)
-
-    # self.trans_sheet_id = self.setup_transaction()
-    # self.journal_sheet_id = self.setup_journal_entry()
-    # setup up  T account sheet
-    # setup trial balance sheet
-    # setup up financial statements
+      self.create_app_script(general_ledger_id)
 
   def create_service(self) -> Tuple[Any, Any, Any]:
     """
