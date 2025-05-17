@@ -29,6 +29,7 @@ def delete() -> None:
   print(f"Deleted {table_name} table")
   return None
 
+
 if __name__ == "__main__":
   load_dotenv()
   delete()

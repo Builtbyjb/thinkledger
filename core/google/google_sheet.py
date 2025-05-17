@@ -9,7 +9,7 @@ from utils.types import JournalEntry
 from datetime import datetime
 from prompt.journal_entry import generate_prompt
 from agents.gemini import gemini_response, sanitize_gemini_response
-from core.google.app_script import get_app_script
+from helpers.parse_app_script import get_app_script
 
 
 FONT_FAMILY = "Roboto"
@@ -125,59 +125,67 @@ class GoogleSheet:
       results = self.drive_service.files().list(q=query).execute()
       files = results.get('files', [])
       if files: return str(files[0].get('id'))
+    except Exception as e:
+      log.error(f'Error checking if spreadsheet file exists: {e}')
+      return None
 
       # Create new spreadsheet
-      # TODO: Change default spreadsheet name, set default font size
-      body = {
-        "properties": {
-          "title": file_name,
-          "spreadsheetTheme": {
-            "primaryFontFamily": FONT_FAMILY,
-            "themeColors": [
-              # {"colorType": "THEME_COLOR_TYPE_UNSPECIFIED", "color": {}},
-              {
-                "colorType": "TEXT",
-                "color": { "rgbColor": {"red":0.0, "green":0.0, "blue": 0.0} }, # Black
-              },
-              {
-                "colorType": "BACKGROUND",
-                "color": { "rgbColor": {"red":1.0, "green":1.0, "blue":1.0}}, # White
-              },
-              { # A shade of blue
-                "colorType": "ACCENT1",
-                "color": { "rgbColor": {"red":60/255, "green":120/255, "blue":216/255}},
-              },
-              { # A shade of orange/red
-                "colorType": "ACCENT2",
-                "color": { "rgbColor": {"red":221/255, "green":126/255, "blue":107/255}},
-              },
-              { # A shade of purple
-                "colorType": "ACCENT3",
-                "color": { "rgbColor": {"red":152/255, "green":118/255, "blue":170/255} },
-              },
-              { # A shade of teal
-                "colorType": "ACCENT4",
-                "color": { "rgbColor": {"red":109/255, "green":194/255, "blue":202/255} },
-              },
-              { # A shade of yellow
-                "colorType": "ACCENT5",
-                "color": { "rgbColor": {"red":241/255, "green":194/255, "blue":50/255} },
-              },
-              { # A shade of green
-                "colorType": "ACCENT6",
-                "color": { "rgbColor": {"red":127/255, "green":199/255, "blue":132/255} },
-              },
-              { # Standard link blue
-                "colorType": "LINK",
-                "color": { "rgbColor": {"red":17/255, "green":85/255, "blue":204/255} }
-              },
-            ]
-          },
+    # TODO: Change default spreadsheet name, set default font size
+    body = {
+      "properties": {
+        "title": file_name,
+        "spreadsheetTheme": {
+          "primaryFontFamily": FONT_FAMILY,
+          "themeColors": [
+            # {"colorType": "THEME_COLOR_TYPE_UNSPECIFIED", "color": {}},
+            {
+              "colorType": "TEXT",
+              "color": { "rgbColor": {"red":0.0, "green":0.0, "blue": 0.0} }, # Black
+            },
+            {
+              "colorType": "BACKGROUND",
+              "color": { "rgbColor": {"red":1.0, "green":1.0, "blue":1.0}}, # White
+            },
+            { # A shade of blue
+              "colorType": "ACCENT1",
+              "color": { "rgbColor": {"red":60/255, "green":120/255, "blue":216/255}},
+            },
+            { # A shade of orange/red
+              "colorType": "ACCENT2",
+              "color": { "rgbColor": {"red":221/255, "green":126/255, "blue":107/255}},
+            },
+            { # A shade of purple
+              "colorType": "ACCENT3",
+              "color": { "rgbColor": {"red":152/255, "green":118/255, "blue":170/255} },
+            },
+            { # A shade of teal
+              "colorType": "ACCENT4",
+              "color": { "rgbColor": {"red":109/255, "green":194/255, "blue":202/255} },
+            },
+            { # A shade of yellow
+              "colorType": "ACCENT5",
+              "color": { "rgbColor": {"red":241/255, "green":194/255, "blue":50/255} },
+            },
+            { # A shade of green
+              "colorType": "ACCENT6",
+              "color": { "rgbColor": {"red":127/255, "green":199/255, "blue":132/255} },
+            },
+            { # Standard link blue
+              "colorType": "LINK",
+              "color": { "rgbColor": {"red":17/255, "green":85/255, "blue":204/255} }
+            },
+          ]
         },
-      }
-      spreadsheet = self.sheet_service.spreadsheets().create(body=body).execute()
+      },
+    }
 
-      # Move to correct folder
+    # Create spreadsheet file
+    try: spreadsheet = self.sheet_service.spreadsheets().create(body=body).execute()
+    except Exception as e:
+      log.error(f"Error creating spreadsheet file: {e}")
+      return None
+
+    try: # Move to correct folder
       spreadsheet_id = spreadsheet.get('spreadsheetId')
       self.drive_service.files().update(
         fileId=spreadsheet_id,
@@ -189,7 +197,7 @@ class GoogleSheet:
       log.info("Spreadsheet file created")
       return str(spreadsheet_id)
     except Exception as e:
-      log.error(f'Google Sheets API error: {e}')
+      log.error(f'Error moving spreadsheet to the right folder: {e}')
       return None
 
   def create_app_script(self, folder_id:str) -> None:
@@ -216,8 +224,18 @@ class GoogleSheet:
       log.error(f"Error creating app script project: {e}")
       return None
 
+    manifest = """
+    {
+      "timeZone": "America/New_York",
+      "dependencies": {},
+      "exceptionLogging": "STACKDRIVER",
+      "runtimeVersion": "V8",
+      "oauthScopes": ["https://www.googleapis.com/auth/spreadsheets.currentonly"]
+    }
+    """
+
     # Get google app script and manifest file
-    app_script, manifest = get_app_script()
+    app_script = get_app_script()
 
     try: # Update app script file
       self.script_service.projects().updateContent(

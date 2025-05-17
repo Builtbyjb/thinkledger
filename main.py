@@ -1,4 +1,4 @@
-import os, multiprocessing, signal, sys
+import os, multiprocessing, signal, sys, asyncio
 from fastapi import FastAPI, Request
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import HTMLResponse, JSONResponse
@@ -11,7 +11,6 @@ from core.core import core
 from typing import Any
 from contextlib import asynccontextmanager
 from utils.logger import log
-import asyncio
 
 
 # Load .env file
@@ -30,18 +29,16 @@ async def lifespan(app: FastAPI) -> Any:
     core_process.start()
     yield
   except asyncio.CancelledError: pass
-  finally:
-    if core_process: core_process.close()
-    log.info("Shutting down gracefully...")
+  finally: log.info("Shutdown gracefully...")
 
 
 def signal_handler(sig:Any, frame:Any) -> None:
   log.info(f"Main process received signal {sig}, initiating shutdown...")
   exit_process.set()
-
   # Give the worker process some time to clean up
   if core_process:
     core_process.join(timeout=10)
+    core_process.close()
     if core_process.is_alive():
       log.info("Core process did not exit in time, forcing termination!!")
       core_process.terminate()

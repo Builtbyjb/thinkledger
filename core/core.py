@@ -12,10 +12,6 @@ from multiprocessing.synchronize import Event
 from core.google.google_sheet import GoogleSheet
 
 
-MAX_WORKERS = 5
-INTERVAL = 60
-
-
 def handle_high_task(db:Session, redis:Redis, user_id:str) -> None:
   # Check for tasks of High level priority
   try: l = redis.llen(f"tasks:{TaskPriority.HIGH}:{user_id}")
@@ -39,8 +35,7 @@ def handle_high_task(db:Session, redis:Redis, user_id:str) -> None:
       # NOTE: Rethink how value is handled
       task, access_token = value.split(":")
 
-      if task == Tasks.trans_sync.value:
-        GoogleSheet(user_id=user_id, init=True)
+      if task == Tasks.trans_sync.value: GoogleSheet(user_id=user_id, init=True)
         # for t in get_transactions(access_token):
         #   for g in generate_transaction(t, db):
         #     pass
@@ -132,6 +127,10 @@ def handle_task(db:Session, redis:Redis, user_id:str) -> None:
   return None
 
 
+MAX_WORKERS = 5
+INTERVAL = 60
+
+
 def core(exit_process: Event) -> None:
   """
   Gets users from the database and creates a new thread for each user to handle their tasks.
@@ -139,6 +138,7 @@ def core(exit_process: Event) -> None:
   log.info("Starting core process...")
   while not exit_process.is_set():
     try:
+      # Get a fresh DB connection each time through the loop
       db = gen_db()
       if db is None: raise Exception("Failed to get database connection")
 
@@ -147,13 +147,12 @@ def core(exit_process: Event) -> None:
       if redis is None: raise Exception("Failed to get Redis connection")
 
       users = db.exec(select(User)).all()
-      # Get a fresh DB connection each time through the loop
       if len(users) == 0: log.info("No users found in database")
       else:
         with ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
           futures = {executor.submit(handle_task, db, redis, u.id): u for u in users}
           for f in futures: f.result()
         exit_process.wait(INTERVAL)
-    except KeyboardInterrupt:
-      exit_process.set()
-      break
+    except KeyboardInterrupt: exit_process.set()
+    except Exception as e: log.error(e)
+    finally: break
