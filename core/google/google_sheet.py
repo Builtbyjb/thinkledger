@@ -9,7 +9,7 @@ from utils.types import JournalEntry
 from datetime import datetime
 from prompt.journal_entry import generate_prompt
 from agents.gemini import gemini_response, sanitize_gemini_response
-from helpers.parse_app_script import get_app_script
+from helpers.parse_google_script import google_script
 
 
 FONT_FAMILY = "Roboto"
@@ -36,7 +36,7 @@ class GoogleSheet:
       if spreadsheet_id is None: raise ValueError("Error creating spreadsheet file")
       self.spreadsheet_id = spreadsheet_id
 
-      self.create_app_script(general_ledger_id)
+      self.create_google_script(general_ledger_id)
 
   def create_service(self) -> Tuple[Any, Any, Any]:
     """
@@ -200,7 +200,7 @@ class GoogleSheet:
       log.error(f'Error moving spreadsheet to the right folder: {e}')
       return None
 
-  def create_app_script(self, folder_id:str) -> None:
+  def create_google_script(self, folder_id:str) -> None:
     file_name = "app_script"
     try: # Check if app script exists
       query = f"""
@@ -233,16 +233,12 @@ class GoogleSheet:
       "oauthScopes": ["https://www.googleapis.com/auth/spreadsheets.currentonly"]
     }
     """
-
-    # Get google app script and manifest file
-    app_script = get_app_script()
-
     try: # Update app script file
       self.script_service.projects().updateContent(
         scriptId=script_project.get("scriptId"),
         body={
           'files': [
-            {'name': file_name, 'type': 'SERVER_JS', 'source': app_script},
+            {'name': file_name, 'type': 'SERVER_JS', 'source': google_script()},
             { 'name': 'appsscript', 'type': 'JSON', 'source': manifest }
           ]
         }

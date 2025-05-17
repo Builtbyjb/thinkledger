@@ -1,17 +1,5 @@
 
-# NOTE: I need setup sheets onOpen()
-# send a done signal to the backend
-# process the done signal
-# Handle not creating another google sheet instance
-# Generate a unique id assigned to a user id, so i know who to process the transactions for
-# Create endpoint that listens for transaction signals
-# start appending transactions
-# and journal entries
-# setup up  T account sheet
-# setup trial balance sheet
-# setup up other financial statements
-
-def get_app_script() -> str:
+def google_script() -> str:
   # Google app script
   return """
   /*!
