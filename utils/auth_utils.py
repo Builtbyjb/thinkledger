@@ -80,7 +80,7 @@ def verify_access_token(access_token:str) -> bool:
   return True
 
 
-def refresh_access_token(refresh_token:str, client_id:str,client_secret:str) -> Optional[str]:
+def refresh_access_token(refresh_token:str, client_id:str, client_secret:str) -> Optional[str]:
   """
     Refresh google access token.
   """

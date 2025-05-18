@@ -9,7 +9,7 @@ from utils.types import JournalEntry
 from datetime import datetime
 from prompt.journal_entry import generate_prompt
 from agents.gemini import gemini_response, sanitize_gemini_response
-from helpers.parse_google_script import google_script
+from helpers.parse_gs import google_script
 
 
 FONT_FAMILY = "Roboto"
