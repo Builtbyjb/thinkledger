@@ -17,28 +17,28 @@ FONT_FAMILY = "Roboto"
 
 class GoogleSheet:
   def __init__(self, user_id:str, name:Optional[str]=None, init:bool=False):
-    self.user_id = user_id
-    self.name = name
+    self._user_id = user_id
+    self._name = name
 
-    self.sheet_service, self.drive_service, self.script_service = self.create_service()
+    self.sheet_service, self.drive_service, self.script_service = self._create_service()
     if self.sheet_service is None or self.drive_service is None or self.script_service is None:
       raise ValueError("Error creating a service")
 
     if init:
-      parent_id = self.create_folder("thinkledger")
+      parent_id = self._create_folder("thinkledger")
       if parent_id is None: raise ValueError("Error creating thinkledger folder")
 
-      general_ledger_id = self.create_folder("general_ledger", parent_id)
+      general_ledger_id = self._create_folder("general_ledger", parent_id)
       if general_ledger_id is None: raise ValueError("Error creating general ledger folder")
 
       file_name = f"ledger_{datetime.now().year}"
-      spreadsheet_id = self.create_spreadsheet(file_name, general_ledger_id)
+      spreadsheet_id = self._create_spreadsheet(file_name, general_ledger_id)
       if spreadsheet_id is None: raise ValueError("Error creating spreadsheet file")
       self.spreadsheet_id = spreadsheet_id
 
-      self.create_google_script(general_ledger_id)
+      self._create_google_script(general_ledger_id)
 
-  def create_service(self) -> Tuple[Any, Any, Any]:
+  def _create_service(self) -> Tuple[Any, Any, Any]:
     """
     Create a google sheet service and a google drive service; returns None if failed
     """
@@ -52,8 +52,8 @@ class GoogleSheet:
 
     # Verify access token; and if expired, use refresh token to get new access token
     try:
-      access_token = redis.get(f"service_access_token:{self.user_id}")
-      refresh_token = redis.get(f"service_refresh_token:{self.user_id}")
+      access_token = redis.get(f"service_access_token:{self._user_id}")
+      refresh_token = redis.get(f"service_refresh_token:{self._user_id}")
     except Exception as e:
       log.error(f"Error getting access token and refresh token: {e}")
       return None, None, None
@@ -79,7 +79,7 @@ class GoogleSheet:
       log.error(f"Error creating Google Sheets service or Google Drive service: {e}")
       return None, None, None
 
-  def create_folder(self, name:str, parent_id:str="root") -> Optional[str]:
+  def _create_folder(self, name:str, parent_id:str="root") -> Optional[str]:
     """
     Create a folder in the user's google drive. The parent_id specifies the parent folder id; if it
     is "root", the folder will be created in the root directory.
@@ -110,7 +110,7 @@ class GoogleSheet:
       log.error("Error creating folder: ", e)
       return None
 
-  def create_spreadsheet(self, file_name:str, folder_id:str) -> Optional[str]:
+  def _create_spreadsheet(self, file_name:str, folder_id:str) -> Optional[str]:
     """
     Create a spreadsheet file in a folder
     NOTE:
@@ -200,8 +200,8 @@ class GoogleSheet:
       log.error(f'Error moving spreadsheet to the right folder: {e}')
       return None
 
-  def create_google_script(self, folder_id:str) -> None:
-    file_name = "app_script"
+  def _create_google_script(self, folder_id:str) -> None:
+    file_name = "google_script"
     try: # Check if app script exists
       query = f"""
       name='{file_name}' and mimeType='application/vnd.google-apps.script'
@@ -216,7 +216,7 @@ class GoogleSheet:
 
     try: # Create the script project
       script_project = self.script_service.projects().create(body={
-        "title": "app_script",
+        "title": file_name,
         "parentId": self.spreadsheet_id  # Binds to the spreadsheet
       }).execute()
       log.info("App script file created")
@@ -243,7 +243,7 @@ class GoogleSheet:
           ]
         }
       ).execute()
-      log.info("App script file updated")
+      log.info("Google script file updated")
     except Exception as e:
       log.error(f"Error updating app script project: {e}")
       return None
@@ -404,7 +404,7 @@ class GoogleSheet:
     try:
       self.sheet_service.spreadsheets().values().append(
         spreadsheetId=self.spreadsheet_id,
-        range=self.name,
+        range=self._name,
         valueInputOption='USER_ENTERED',
         insertDataOption='INSERT_ROWS',
         body={'values': values}
@@ -412,7 +412,7 @@ class GoogleSheet:
       # TODO: Add styling
       return True
     except Exception as e:
-      log.error(f"Error appending line to {self.name} sheet: {e}")
+      log.error(f"Error appending line to {self._name} sheet: {e}")
       return False
 
   def append_char(self, values:List[List[str]]) -> bool:
@@ -423,7 +423,7 @@ class GoogleSheet:
       # Get last row number
       result = self.sheet_service.spreadsheets().values().get(
         spreadsheetId=self.spreadsheet_id,
-        range=f"{self.name}!A:A"
+        range=f"{self._name}!A:A"
       ).execute()
       next_row = len(result.get('values', [])) + 1
 
@@ -516,11 +516,13 @@ class JournalEntrySheet(GoogleSheet):
       "merchant_name":str(t[8]),
       "pending":str(t[10]),
     })
+
     # Get gemini response
     try: response = gemini_response(prompt)
     except Exception as e:
       log.error(f"Error getting gemini response: {e}")
       return None
+
     # Sanitize gemini response
     try: r = sanitize_gemini_response(response)
     except Exception:

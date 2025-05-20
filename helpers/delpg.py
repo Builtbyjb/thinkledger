@@ -1,5 +1,9 @@
 #!/usr/bin/env python3
 
+#########################################################################################
+# WARNING: This script deletes table(s) from a postgreSQL database table. Use carefully!!!
+#########################################################################################
+
 import os, sys
 # Add project root to path
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
