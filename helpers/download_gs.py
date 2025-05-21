@@ -1,11 +1,17 @@
 #!/usr/bin/env python3
 
+################################
+# Downloads a google script file
+################################
+
 import os, sys
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from dotenv import load_dotenv
 from google_auth_oauthlib.flow import InstalledAppFlow, Flow
 from googleapiclient.discovery import build
 from typing import Optional, Any
+from pathlib import Path
+from utils.constants import GS_FILENAME
 
 
 def get_service_flow() -> Optional[Flow]:
@@ -35,11 +41,8 @@ def get_service_flow() -> Optional[Flow]:
 
 
 def download_gs(creds:Any) -> None:
-  gs_filename = os.getenv("GOOGLE_SCRIPT_FILENAME")
-  output_dir = os.getenv("GOOGLE_SCRIPT_OUTPUT_DIR")
+  root_dir = str(Path(__file__).parent.parent)
   script_id = os.getenv("GOOGLE_SCRIPT_ID")
-  if gs_filename is None: raise ValueError("Google filename not found")
-  if output_dir is None: raise ValueError("Output dir not found")
   if script_id is None: raise ValueError("Google script id not found")
 
   try: script_service = build("script", "v1", credentials=creds)
@@ -54,13 +57,13 @@ def download_gs(creds:Any) -> None:
   google_script = None
 
   for f in files:
-    if f.get("name") == gs_filename and f.get("type") == "SERVER_JS":
+    if f.get("name") == GS_FILENAME and f.get("type") == "SERVER_JS":
       google_script = f.get("source")
       break
 
   if google_script is None: sys.exit("Failed to download google script")
 
-  file_path = os.path.join(f"{os.getcwd()}/{output_dir}", f"{gs_filename}.gs")
+  file_path = os.path.join(f"{root_dir}/{GS_FILENAME}", f"{GS_FILENAME}.gs")
 
   with open(file_path, "w", encoding="utf-8") as f:
     f.write(google_script)

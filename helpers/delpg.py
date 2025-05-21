@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 #########################################################################################
-# WARNING: This script deletes table(s) from a postgreSQL database table. Use carefully!!!
+# WARNING: This script deletes table(s) from a postgreSQL database. Use carefully!!!
 #########################################################################################
 
 import os, sys
