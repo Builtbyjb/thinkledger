@@ -49,7 +49,7 @@ signal.signal(signal.SIGTERM, signal_handler)
 # signal.signal(signal.SIGINT, signal_handler)
 
 
-app = FastAPI(lifespan=lifespan)
+app = FastAPI(lifespan=lifespan, docs_url=None, redoc_url=None, openapi_url=None)
 
 # Middleware
 app.add_middleware(RateLimiter)
