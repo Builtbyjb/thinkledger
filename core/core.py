@@ -36,6 +36,12 @@ def handle_high_task(db:Session, redis:Redis, user_id:str) -> None:
       task, access_token = value.split(":")
 
       if task == Tasks.trans_sync.value: GoogleSheet(user_id=user_id, init=True)
+      # TODO: if the GoogleSheet is instantiated successfully send an email to the user, with
+      #  with a spreadsheet url.
+      # TODO: if GoogleSheet instantiation fails send an email to the developer and notice the user
+      #  via email.
+
+      # TODO: Created a new task to handle this
         # for t in get_transactions(access_token):
         #   for g in generate_transaction(t, db):
         #     pass
@@ -122,7 +128,7 @@ def handle_task(db:Session, redis:Redis, user_id:str) -> None:
     handle_high_task(db, redis, user_id)
     handle_low_task(redis, user_id)
   else:
-    # TODO: Alert user to complete requirements
+    # TODO: Alert user to complete requirement
     log.info("User did not pass requirement")
   return None
 
