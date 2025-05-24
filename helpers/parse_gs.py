@@ -4,12 +4,25 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from utils.constants import GS_FILENAME
 from typing import List
 
+TEST_USER_ID:str = "1"
 
-# TODO: Generate a uuid and append assign it to the current user and embed it to the google script
-# TODO: Check lines for variable and replace variables with values before appending
+
 def replace_str(line:str) -> str:
-  p = rf"\b{re.escape('__DEBUG__')}\b"
-  return re.sub(p, "1", line)
+  server_url = os.getenv("SERVER_URL")
+
+  new_line = ""
+
+  debug = re.escape("SET_DEBUG__()")
+  if bool(re.search(debug, line)): new_line = re.sub(debug, "0", line)
+
+  tmp_user_id = re.escape("SET_TMP_USER_ID__()")
+  if bool(re.search(tmp_user_id, line)): new_line = re.sub(tmp_user_id, TEST_USER_ID, line)
+
+  backend_url = re.escape("SET_BACKEND_URL__()")
+  if bool(re.search(backend_url, line)):
+    new_line = re.sub(backend_url, f"{server_url}/google/spreadsheet/signal", line)
+
+  return new_line if len(new_line) > 0 else line
 
 
 #  The function could take in a user id,
@@ -23,6 +36,8 @@ def google_script() -> str:
     for l in f:
       new_l = replace_str(l)
       lines.append(new_l)
+
+  # TODO: Save the user id to redis
 
   return "\n".join(lines)
 

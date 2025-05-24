@@ -11,16 +11,16 @@
 * @OnlyCurrentDoc
 */
 
-const DEBUG = SET_DEBUG();
-const TMP_USER_ID = SET_TMP_USER_ID();
-const BACKEND_URL = SET_BACKEND_URL();
+const DEBUG = SET_DEBUG__();
+const TMP_USER_ID = SET_TMP_USER_ID__();
+const BACKEND_URL = SET_BACKEND_URL__();
 const SPREADSHEET_ID = SpreadsheetApp.getActiveSpreadsheet().getId();
 
 function onOpen() {
   if (DEBUG === 1) {
     try {
       SpreadsheetApp.getUi()
-        .createMenu('Script')
+        .createMenu('Thinkledger')
         .addItem('Show Alert', 'testScript')
         .addItem('Test', 'setupSheets')
         .addToUi();
@@ -30,7 +30,7 @@ function onOpen() {
   }
 
   // Setup sheets
-  // setupSheets();
+  setupSheets();
 }
 
 function testScript() {

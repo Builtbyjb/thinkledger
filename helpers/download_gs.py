@@ -7,15 +7,15 @@
 import os, sys
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from dotenv import load_dotenv
-from google_auth_oauthlib.flow import InstalledAppFlow, Flow
+from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
 from typing import Optional, Any
 from pathlib import Path
 from utils.constants import GS_FILENAME
 
 
-def get_service_flow() -> Optional[Flow]:
-  scopes = ['https://www.googleapis.com/auth/script.projects.readonly']
+def get_service_flow() -> Optional[InstalledAppFlow]:
+  scopes = [ 'https://www.googleapis.com/auth/script.projects.readonly' ]
   client_id = os.getenv("GOOGLE_SERVICE_DEV_CLIENT_ID")
   client_secret = os.getenv("GOOGLE_SERVICE_DEV_CLIENT_SECRET")
   if client_id is None: raise ValueError("client id not found")
@@ -46,15 +46,13 @@ def download_gs(creds:Any) -> None:
   if script_id is None: raise ValueError("Google script id not found")
 
   try: script_service = build("script", "v1", credentials=creds)
-  except Exception as e:
-    sys.exit(f"Could not create script service: {e}")
+  except Exception as e: sys.exit(f"Could not create script service: {e}")
 
   try: response = script_service.projects().getContent(scriptId=script_id).execute()
-  except Exception:
-    sys.exit("Could not get script project files")
+  except Exception as e: sys.exit(f"Could not get script project files: {e}")
 
   files = response.get("files", [])
-  google_script = None
+  google_script: Optional[str] = None
 
   for f in files:
     if f.get("name") == GS_FILENAME and f.get("type") == "SERVER_JS":
@@ -62,6 +60,7 @@ def download_gs(creds:Any) -> None:
       break
 
   if google_script is None: sys.exit("Failed to download google script")
+  assert isinstance(google_script, str)
 
   file_path = os.path.join(f"{root_dir}/{GS_FILENAME}", f"{GS_FILENAME}.gs")
 
