@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 
-################################
-# Downloads a google script file
-################################
+##################################
+# Downloads a google script file #
+##################################
 
 import os, sys
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))

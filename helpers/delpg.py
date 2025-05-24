@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 #########################################################################################
-# WARNING: This script deletes table(s) from a postgreSQL database. Use carefully!!!
+# WARNING: This script deletes table(s) from a postgreSQL database. Use carefully!!!    #
 #########################################################################################
 
 import os, sys
@@ -13,10 +13,7 @@ from sqlmodel import create_engine
 
 def delete() -> None:
   """
-    Deletes a postgres table. The script takes in a table
-    as command line arguments
-
-    chmod +x delscript.py to create an executable script
+  Deletes a postgres table. The script takes in a table name as a command line argument
   """
   postgres_url = os.getenv("POSTGRES_URL")
   if postgres_url is not None: engine = create_engine(postgres_url)

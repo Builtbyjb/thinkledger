@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 
-#########################################################################################
-# WARNING: This script clears all the keys and values in a redis database. Use carefully!!!
-##########################################################################################
+#############################################################################################
+# WARNING: This script clears all the keys and values in a redis database. Use carefully!!! #
+#############################################################################################
 
 import os, sys
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))

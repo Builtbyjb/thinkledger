@@ -35,11 +35,15 @@ def handle_high_task(db:Session, redis:Redis, user_id:str) -> None:
       # NOTE: Rethink how value is handled
       task, access_token = value.split(":")
 
-      if task == Tasks.trans_sync.value: GoogleSheet(user_id=user_id, init=True)
-      # TODO: if the GoogleSheet is instantiated successfully send an email to the user, with
-      #  with a spreadsheet url.
-      # TODO: if GoogleSheet instantiation fails send an email to the developer and notice the user
-      #  via email.
+      if task == Tasks.trans_sync.value:
+        try:
+          google_sheet = GoogleSheet(user_id=user_id, init=True)
+          print(google_sheet.spreadsheet_url)
+          # TODO: Email spreadsheet_url to the user
+        except Exception as e:
+          # TODO: if GoogleSheet instantiation fails send an email to the developer
+          # and notify the user via email.
+          log.error(e)
 
       # TODO: Created a new task to handle this
         # for t in get_transactions(access_token):
@@ -47,6 +51,8 @@ def handle_high_task(db:Session, redis:Redis, user_id:str) -> None:
         #     pass
             # is_added = transaction_sheet.append_line([g])
             # if not is_added: log.error("Error creating transaction")
+
+  return None
 
 
 def handle_low_task(redis:Redis, user_id:str) -> None:
@@ -133,8 +139,8 @@ def handle_task(db:Session, redis:Redis, user_id:str) -> None:
   return None
 
 
-MAX_WORKERS = 5
-INTERVAL = 60
+MAX_WORKERS:int = 5
+INTERVAL:int = 60 # Secs
 
 
 def core(exit_process: Event) -> None:

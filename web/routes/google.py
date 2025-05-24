@@ -17,6 +17,7 @@ from utils.auth_utils import service_auth_config
 from utils.constants import TOKEN_URL
 from utils.logger import log
 from fastapi import BackgroundTasks
+from pydantic import BaseModel
 
 
 router = APIRouter(prefix="/google", tags=["Google"])
@@ -252,9 +253,17 @@ async def google_service_token(request: Request) -> JSONResponse:
   return response
 
 
+class SpreadsheetSignal(BaseModel):
+  tmp_user_id:str
+  spreadsheet_id:str
+  event:str
+
+
 @router.post("/spreadsheet/signal")
-async def google_spreadsheet_signal(request: Request) -> Response:
+async def google_spreadsheet_signal(request:Request, redis:Redis = Depends(get_redis)) -> Response:
   """
   Handles google spreadsheet signals
   """
+  # Receives a spreadsheet_id, tmp_user_id, and an event.
+
   return Response(status_code=200)

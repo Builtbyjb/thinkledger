@@ -16,7 +16,7 @@ FONT_FAMILY = "Roboto"
 
 
 class GoogleSheet:
-  def __init__(self, user_id:str, name:Optional[str]=None, init:bool=False):
+  def __init__(self, user_id:str, name:Optional[str]=None, init:bool=False) -> None:
     self._user_id = user_id
     self._name = name
 
@@ -34,11 +34,11 @@ class GoogleSheet:
       file_name = f"ledger_{datetime.now().year}"
       spreadsheet_id = self._create_spreadsheet(file_name, general_ledger_id)
       if spreadsheet_id is None: raise ValueError("Error creating spreadsheet file")
-      self.spreadsheet_id = spreadsheet_id
 
-      script_is_created = self._create_google_script(general_ledger_id)
+      script_is_created = self._create_google_script(general_ledger_id, spreadsheet_id)
       if script_is_created is None: raise ValueError("Error creating google script")
-      # TODO: Create a spreadsheet url attribute
+
+      self.spreadsheet_url = f"https://docs.google.com/spreadsheets/d/{spreadsheet_id}/edit"
 
   def _create_service(self) -> Tuple[Any, Any, Any]:
     """
@@ -131,11 +131,13 @@ class GoogleSheet:
       log.error(f'Error checking if spreadsheet file exists: {e}')
       return None
 
-      # Create new spreadsheet
-    # TODO: Change default spreadsheet name, set default font size
+    # Create new spreadsheet
     body = {
       "properties": {
         "title": file_name,
+        "defaultFormat": {
+          "textFormat": { "fontFamily": FONT_FAMILY, "fontSize": 11, }
+        },
         "spreadsheetTheme": {
           "primaryFontFamily": FONT_FAMILY,
           "themeColors": [
@@ -202,7 +204,7 @@ class GoogleSheet:
       log.error(f'Error moving spreadsheet to the right folder: {e}')
       return None
 
-  def _create_google_script(self, folder_id:str) -> Optional[bool]:
+  def _create_google_script(self, folder_id:str, spreadsheet_id:str) -> Optional[bool]:
     file_name = "google_script"
     try: # Check if app script exists
       query = f"""
@@ -219,7 +221,7 @@ class GoogleSheet:
     try: # Create the script project
       script_project = self.script_service.projects().create(body={
         "title": file_name,
-        "parentId": self.spreadsheet_id  # Binds to the spreadsheet
+        "parentId": spreadsheet_id  # Binds to the spreadsheet
       }).execute()
       log.info("App script file created")
     except Exception as e:
@@ -235,12 +237,13 @@ class GoogleSheet:
       "oauthScopes": ["https://www.googleapis.com/auth/spreadsheets.currentonly"]
     }
     """
+    code_gs = google_script()
     try: # Update app script file
       self.script_service.projects().updateContent(
         scriptId=script_project.get("scriptId"),
         body={
           'files': [
-            {'name': file_name, 'type': 'SERVER_JS', 'source': google_script()},
+            {'name': file_name, 'type': 'SERVER_JS', 'source': code_gs},
             { 'name': 'appsscript', 'type': 'JSON', 'source': manifest }
           ]
         }
@@ -251,13 +254,13 @@ class GoogleSheet:
       return None
     return True
 
-  def append_line(self, values:List[List[str]]) -> bool:
+  def append_line(self, spreadsheet_id:str, values:List[List[str]]) -> bool:
     """
     Append values to a sheet line by line
     """
     try:
       self.sheet_service.spreadsheets().values().append(
-        spreadsheetId=self.spreadsheet_id,
+        spreadsheetId=spreadsheet_id,
         range=self._name,
         valueInputOption='USER_ENTERED',
         insertDataOption='INSERT_ROWS',
@@ -268,14 +271,14 @@ class GoogleSheet:
       log.error(f"Error appending line to {self._name} sheet: {e}")
       return False
 
-  def append_char(self, values:List[List[str]]) -> bool:
+  def append_char(self, spreadsheet_id:str, values:List[List[str]]) -> bool:
     """
     Append values to a sheet character by character
     """
     try:
       # Get last row number
       result = self.sheet_service.spreadsheets().values().get(
-        spreadsheetId=self.spreadsheet_id,
+        spreadsheetId=spreadsheet_id,
         range=f"{self._name}!A:A"
       ).execute()
       next_row = len(result.get('values', [])) + 1
@@ -319,8 +322,10 @@ class GoogleSheet:
                   }
                 }]
               }],
-              'fields': """userEnteredValue,userEnteredFormat(backgroundColor,textFormat,borders,
-                horizontalAlignment,verticalAlignment)""",
+              'fields': """
+                userEnteredValue,userEnteredFormat(backgroundColor,textFormat,borders,
+                horizontalAlignment,verticalAlignment)
+              """,
               'range': {
                 # 'sheetId': self.trans_sheet_id,
                 'startRowIndex': next_row - 1,
@@ -333,7 +338,7 @@ class GoogleSheet:
 
           # Execute update for each character
           self.sheet_service.spreadsheets().batchUpdate(
-            spreadsheetId=self.spreadsheet_id,
+            spreadsheetId=spreadsheet_id,
             body={'requests': [request]}
           ).execute()
 
@@ -349,13 +354,13 @@ class GoogleSheet:
 
 
 class TransactionSheet(GoogleSheet):
-  def __init__(self, user_id:str):
+  def __init__(self, user_id:str) -> None:
     name:str = "Transactions"
     super().__init__(user_id, name)
 
 
 class JournalEntrySheet(GoogleSheet):
-  def __init__(self, user_id:str):
+  def __init__(self, user_id:str) -> None:
     name:str = "Journal Entries"
     super().__init__(user_id, name)
 
