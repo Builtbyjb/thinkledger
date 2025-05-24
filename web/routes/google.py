@@ -11,7 +11,7 @@ from sqlmodel import Session
 from database.postgres.postgres_db import get_db
 from database.redis.redis import get_redis
 from database.postgres.postgres_schema import User
-from typing import Optional, Union, Any
+from typing import Optional, Union, Any, Dict
 from enum import Enum
 from utils.auth_utils import service_auth_config
 from utils.constants import TOKEN_URL
@@ -45,12 +45,13 @@ def add_user_pg(db: Session, user_info: Any) -> None:
 
 
 def add_user_redis(
-  redis: Redis,
-  user_id: str,
-  session_id: str,
-  username: str,
-  access_token: str,
-  refresh_token: Optional[str] = None
+  redis:Redis,
+  user_id:str,
+  session_id:str,
+  username:str,
+  email:str,
+  access_token:str,
+  refresh_token:Optional[str] = None
 ) -> None:
   """
     Save user info to redis database
@@ -60,6 +61,7 @@ def add_user_redis(
     redis.set(session_id, user_id, ex=3600 * 24 * 7) # set expire data to one week
     redis.set(f"user_id:{user_id}", user_id) # For use later
     redis.set(f"username:{user_id}", username)
+    redis.set(f"email:{user_id}", email)
     redis.set(f"access_token:{user_id}", access_token)
     if refresh_token is not None: redis.set(f"refresh_token:{user_id}", refresh_token)
     log.info("User added to redis")
@@ -93,7 +95,10 @@ async def google_sign_in_callback(
   # Get authorization tokens
   try:
     code = request.query_params.get("code")
-    payload = {
+    if code is None:
+      return JSONResponse(content={"error": "Authorization code not in request"}, status_code=400)
+
+    payload: Dict[str, str] = {
       "code": code,
       "client_id": client_id,
       "client_secret": client_secret,
@@ -108,7 +113,7 @@ async def google_sign_in_callback(
 
   # Get user information
   try:
-    user_info = id_token.verify_oauth2_token(
+    user_info: Any = id_token.verify_oauth2_token(
       token["id_token"],
       google_requests.Request(),
       client_id
@@ -120,7 +125,11 @@ async def google_sign_in_callback(
   # print(user_info)
 
   user_id = user_info.get("sub")
+  assert isinstance(user_id, str)
   username = user_info.get("name")
+  assert isinstance(username, str)
+  email = user_info.get("email")
+  assert isinstance(email, str)
   access_token = token["access_token"]
   session_id: str = generate_crypto_string()
   refresh_token: Optional[str] = None
@@ -134,7 +143,7 @@ async def google_sign_in_callback(
     bg.add_task(add_user_pg, db, user_info)
 
   # Add user to redis
-  add_user_redis(redis, user_id, session_id, username, access_token, refresh_token)
+  add_user_redis(redis, user_id, session_id, username, email, access_token, refresh_token)
 
   # Set user authentication cookie
   response = RedirectResponse(url="/home", status_code=302)
@@ -172,7 +181,9 @@ async def google_service_callback(
   # Get authorization tokens
   try:
     code = request.query_params.get("code")
-    payload = {
+    if code is None:
+      return JSONResponse(content={"error": "Authorization code not in request"}, status_code=400)
+    payload:Dict[str, str] = {
       "code": code,
       "client_id": client_id,
       "client_secret": client_secret,
@@ -197,7 +208,7 @@ async def google_service_callback(
   if not isinstance(user_id, str): raise ValueError("User id must be a string")
 
   # print(token)
-  access_token: str = token.get("access_token")
+  access_token = token.get("access_token")
   if access_token is None: raise ValueError("Error getting access token")
   refresh_token: Optional[str] = token.get("refresh_token")
 
@@ -238,6 +249,7 @@ async def google_service_token(request: Request) -> JSONResponse:
   # Get oauth service config
   config = service_auth_config(scopes)
   url, state = config.authorization_url(access_type="offline", prompt="consent")
+  assert isinstance(state, str)
 
   response = JSONResponse(content={"url": url}, status_code=200)
   expires = datetime.now(timezone.utc) + timedelta(minutes=5)

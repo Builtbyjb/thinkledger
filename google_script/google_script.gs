@@ -129,7 +129,7 @@ function setupTransactionSheet(activeSpreadsheet) {
             rule = SpreadsheetApp.newDataValidation()
               .requireNumberGreaterThan(-1)
               .setAllowInvalid(false)
-              .setHelpText("Please enter a numerical ammount.")
+              .setHelpText("Please enter a numerical amount.")
               .build();
             columnRange.setDataValidation(rule);
             columnRange.setNumberFormat("$#,##0.00;$(#,##0.00)");
@@ -236,7 +236,7 @@ function setupJournalEntrySheet(activeSpreadSheet) {
         const columnRange = journalEntrySheet.getRange(validationRowStart, columnIndex, numRowsForValidation, 1);
 
         // TODO: wrap description at a certain length 
-        // TDOO: merge debit amount row and credit amount row for the description
+        // TODO: merge debit amount row and credit amount row for the description
 
         let rule;
         switch (h) {
@@ -254,7 +254,7 @@ function setupJournalEntrySheet(activeSpreadSheet) {
             rule = SpreadsheetApp.newDataValidation()
               .requireNumberGreaterThan(-1)
               .setAllowInvalid(false)
-              .setHelpText("Please enter a numerical ammount.")
+              .setHelpText("Please enter a numerical amount.")
               .build();
             columnRange.setDataValidation(rule);
             columnRange.setNumberFormat("$#,##0.00;$(#,##0.00)");
@@ -264,7 +264,7 @@ function setupJournalEntrySheet(activeSpreadSheet) {
             rule = SpreadsheetApp.newDataValidation()
               .requireNumberGreaterThan(-1)
               .setAllowInvalid(false)
-              .setHelpText("Please enter a numerical ammount.")
+              .setHelpText("Please enter a numerical amount.")
               .build();
             columnRange.setDataValidation(rule);
             columnRange.setNumberFormat("$#,##0.00;$(#,##0.00)");
@@ -301,7 +301,7 @@ function onEdit(e) {
   // Add padding
   const currentWidth = sheet.getColumnWidth(editedColumn);
   sheet.setColumnWidth(editedColumn, currentWidth + 20);
-  // If the active sheet name is transactions and editedcolumn == 1; pass
+  // If the active sheet name is transactions and edited column == 1; pass
 
   // get t-account values
 }
@@ -336,7 +336,7 @@ function notify(event) {
   }
 }
 
-function backgroungTask() {
+function backgroundTask() {
   // Trigger every hour
   ScriptApp.newTrigger('myBackgroundTask')
     .timeBased()

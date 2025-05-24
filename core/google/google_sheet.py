@@ -1,6 +1,6 @@
 from googleapiclient.discovery import build
 from google.oauth2.credentials import Credentials
-from database.redis.redis import gen_redis
+from redis import Redis
 from typing import Optional, Tuple, Any, List
 import os, time
 from utils.constants import TOKEN_URL
@@ -16,11 +16,14 @@ FONT_FAMILY = "Roboto"
 
 
 class GoogleSheet:
-  def __init__(self, user_id:str, name:Optional[str]=None, init:bool=False) -> None:
+  def __init__(self, redis:Redis,  user_id:str, name:Optional[str]=None, init:bool=False) -> None:
     self._user_id = user_id
     self._name = name
+    email = redis.get(f"email:{user_id}")
+    if email is None: raise ValueError("Enable to get user email address from redis")
+    self.email = str(email)
 
-    self.sheet_service, self.drive_service, self.script_service = self._create_service()
+    self.sheet_service, self.drive_service, self.script_service = self._create_service(redis)
     if self.sheet_service is None or self.drive_service is None or self.script_service is None:
       raise ValueError("Error creating a service")
 
@@ -40,13 +43,10 @@ class GoogleSheet:
 
       self.spreadsheet_url = f"https://docs.google.com/spreadsheets/d/{spreadsheet_id}/edit"
 
-  def _create_service(self) -> Tuple[Any, Any, Any]:
+  def _create_service(self, redis:Redis) -> Tuple[Any, Any, Any]:
     """
     Create a google sheet service and a google drive service; returns None if failed
     """
-    redis = gen_redis()
-    if redis is None: return None, None, None
-
     client_id = os.getenv("GOOGLE_SERVICE_CLIENT_ID")
     client_secret = os.getenv("GOOGLE_SERVICE_CLIENT_SECRET")
     if client_id is None: raise ValueError("Client ID is not found")
@@ -228,6 +228,17 @@ class GoogleSheet:
       log.error(f"Error creating app script project: {e}")
       return None
 
+    try: # Grant user permission to view the script???
+      permission = { 'type': 'user', 'role': 'owner', 'emailAddress': self.email }
+      self.drive_service.permissions().create(
+        fileId=script_project.get("scriptId"),
+        body=permission,
+        fields='id'
+      ).execute()
+    except Exception as e:
+        log.error(f"Error granting user permission: {e}")
+        return None
+
     manifest = """
     {
       "timeZone": "America/New_York",
@@ -354,15 +365,15 @@ class GoogleSheet:
 
 
 class TransactionSheet(GoogleSheet):
-  def __init__(self, user_id:str) -> None:
+  def __init__(self, redis:Redis, user_id:str) -> None:
     name:str = "Transactions"
-    super().__init__(user_id, name)
+    super().__init__(redis, user_id, name)
 
 
 class JournalEntrySheet(GoogleSheet):
-  def __init__(self, user_id:str) -> None:
+  def __init__(self, redis:Redis, user_id:str) -> None:
     name:str = "Journal Entries"
-    super().__init__(user_id, name)
+    super().__init__(redis, user_id, name)
 
   def generate(self, t:List[str]) -> Optional[List[List[str]]]:
     # Generate prompt

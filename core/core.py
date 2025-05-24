@@ -33,11 +33,11 @@ def handle_high_task(db:Session, redis:Redis, user_id:str) -> None:
     if value is not None:
       if not isinstance(value, str): raise ValueError("Value must be a string")
       # NOTE: Rethink how value is handled
-      task, access_token = value.split(":")
+      task, _ = value.split(":")
 
       if task == Tasks.trans_sync.value:
         try:
-          google_sheet = GoogleSheet(user_id=user_id, init=True)
+          google_sheet = GoogleSheet(redis=redis, user_id=user_id, init=True)
           print(google_sheet.spreadsheet_url)
           # TODO: Email spreadsheet_url to the user
         except Exception as e:
@@ -68,6 +68,7 @@ def handle_low_task(redis:Redis, user_id:str) -> None:
     except Exception as e:
       log.error(e)
       return
+    assert isinstance(task, str) # lazy fix
     print(task)
   return
 

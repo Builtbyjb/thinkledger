@@ -171,6 +171,7 @@ async def plaid_access_token(
   try:
     exchange_response = client.item_public_token_exchange(exchange_request)
     access_token = exchange_response['access_token']
+    assert isinstance(access_token, str)
   except Exception as e:
     log.error(f"Error exchanging public token: {e}")
     return JSONResponse(content={"error": "Internal Server Error"}, status_code=500)
