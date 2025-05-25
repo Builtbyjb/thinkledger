@@ -44,9 +44,9 @@ def signal_handler(sig:Any, frame:Any) -> None:
       core_process.terminate()
   sys.exit(0)
 
-# Register signal handlers, Handle KeyboardInterrupt
+# Register signal handlers, Handle Ctrl+C and SIGTERM
 signal.signal(signal.SIGTERM, signal_handler)
-# signal.signal(signal.SIGINT, signal_handler)
+signal.signal(signal.SIGINT, signal_handler)
 
 
 app = FastAPI(lifespan=lifespan, docs_url=None, redoc_url=None, openapi_url=None)

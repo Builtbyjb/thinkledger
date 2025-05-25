@@ -8,7 +8,7 @@ TEST_USER_ID:str = "1"
 
 
 def replace_str(line:str) -> str:
-  server_url = os.getenv("SERVER_URL")
+  url = f"{os.getenv('SERVER_URL')}/google/spreadsheet/signal"
 
   new_line = ""
 
@@ -19,8 +19,7 @@ def replace_str(line:str) -> str:
   if bool(re.search(tmp_user_id, line)): new_line = re.sub(tmp_user_id, TEST_USER_ID, line)
 
   backend_url = re.escape("SET_BACKEND_URL__()")
-  if bool(re.search(backend_url, line)):
-    new_line = re.sub(backend_url, f"{server_url}/google/spreadsheet/signal", line)
+  if bool(re.search(backend_url, line)): new_line = re.sub(backend_url,'\"'+ url + '\"', line)
 
   return new_line if len(new_line) > 0 else line
 

@@ -46,6 +46,7 @@ def handle_high_task(db:Session, redis:Redis, user_id:str) -> None:
           log.error(e)
 
       # TODO: Created a new task to handle this
+
         # for t in get_transactions(access_token):
         #   for g in generate_transaction(t, db):
         #     pass
