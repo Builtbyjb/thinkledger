@@ -6,7 +6,6 @@ from utils.types import JournalEntry
 
 
 def gemini_response(prompt: str) -> Any:
-  # TODO: Add system instructions
   gemini_api_key = os.getenv("GEMINI_API_KEY")
   client = genai.Client(api_key=gemini_api_key)
   return client.models.generate_content(
