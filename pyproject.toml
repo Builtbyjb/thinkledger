@@ -1,26 +1,28 @@
 [project]
 name = "thinkledger"
 version = "0.1.0"
-description = "Add your description here"
+description = "A full stack business assistant"
 readme = "README.md"
-requires-python = ">=3.9"
+requires-python = ">=3.12"
 dependencies = [
-    "celery>=5.5.2",
-    "fastapi>=0.115.12",
-    "google-api-python-client>=2.167.0",
-    "google-auth-oauthlib>=1.2.1",
-    "jinja2>=3.1.6",
-    "mypy>=1.15.0",
-    "pip>=25.0.1",
-    "plaid-python>=29.1.0",
-    "psycopg2-binary>=2.9.10",
-    "python-dotenv>=1.1.0",
-    "python-multipart>=0.0.20",
-    "redis>=5.2.1",
-    "requests>=2.32.3",
-    "ruff>=0.11.7",
-    "sendgrid>=6.11.0",
-    "sqlmodel>=0.0.24",
-    "types-requests>=2.32.0.20250328",
-    "uvicorn>=0.34.1",
+  "celery>=5.5.2",
+  "fastapi>=0.115.12",
+  "google-api-python-client>=2.167.0",
+  "google-auth-oauthlib>=1.2.1",
+  "google-genai>=1.14.0",
+  "jinja2>=3.1.6",
+  "mypy>=1.15.0",
+  "pip>=25.0.1",
+  "plaid-python>=29.1.0",
+  "pre-commit>=4.2.0",
+  "psycopg2-binary>=2.9.10",
+  "python-dotenv>=1.1.0",
+  "python-multipart>=0.0.20",
+  "redis>=5.2.1",
+  "requests>=2.32.3",
+  "ruff>=0.11.7",
+  "sendgrid>=6.11.0",
+  "sqlmodel>=0.0.24",
+  "types-requests>=2.32.0.20250328",
+  "uvicorn>=0.34.1",
 ]
