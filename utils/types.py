@@ -3,19 +3,19 @@ from datetime import date as dt, datetime as dtt
 from typing import List, Optional
 
 
-class Transaction(BaseModel):
-  id: str
-  date: dt
-  amount: float
-  institution: str
-  institution_account_name: str
-  institution_account_type: str
-  category: str
-  payment_channel: str
-  merchant_name: str
-  currency_code: str
-  pending: bool
-  authorized_date: Optional[dt]
+# class Transaction(BaseModel):
+#   id: str
+#   date: dt
+#   amount: float
+#   institution: str
+#   institution_account_name: str
+#   institution_account_type: str
+#   category: str
+#   payment_channel: str
+#   merchant_name: str
+#   currency_code: str
+#   pending: bool
+#   authorized_date: Optional[dt]
 
 
 class Counterparty(BaseModel):

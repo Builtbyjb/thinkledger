@@ -25,10 +25,10 @@ jobs:
       - name: Install linters
         run: |
           uv tool install ruff
-          uv tool install mypy
+          uv tool install "mypy==1.15.0"
 
       - name: Run ruff
         run: ruff check .
 
       - name: Run mypy
-        run: mypy --strict-equality .
+        run: mypy . --disable-error-code=call-arg

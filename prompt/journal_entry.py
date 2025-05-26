@@ -8,53 +8,53 @@ def generate_prompt(t:Dict[str, str]) -> str:
   these (case-insensitive, and common variations like "A/P" for "accounts_payable" should be
   recognized).
 
-  ```json
+  ```json ("ACCOUNT_NAME":"ACCOUNT_ID")
   {{
     "account_ids": {{
-      "cash": "J100",
-      "accounts_receivable": "J150",
-      "inventory": "J200",
-      "prepaid_expenses": "J250",
-      "equipment": "J300",
-      "accumulated_depreciation": "J305",
-      "accounts_payable": "L100",
-      "unearned_revenue": "L150",
-      "notes_payable": "L200",
-      "common_stock": "Q100",
-      "retained_earnings": "Q150",
-      "sales_revenue": "R100",
-      "service_revenue": "R110",
-      "cost_of_goods_sold": "E100",
-      "rent_expense": "E200",
-      "salaries_expense": "E210",
-      "utilities_expense": "E220",
-      "office_supplies_expense": "E230"
+      "Cash": "J100",
+      "Accounts Receivable": "J149",
+      "Inventory": "J200",
+      "Prepaid Expenses": "J250",
+      "Equipment": "J300",
+      "Accumulated Depreciation": "J305",
+      "Accounts Payable": "L100",
+      "Unearned Revenue": "L150",
+      "Notes Payable": "L200",
+      "Common Stock": "Q100",
+      "Retained Earnings": "Q150",
+      "Sales Revenue": "R100",
+      "Service Revenue": "R110",
+      "Cost of Goods Sold": "E100",
+      "Rent Expense": "E200",
+      "Salaries Expense": "E210",
+      "Utilities Expense": "E220",
+      "Office Supplies Expense": "E230"
     }}
   }}
   ```
-
   2. Output Format:
   Create a journal entry from this {t}, the journal entry should specify the accounts
   debited or credited. Your response MUST be a single JSON object strictly following this format:
+  ```json
   {{
     "date": "YYYY-MM-DD",
     "description": "Transaction description for the journal entry.",
     "debit": [
       {{
-        "name": "account_name",
+        "name": "ACCOUNT_NAME",
         "account_id": "ACCOUNT_ID",
         "amount": "numerical_amount_as_string"
       }}
     ],
     "credit": [
       {{
-        "name": "account_name",
+        "name": "ACCOUNT_NAME",
         "account_id": "ACCOUNT_ID",
         "amount": "numerical_amount_as_string"
       }}
     ]
   }}
-
+  ```
   3. Field Descriptions and Rules:
   * Date: is the transaction date.
   * Description: A clear and concise description of the journal entry.  This should accurately
@@ -68,25 +68,26 @@ def generate_prompt(t:Dict[str, str]) -> str:
   * Amount: The amount that is to be credited or debited
 
   4. Example Output:
+  ```json
   {{
     "date": "2024-08-17" #(yyyy-mm-dd),
     "description": "bought inventory worth $5000 from XYZ company with cash",
     "debit": [
       {{
-        "name": "inventory",
+        "name": "Inventory",
         "account_id": "J200",
         "amount": "5000"
       }},
     ]
     "credit": [
       {{
-        "name": "cash",
+        "name": "Cash",
         "account_id": "J100",
         "amount": "5000"
       }},
     ]
   }}
-
+  ```
   5. Key Accounting Principles to Adhere To:
   * Double-Entry System: For every transaction, total debits MUST equal total credits.
   * Account Identification: Correctly identify the accounts affected by the transaction based on

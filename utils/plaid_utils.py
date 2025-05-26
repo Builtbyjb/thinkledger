@@ -1,4 +1,4 @@
-import plaid
+import plaid.plaid as plaid
 from plaid.api import plaid_api
 import os
 
