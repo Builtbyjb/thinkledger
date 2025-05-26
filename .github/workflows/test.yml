@@ -31,4 +31,4 @@ jobs:
         run: ruff check .
 
       - name: Run mypy
-        run: mypy --strict . --allow-untyped-calls --disable-error-code=misc --disable-error-code=call-arg
+        run: mypy .

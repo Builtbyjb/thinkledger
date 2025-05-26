@@ -64,7 +64,7 @@ class GoogleSheet:
       log.error("Service access token not found in redis")
       return None, None, None
 
-    credentials = Credentials(
+    credentials:Credentials = Credentials(
       token=str(access_token),
       token_uri=TOKEN_URL,
       refresh_token=str(refresh_token),

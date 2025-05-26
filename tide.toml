@@ -1,18 +1,14 @@
 root_dir = "."
 
 [command]
-dev = [
-  "uvicorn main:app --host 0.0.0.0 --port 3000",
-  "ngrok http --url=admittedly-adequate-scorpion.ngrok-free.app 3000",
-]
+dev = ["python main.py"]
 prod = []
 test = []
 
 [exclude]
 dir = [
   "./.git",
-  "./node_modules",
-  "./*__pycache__",
+  "./__pycache__",
   "./.ruff_cache",
   "./.mypy_cache",
   "./.vscode",
