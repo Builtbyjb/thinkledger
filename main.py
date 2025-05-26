@@ -8,7 +8,7 @@ from utils.logger import log
 from redis import Redis
 import os, sys
 from concurrent.futures import ThreadPoolExecutor
-from google.google_sheet import GoogleSheet
+from google_core.google_sheet import GoogleSheet
 
 
 def handle_high_task(db:Session, redis:Redis, user_id:str) -> None:
