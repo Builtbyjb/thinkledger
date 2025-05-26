@@ -1,7 +1,7 @@
 root_dir = "."
 
 [command]
-dev = ["python main.py"]
+dev = ["uv run python3 main.py"]
 prod = []
 test = []
 

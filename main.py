@@ -6,7 +6,7 @@ from utils.auth_utils import refresh_access_token, verify_access_token
 from utils.core_utils import TaskPriority, Tasks
 from utils.logger import log
 from redis import Redis
-import os, sys
+import os, sys, time
 from concurrent.futures import ThreadPoolExecutor
 from google_core.google_sheet import GoogleSheet
 
@@ -141,35 +141,42 @@ def handle_task(db:Session, redis:Redis, user_id:str) -> None:
 
 
 MAX_WORKERS:int = 5
-INTERVAL:int = 60 # Secs
+INTERVAL:float = 0.1 # 100ms
 
 
 def main() -> None:
   """
   Gets users from the database and creates a new thread for each user to handle their tasks.
   """
-  log.info("Starting core process...")
+  try:
+    db = gen_db()
+    if db is None: raise Exception("Failed to get database connection")
+  except Exception as e:
+    log.error(e)
+    sys.exit(1)
+
+  try:
+    redis = gen_redis()
+    if redis is None: raise Exception("Failed to get Redis connection")
+  except Exception as e:
+    log.error(e)
+    sys.exit(1)
+
+  log.info("Starting...")
+
   while 1:
     try:
-      # Get a fresh DB connection each time through the loop
-      db = gen_db()
-      if db is None: raise Exception("Failed to get database connection")
-
-      # Get a fresh Redis connection each time through the loop
-      redis = gen_redis()
-      if redis is None: raise Exception("Failed to get Redis connection")
-
       users = db.exec(select(User)).all()
       if len(users) == 0: log.info("No users found in database")
       else:
         with ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
-          futures = {executor.submit(handle_task, db, redis, u.id): u for u in users}
-          for f in futures: f.result()
+          _ = {executor.submit(handle_task, db, redis, u.id): u for u in users}
+
+      time.sleep(INTERVAL)
     except KeyboardInterrupt:
-      print("Shutting down")
+      print("\nShutting down")
       sys.exit(0)
     except Exception as e: log.error(e)
-    finally: break
 
 
 if __name__ == "__main__":
