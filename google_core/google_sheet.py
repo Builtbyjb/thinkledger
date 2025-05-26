@@ -229,7 +229,7 @@ class GoogleSheet:
       return None
 
     try: # Grant user permission to view the script???
-      permission = { 'type': 'user', 'role': 'writer', 'emailAddress': self.email }
+      permission = { 'type': 'user', 'role': 'reader', 'emailAddress': self.email }
       self.drive_service.permissions().create(
         fileId=spreadsheet_id,
         body=permission,
@@ -249,7 +249,6 @@ class GoogleSheet:
     }
     """
     code_gs = google_script()
-    print(code_gs)
     try: # Update app script file
       self.script_service.projects().updateContent(
         scriptId=script_project.get("scriptId"),
