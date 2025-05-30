@@ -3,8 +3,8 @@ from pathlib import Path
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from utils.constants import GS_FILENAME
 from typing import List
-
-TEST_USER_ID:str = "1"
+from utils.context import DEBUG
+import uuid
 
 
 def replace_str(line:str) -> str:
@@ -13,13 +13,15 @@ def replace_str(line:str) -> str:
   new_line = ""
 
   debug = re.escape("SET_DEBUG__()")
-  if bool(re.search(debug, line)): new_line = re.sub(debug, "0", line)
+  level = "1" if DEBUG >= 1 else "0"
+  if bool(re.search(debug, line)): new_line = re.sub(debug, level, line)
 
   tmp_user_id = re.escape("SET_TMP_USER_ID__()")
-  if bool(re.search(tmp_user_id, line)): new_line = re.sub(tmp_user_id, TEST_USER_ID, line)
+  u_id = "1" if DEBUG >= 1 else str(uuid.uuid4())
+  if bool(re.search(tmp_user_id, line)): new_line = re.sub(tmp_user_id, '\"' + u_id +'\"', line)
 
   backend_url = re.escape("SET_BACKEND_URL__()")
-  if bool(re.search(backend_url, line)): new_line = re.sub(backend_url,'\"'+ url + '\"', line)
+  if bool(re.search(backend_url, line)): new_line = re.sub(backend_url,'\"' + url + '\"', line)
 
   return new_line if len(new_line) > 0 else line
 

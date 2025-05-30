@@ -15,6 +15,13 @@ const DEBUG = SET_DEBUG__();
 const TMP_USER_ID = SET_TMP_USER_ID__();
 const BACKEND_URL = SET_BACKEND_URL__();
 const SPREADSHEET_ID = SpreadsheetApp.getActiveSpreadsheet().getId();
+const SCRIPT_PROPERTIES = PropertiesService.getDocumentProperties();
+
+// const userProperties = PropertiesService.getUserProperties();
+// const notificationSent = userProperties.getProperty('permissionNotificationSent');
+// userProperties.setProperty('permissionNotificationSent', 'true');
+
+// PropertiesService.getUserProperties().deleteProperty('permissionNotificationSent');
 
 function onOpen() {
   if (DEBUG === 1) {
@@ -22,7 +29,7 @@ function onOpen() {
       SpreadsheetApp.getUi()
         .createMenu('Thinkledger')
         .addItem('Show Alert', 'testScript')
-        .addItem('Test', 'setupSheets')
+        .addItem('Run Setup', 'setupSheets')
         .addToUi();
     } catch (error) {
       SpreadsheetApp.getUi().alert(error);
@@ -30,7 +37,10 @@ function onOpen() {
   }
 
   // Setup sheets
-  setupSheets();
+  // const setupDone = SCRIPT_PROPERTIES.getProperty('initialSetupDone');
+  // if (!setupDone) {
+  // setupSheets();
+  // }
 }
 
 function testScript() {
@@ -42,7 +52,9 @@ function setupSheets() {
   setupDashboardSheet(activeSpreadSheet);
   setupTransactionSheet(activeSpreadSheet);
   setupJournalEntrySheet(activeSpreadSheet);
+  SpreadsheetApp.getUi().alert('Just got done setting your spreadsheet, give me a moment to fetch your transactions');
   notify('SpreadsheetSetupCompleted');
+  // SCRIPT_PROPERTIES.setProperty('initialSetupDone', 'true');
 }
 
 /* ----- Dashboard Sheet ---- */
@@ -259,7 +271,7 @@ function setupJournalEntrySheet(activeSpreadSheet) {
             columnRange.setDataValidation(rule);
             columnRange.setNumberFormat("$#,##0.00;$(#,##0.00)");
             break;
-          
+
           case "Credit":
             rule = SpreadsheetApp.newDataValidation()
               .requireNumberGreaterThan(-1)
@@ -270,14 +282,14 @@ function setupJournalEntrySheet(activeSpreadSheet) {
             columnRange.setNumberFormat("$#,##0.00;$(#,##0.00)");
             break;
 
-            // Set description wrap  
+          // Set description wrap  
         }
       });
       // Apply conditional format rules
       if (conditionalFormatRules.length > 0) {
         journalEntrySheet.setConditionalFormatRules(conditionalFormatRules);
       }
-    
+
       setDynamicRow(journalEntrySheet, validationRowStart, headers.length);
 
     } catch (error) {
@@ -328,16 +340,19 @@ function notify(event) {
 
     if (responseCode === 200) {
       Logger.log('Successfully notified backend');
+      if (DEBUG >= 1) SpreadsheetApp.getUi().alert("Successfully notified backend. Status: " + responseCode)
     } else {
+      if (DEBUG >= 1) SpreadsheetApp.getUi().alert("Error notifying backend. Status: " + responseCode)
       Logger.log('Error notifying backend. Status: ' + responseCode);
     }
   } catch (error) {
-    Logger.log('Failed to send notification to backend: ' + error.toString());
+    if (DEBUG >= 1) SpreadsheetApp.getUi().alert(error)
+    Logger.log('Failed to send notification to backend: ' + error);
   }
 }
 
 function backgroundTask() {
-  // Trigger every hour
+  1  // Trigger every hour
   ScriptApp.newTrigger('myBackgroundTask')
     .timeBased()
     .everyHours(1) // Can also be .everyDays(1), .everyWeeks(1), .onMonthDay(1), etc.

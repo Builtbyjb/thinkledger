@@ -13,7 +13,7 @@ from google_core.google_sheet import GoogleSheet
 
 def handle_high_task(db:Session, redis:Redis, user_id:str) -> None:
   # Check for tasks of High level priority
-  try: l = redis.llen(f"tasks:{TaskPriority.HIGH}:{user_id}")
+  try: l = redis.llen(f"tasks:{TaskPriority.HIGH.value}:{user_id}")
   except Exception as e:
     log.error(f"Error getting high priority tasks length from redis: {e}")
     return None
@@ -24,12 +24,13 @@ def handle_high_task(db:Session, redis:Redis, user_id:str) -> None:
     return None
 
   for _ in range(l):
-    try: value = redis.rpop(f"tasks:{TaskPriority.HIGH}:{user_id}")
+    try: value = redis.rpop(f"tasks:{TaskPriority.HIGH.value}:{user_id}")
     except Exception as e:
       log.error(f"Error popping high priority task from redis: {e}")
       return None
 
     if value is not None:
+      print(value)
       if not isinstance(value, str): raise ValueError("Value must be a string")
       # NOTE: Rethink how value is handled
       task, _ = value.split(":")
@@ -40,6 +41,7 @@ def handle_high_task(db:Session, redis:Redis, user_id:str) -> None:
           print(google_sheet.spreadsheet_url)
           # TODO: Email spreadsheet_url to the user
         except Exception as e:
+          # User email address is stored in redis
           # TODO: if GoogleSheet instantiation fails send an email to the developer
           # and notify the user via email.
           log.error(e)
@@ -135,7 +137,7 @@ def handle_task(db:Session, redis:Redis, user_id:str) -> None:
     handle_high_task(db, redis, user_id)
     handle_low_task(redis, user_id)
   else:
-    # TODO: Alert user to complete requirement
+    # TODO: Alert user to complete requirement, Some time as passed
     log.info("User did not pass requirement")
   return None
 
@@ -176,7 +178,9 @@ def main() -> None:
     except KeyboardInterrupt:
       print("\nShutting down")
       sys.exit(0)
-    except Exception as e: log.error(e)
+    except Exception as e:
+      log.error(e)
+      sys.exit(1)
 
 
 if __name__ == "__main__":

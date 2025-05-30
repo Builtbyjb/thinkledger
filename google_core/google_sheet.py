@@ -245,7 +245,10 @@ class GoogleSheet:
       "dependencies": {},
       "exceptionLogging": "STACKDRIVER",
       "runtimeVersion": "V8",
-      "oauthScopes": ["https://www.googleapis.com/auth/spreadsheets.currentonly"]
+      "oauthScopes": [
+        "https://www.googleapis.com/auth/spreadsheets.currentonly",
+        "https://www.googleapis.com/auth/script.external_request"
+      ]
     }
     """
     code_gs = google_script()
@@ -414,5 +417,4 @@ class JournalEntrySheet(GoogleSheet):
       # Append credit values
       for c in r.credit: m_list.append(["", "", c.name, c.account_id, "", c.amount])
       return m_list
-
     return helper(r)
