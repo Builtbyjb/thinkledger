@@ -3,56 +3,62 @@ from database.redis.redis import gen_redis
 from database.postgres.postgres_schema import User, Institution
 from sqlmodel import select, Session
 from utils.auth_utils import refresh_access_token, verify_access_token
-from utils.core_utils import TaskPriority, Tasks
+from utils.tasks import TaskPriority, Tasks
 from utils.logger import log
 from redis import Redis
 import os, sys, time
 from concurrent.futures import ThreadPoolExecutor
 from google_core.google_sheet import GoogleSheet
+from utils.context import DEBUG
 
 
-def handle_high_task(db:Session, redis:Redis, user_id:str) -> None:
+# TODO: Rethink this function
+async def handle_high_task(db:Session, redis:Redis, user_id:str) -> None:
   # Check for tasks of High level priority
-  try: l = redis.llen(f"tasks:{TaskPriority.HIGH.value}:{user_id}")
-  except Exception as e:
-    log.error(f"Error getting high priority tasks length from redis: {e}")
-    return None
+  with redis as r:
+    try: l = await r.llen(f"task:{TaskPriority.HIGH.value}:{user_id}")
+    except Exception as e:
+      log.error(f"Error getting high priority tasks length from redis: {e}")
+      return None
   if not isinstance(l, int): raise ValueError("Task length must be an integer")
 
   if l == 0:
-    log.info("No high priority tasks")
+    if DEBUG >= 1: log.info("No high priority tasks")
     return None
 
-  for _ in range(l):
-    try: value = redis.rpop(f"tasks:{TaskPriority.HIGH.value}:{user_id}")
-    except Exception as e:
-      log.error(f"Error popping high priority task from redis: {e}")
-      return None
+  with redis as r:
+    for _ in range(l):
+      try: value = await r.rpop(f"task:{TaskPriority.HIGH.value}:{user_id}")
+      except Exception as e:
+        log.error(f"Error popping high priority task from redis: {e}")
+        return None
 
-    if value is not None:
-      print(value)
-      if not isinstance(value, str): raise ValueError("Value must be a string")
-      # NOTE: Rethink how value is handled
-      task, _ = value.split(":")
+      if value is not None:
+        if DEBUG >= 1: log.info(value)
+        if not isinstance(value, str): raise ValueError("Value must be a string")
+        # NOTE: Rethink how value is handled
+        # No need to pass access token
+        task, _ = value.split(":")
 
-      if task == Tasks.trans_sync.value:
-        try:
-          google_sheet = GoogleSheet(redis=redis, user_id=user_id, init=True)
-          print(google_sheet.spreadsheet_url)
-          # TODO: Email spreadsheet_url to the user
-        except Exception as e:
-          # User email address is stored in redis
-          # TODO: if GoogleSheet instantiation fails send an email to the developer
-          # and notify the user via email.
-          log.error(e)
-
-      # TODO: Created a new task to handle this
-
-        # for t in get_transactions(access_token):
-        #   for g in generate_transaction(t, db):
-        #     pass
-            # is_added = transaction_sheet.append_line([g])
-            # if not is_added: log.error("Error creating transaction")
+        if task == Tasks.setup_spreadsheet.value:
+          try:
+            google_sheet = GoogleSheet(redis=r, user_id=user_id, init=True)
+            if DEBUG >= 1: log.info(google_sheet.spreadsheet_url)
+            # TODO: Email spreadsheet_url to the user
+          except Exception as e:
+            # User email address is stored in redis
+            # TODO: if GoogleSheet instantiation fails send an email to the developer
+            # and notify the user via email.
+            log.error(e)
+        elif task == Tasks.sync_transaction.value:
+          # Get access token
+          pass
+          # TODO: Created a new task to handle this
+          # for t in get_transactions(access_token):
+          #   for g in generate_transaction(t, db):
+          #     pass
+              # is_added = transaction_sheet.append_line([g])
+              # if not is_added: log.error("Error creating transaction")
 
   return None
 
@@ -131,10 +137,10 @@ def check_requirements(db:Session, redis:Redis, user_id:str) -> bool:
   return True
 
 
-def handle_task(db:Session, redis:Redis, user_id:str) -> None:
+async def handle_task(db:Session, redis:Redis, user_id:str) -> None:
   is_passed =  check_requirements(db, redis, user_id)
   if is_passed:
-    handle_high_task(db, redis, user_id)
+    await handle_high_task(db, redis, user_id)
     handle_low_task(redis, user_id)
   else:
     # TODO: Alert user to complete requirement, Some time as passed

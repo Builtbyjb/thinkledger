@@ -5,9 +5,10 @@ from utils.constants import GS_FILENAME
 from typing import List
 from utils.context import DEBUG
 import uuid
+from redis import Redis
 
 
-def replace_str(line:str) -> str:
+def replace_str(line:str, user_id:str, redis:Redis) -> str:
   url = f"{os.getenv('SERVER_URL')}/google/spreadsheet/signal"
 
   new_line = ""
@@ -17,8 +18,12 @@ def replace_str(line:str) -> str:
   if bool(re.search(debug, line)): new_line = re.sub(debug, level, line)
 
   tmp_user_id = re.escape("SET_TMP_USER_ID__()")
-  u_id = "1" if DEBUG >= 1 else str(uuid.uuid4())
-  if bool(re.search(tmp_user_id, line)): new_line = re.sub(tmp_user_id, '\"' + u_id +'\"', line)
+  if bool(re.search(tmp_user_id, line)):
+    tmp_id = str(uuid.uuid4())
+    if DEBUG < 2:
+      try: redis.set(f"spreadsheet:{tmp_id}", user_id)
+      except Exception as e: raise Exception(f"Error saving tmp id to redis: {e}")
+    new_line = re.sub(tmp_user_id, '\"' + tmp_id +'\"', line)
 
   backend_url = re.escape("SET_BACKEND_URL__()")
   if bool(re.search(backend_url, line)): new_line = re.sub(backend_url,'\"' + url + '\"', line)
@@ -26,8 +31,7 @@ def replace_str(line:str) -> str:
   return new_line if len(new_line) > 0 else line
 
 
-#  The function could take in a user id,
-def google_script() -> str:
+def google_script(user_id:str, redis:Redis) -> str:
   root_dir = str(Path(__file__).parent.parent)
   file_path = os.path.join(f"{root_dir}/{GS_FILENAME}", f"{GS_FILENAME}.gs")
 
@@ -35,13 +39,12 @@ def google_script() -> str:
 
   with open(file_path, "r", encoding="utf-8") as f:
     for l in f:
-      new_l = replace_str(l)
+      new_l = replace_str(l, user_id, redis)
       lines.append(new_l)
-
-  # TODO: Save the user id to redis
 
   return "\n".join(lines)
 
 
 if __name__ == "__main__":
-  print(google_script())
+  print("Action required")
+  # print(google_script("1"))

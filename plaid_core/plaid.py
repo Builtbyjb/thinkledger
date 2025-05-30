@@ -3,7 +3,7 @@ from plaid.model.transactions_sync_request import TransactionsSyncRequest
 from plaid.model.transactions_sync_response import TransactionsSyncResponse
 from database.postgres.postgres_schema import Account, Institution
 from utils.logger import log
-from utils.core_utils import invert_amount
+from utils.util import invert_amount
 from typing import Generator, List
 from sqlmodel import Session
 from utils.types import PlaidTransaction, PlaidResponse
