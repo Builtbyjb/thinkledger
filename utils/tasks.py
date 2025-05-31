@@ -16,7 +16,7 @@ class TaskPriority(Enum):
   LOW = "LOW"
 
 
-def add_tasks(value: str, user_id: str, priority: TaskPriority) -> bool:
+def add_task(value: str, user_id: str, priority: TaskPriority) -> bool:
   """
     Adds a task to the core task queue.
     Value is a string containing the task function signature, and its arguments,
@@ -34,3 +34,9 @@ def add_tasks(value: str, user_id: str, priority: TaskPriority) -> bool:
     return False
 
   return True
+
+
+def get_task(v:str) -> str: return v.split(":")[0]
+
+
+def get_task_args(v:str) -> list[str]: return v.split(":")[1:]
