@@ -30,3 +30,11 @@ def time_format(time:float) -> str:
     t = t * 1000
     t_rep = "us" # microseconds
   return f"{t:.2f} {t_rep}"
+
+
+def invert_amount(amount: float) -> float:
+  """
+    Inverts the amount to be negative if it is positive, and positive if it is negative
+  """
+  if amount > 0: return -amount
+  return abs(amount)

@@ -3,7 +3,8 @@ from database.redis.redis import gen_redis
 
 
 class Tasks(Enum):
-  trans_sync = "transaction_sync"
+  setup_spreadsheet = "setup_spreadsheet"
+  sync_transaction = "sync_transaction"
 
 
 class TaskPriority(Enum):
@@ -15,7 +16,7 @@ class TaskPriority(Enum):
   LOW = "LOW"
 
 
-def add_tasks(value: str, user_id: str, priority: TaskPriority) -> bool:
+def add_task(value: str, user_id: str, priority: TaskPriority) -> bool:
   """
     Adds a task to the core task queue.
     Value is a string containing the task function signature, and its arguments,
@@ -35,9 +36,7 @@ def add_tasks(value: str, user_id: str, priority: TaskPriority) -> bool:
   return True
 
 
-def invert_amount(amount: float) -> float:
-  """
-    Inverts the amount to be negative if it is positive, and positive if it is negative
-  """
-  if amount > 0: return -amount
-  return abs(amount)
+def get_task(v:str) -> str: return v.split(":")[0]
+
+
+def get_task_args(v:str) -> list[str]: return v.split(":")[1:]

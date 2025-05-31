@@ -19,11 +19,12 @@ class GoogleSheet:
   def __init__(self, redis:Redis,  user_id:str, name:Optional[str]=None, init:bool=False) -> None:
     self._user_id = user_id
     self._name = name
-    email = redis.get(f"email:{user_id}")
+    self._redis = redis
+    email = self._redis.get(f"email:{user_id}")
     if email is None: raise ValueError("Enable to get user email address from redis")
     self.email = str(email)
 
-    self.sheet_service, self.drive_service, self.script_service = self._create_service(redis)
+    self.sheet_service, self.drive_service, self.script_service = self._create_service()
     if self.sheet_service is None or self.drive_service is None or self.script_service is None:
       raise ValueError("Error creating a service")
 
@@ -43,7 +44,7 @@ class GoogleSheet:
 
       self.spreadsheet_url = f"https://docs.google.com/spreadsheets/d/{spreadsheet_id}/edit"
 
-  def _create_service(self, redis:Redis) -> Tuple[Any, Any, Any]:
+  def _create_service(self) -> Tuple[Any, Any, Any]:
     """
     Create a google sheet service and a google drive service; returns None if failed
     """
@@ -54,8 +55,8 @@ class GoogleSheet:
 
     # Verify access token; and if expired, use refresh token to get new access token
     try:
-      access_token = redis.get(f"service_access_token:{self._user_id}")
-      refresh_token = redis.get(f"service_refresh_token:{self._user_id}")
+      access_token = self._redis.get(f"service_access_token:{self._user_id}")
+      refresh_token = self._redis.get(f"service_refresh_token:{self._user_id}")
     except Exception as e:
       log.error(f"Error getting access token and refresh token: {e}")
       return None, None, None
@@ -245,10 +246,13 @@ class GoogleSheet:
       "dependencies": {},
       "exceptionLogging": "STACKDRIVER",
       "runtimeVersion": "V8",
-      "oauthScopes": ["https://www.googleapis.com/auth/spreadsheets.currentonly"]
+      "oauthScopes": [
+        "https://www.googleapis.com/auth/spreadsheets.currentonly",
+        "https://www.googleapis.com/auth/script.external_request"
+      ]
     }
     """
-    code_gs = google_script()
+    code_gs = google_script(self._user_id, self._redis)
     try: # Update app script file
       self.script_service.projects().updateContent(
         scriptId=script_project.get("scriptId"),
@@ -414,5 +418,4 @@ class JournalEntrySheet(GoogleSheet):
       # Append credit values
       for c in r.credit: m_list.append(["", "", c.name, c.account_id, "", c.amount])
       return m_list
-
     return helper(r)

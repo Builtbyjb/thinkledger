@@ -15,34 +15,42 @@ const DEBUG = SET_DEBUG__();
 const TMP_USER_ID = SET_TMP_USER_ID__();
 const BACKEND_URL = SET_BACKEND_URL__();
 const SPREADSHEET_ID = SpreadsheetApp.getActiveSpreadsheet().getId();
+const SCRIPT_PROPERTIES = PropertiesService.getDocumentProperties();
+
+// const userProperties = PropertiesService.getUserProperties();
+// const notificationSent = userProperties.getProperty('permissionNotificationSent');
+// userProperties.setProperty('permissionNotificationSent', 'true');
+
+// PropertiesService.getUserProperties().deleteProperty('permissionNotificationSent');
 
 function onOpen() {
-  if (DEBUG === 1) {
-    try {
-      SpreadsheetApp.getUi()
-        .createMenu('Thinkledger')
-        .addItem('Show Alert', 'testScript')
-        .addItem('Test', 'setupSheets')
-        .addToUi();
-    } catch (error) {
-      SpreadsheetApp.getUi().alert(error);
-    }
+  try {
+    SpreadsheetApp.getUi()
+      .createMenu('Thinkledger')
+      .addItem('Setup', 'setupSheets')
+      .addToUi();
+  } catch (error) {
+    if (DEBUG >= 1) SpreadsheetApp.getUi().alert(error);
   }
-
-  // Setup sheets
-  setupSheets();
-}
-
-function testScript() {
-  SpreadsheetApp.getUi().alert('Hello from the scripted menu!');
+  // Check the if the spreadsheet has been set previous and display a message showing the user the user that a setup been completed previously
+  // Only display this message if this the first time the user is opening the spreadsheet.
+  SpreadsheetApp.getUi().alert("Hi there! Complete the setup process by clicking on the 'Setup' button in the 'Thinkledger' menu");
 }
 
 function setupSheets() {
+  // Check the if the spreadsheet has been set previous and display a message showing the user the user that a setup been completed previously
+  // Setup sheets
+  // const setupDone = SCRIPT_PROPERTIES.getProperty('initialSetupDone');
+  // if (!setupDone) {
+    // setupSheets();
+  // }
   const activeSpreadSheet = SpreadsheetApp.getActiveSpreadsheet();
   setupDashboardSheet(activeSpreadSheet);
   setupTransactionSheet(activeSpreadSheet);
   setupJournalEntrySheet(activeSpreadSheet);
+  SpreadsheetApp.getUi().alert('Just got done setting your spreadsheet, give me a moment to fetch your transactions');
   notify('SpreadsheetSetupCompleted');
+  // SCRIPT_PROPERTIES.setProperty('initialSetupDone', 'true');
 }
 
 /* ----- Dashboard Sheet ---- */
@@ -96,8 +104,8 @@ function setupTransactionSheet(activeSpreadsheet) {
 
     //Create table 
     const headers = [
-      "ID", "Date", "Amount", "Institution", "Institution Account Name",
-      "Institution Account Type", "Category", "Payment Channel", "Merchant Name", "Currency"
+      "ID", "Date", "Amount", "Institution", "Institution Account Name", "Institution Account Type", 
+      "Category", "Payment Channel", "Merchant Name", "Currency", "Pending", "Authorized Date"
     ];
 
     try {
@@ -309,8 +317,8 @@ function onEdit(e) {
 // Ensure the sheet setup notification is only sent once, Using propertiesService.
 function notify(event) {
   const payload = {
-    tmpUserId: TMP_USER_ID,
-    spreadsheetId: SPREADSHEET_ID,
+    tmp_user_id: TMP_USER_ID,
+    spreadsheet_id: SPREADSHEET_ID,
     event: event,
   };
 
@@ -328,16 +336,19 @@ function notify(event) {
 
     if (responseCode === 200) {
       Logger.log('Successfully notified backend');
+      if (DEBUG >= 1) SpreadsheetApp.getUi().alert("Successfully notified backend. Status: " + responseCode)
     } else {
+      if (DEBUG >= 1) SpreadsheetApp.getUi().alert("Error notifying backend. Status: " + responseCode)
       Logger.log('Error notifying backend. Status: ' + responseCode);
     }
   } catch (error) {
-    Logger.log('Failed to send notification to backend: ' + error.toString());
+    if (DEBUG >= 1) SpreadsheetApp.getUi().alert(error)
+    Logger.log('Failed to send notification to backend: ' + error);
   }
 }
 
 function backgroundTask() {
-  // Trigger every hour
+1  // Trigger every hour
   ScriptApp.newTrigger('myBackgroundTask')
     .timeBased()
     .everyHours(1) // Can also be .everyDays(1), .everyWeeks(1), .onMonthDay(1), etc.
