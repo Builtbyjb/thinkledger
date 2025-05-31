@@ -24,30 +24,26 @@ const SCRIPT_PROPERTIES = PropertiesService.getDocumentProperties();
 // PropertiesService.getUserProperties().deleteProperty('permissionNotificationSent');
 
 function onOpen() {
-  if (DEBUG === 1) {
-    try {
-      SpreadsheetApp.getUi()
-        .createMenu('Thinkledger')
-        .addItem('Show Alert', 'testScript')
-        .addItem('Run Setup', 'setupSheets')
-        .addToUi();
-    } catch (error) {
-      SpreadsheetApp.getUi().alert(error);
-    }
+  try {
+    SpreadsheetApp.getUi()
+      .createMenu('Thinkledger')
+      .addItem('Setup', 'setupSheets')
+      .addToUi();
+  } catch (error) {
+    if (DEBUG >= 1) SpreadsheetApp.getUi().alert(error);
   }
-
-  // Setup sheets
-  // const setupDone = SCRIPT_PROPERTIES.getProperty('initialSetupDone');
-  // if (!setupDone) {
-  // setupSheets();
-  // }
-}
-
-function testScript() {
-  SpreadsheetApp.getUi().alert('Hello from the scripted menu!');
+  // Check the if the spreadsheet has been set previous and display a message showing the user the user that a setup been completed previously
+  // Only display this message if this the first time the user is opening the spreadsheet.
+  SpreadsheetApp.getUi().alert("Hi there! Complete the setup process by clicking on the 'Setup' button in the 'Thinkledger' menu");
 }
 
 function setupSheets() {
+  // Check the if the spreadsheet has been set previous and display a message showing the user the user that a setup been completed previously
+  // Setup sheets
+  // const setupDone = SCRIPT_PROPERTIES.getProperty('initialSetupDone');
+  // if (!setupDone) {
+    // setupSheets();
+  // }
   const activeSpreadSheet = SpreadsheetApp.getActiveSpreadsheet();
   setupDashboardSheet(activeSpreadSheet);
   setupTransactionSheet(activeSpreadSheet);
@@ -108,8 +104,8 @@ function setupTransactionSheet(activeSpreadsheet) {
 
     //Create table 
     const headers = [
-      "ID", "Date", "Amount", "Institution", "Institution Account Name",
-      "Institution Account Type", "Category", "Payment Channel", "Merchant Name", "Currency"
+      "ID", "Date", "Amount", "Institution", "Institution Account Name", "Institution Account Type", 
+      "Category", "Payment Channel", "Merchant Name", "Currency", "Pending", "Authorized Date"
     ];
 
     try {
@@ -271,7 +267,7 @@ function setupJournalEntrySheet(activeSpreadSheet) {
             columnRange.setDataValidation(rule);
             columnRange.setNumberFormat("$#,##0.00;$(#,##0.00)");
             break;
-
+          
           case "Credit":
             rule = SpreadsheetApp.newDataValidation()
               .requireNumberGreaterThan(-1)
@@ -282,14 +278,14 @@ function setupJournalEntrySheet(activeSpreadSheet) {
             columnRange.setNumberFormat("$#,##0.00;$(#,##0.00)");
             break;
 
-          // Set description wrap  
+            // Set description wrap  
         }
       });
       // Apply conditional format rules
       if (conditionalFormatRules.length > 0) {
         journalEntrySheet.setConditionalFormatRules(conditionalFormatRules);
       }
-
+    
       setDynamicRow(journalEntrySheet, validationRowStart, headers.length);
 
     } catch (error) {
@@ -321,8 +317,8 @@ function onEdit(e) {
 // Ensure the sheet setup notification is only sent once, Using propertiesService.
 function notify(event) {
   const payload = {
-    tmpUserId: TMP_USER_ID,
-    spreadsheetId: SPREADSHEET_ID,
+    tmp_user_id: TMP_USER_ID,
+    spreadsheet_id: SPREADSHEET_ID,
     event: event,
   };
 
@@ -352,7 +348,7 @@ function notify(event) {
 }
 
 function backgroundTask() {
-  1  // Trigger every hour
+1  // Trigger every hour
   ScriptApp.newTrigger('myBackgroundTask')
     .timeBased()
     .everyHours(1) // Can also be .everyDays(1), .everyWeeks(1), .onMonthDay(1), etc.

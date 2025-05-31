@@ -13,20 +13,18 @@ def add_task() -> bool:
   if redis is None: return False
   access_token = os.getenv("DEMO_ACCESS_TOKEN")
   user_id = os.getenv("DEMO_USER_ID")
-  value = f"transaction_sync:{access_token}"
+  value = f"setup_spreadsheet:{access_token}"
   priority = "HIGH"
   with redis as r:
     # Add tasks to list head (LPUSH)
-    try: r.lpush(f"tasks:{priority}:{user_id}", value)
+    try: r.lpush(f"task:{priority}:{user_id}", value)
     except Exception as e:
       print(f"Error adding task to queue: {e}")
       return False
-
   return True
 
 
 if __name__ == "__main__":
   load_dotenv()
-  print("Adding")
   if add_task(): print("Task added")
   else: print("Failed to add task")
