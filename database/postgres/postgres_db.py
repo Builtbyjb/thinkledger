@@ -1,4 +1,4 @@
-from sqlmodel import create_engine, Session, SQLModel
+from sqlmodel import create_engine, Session
 import os
 import sys
 from dotenv import load_dotenv
@@ -19,7 +19,7 @@ def get_db() -> Any:
 
 
 # Function to create all tables
-def create_db_and_tables() -> None: SQLModel.metadata.create_all(engine)
+# def create_db_and_tables() -> None: SQLModel.metadata.create_all(engine)
 
 
 # Generate postgres db engine
