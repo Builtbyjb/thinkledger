@@ -14,7 +14,6 @@ from plaid_core.plaid import get_transactions, generate_transaction
 import asyncio
 
 
-# TODO: Rethink this function
 def handle_high_priority_task(db:Session, redis:Redis, user_id:str) -> None:
   # Check for tasks of High level priority
   with redis as r:
@@ -58,9 +57,11 @@ def handle_high_priority_task(db:Session, redis:Redis, user_id:str) -> None:
         if institutions is None: raise ValueError("No institutions found")
         transaction_sheet = TransactionSheet(r, user_id)
         journal_entry_sheet = JournalEntrySheet(r, user_id)
+
         for ins in institutions:
           # Generate and append transactions for each institution
           for t in get_transactions(ins.access_token):
+            # TODO: Batch process journal entries but still yield them one by one
             for g in generate_transaction(t, db):
               # Add transaction
               is_added_t = transaction_sheet.append_line(spreadsheet_id, [g])
