@@ -7,6 +7,7 @@ from utils.util import invert_amount
 from typing import Generator, List
 from sqlmodel import Session
 from utils.types import PlaidTransaction, PlaidResponse
+from utils.context import DEBUG
 
 
 def get_transactions(access_token:str) -> Generator[List[PlaidTransaction], None, None]:
@@ -44,9 +45,8 @@ def parse_transactions(transactions: List[PlaidTransaction], db:Session) -> List
     Money coming into the account is negative converted to positive
   }
   """
-  print("transaction length: ", len(transactions))
+  if DEBUG >= 1: print("transaction length: ", len(transactions))
   parsed_transactions: List[List[str]] = []
-
   for t in transactions:
     try: acc = db.get(Account, t.account_id)
     except Exception as e:
@@ -87,7 +87,7 @@ def get_balance() -> None:
   client =  create_plaid_client()
   # Make the request to get the account balance
   try:
-    response = client.Accounts.balance.get('your_access_token')
+    response = client.Accounts.balance.get('access_token')
     accounts = response['accounts']
     for account in accounts:
       print(f"Account ID: {account['account_id']}")

@@ -12,6 +12,7 @@ from google_core.google_sheet import GoogleSheet, TransactionSheet, JournalEntry
 from utils.context import DEBUG
 from plaid_core.plaid import get_transactions, parse_transactions
 import asyncio
+from typing import List
 
 
 def handle_high_priority_task(db:Session, redis:Redis, user_id:str) -> None:
@@ -63,16 +64,27 @@ def handle_high_priority_task(db:Session, redis:Redis, user_id:str) -> None:
           for t in get_transactions(ins.access_token):
             parsed_transactions = parse_transactions(t, db)
             # Add transaction
-            for  p in parsed_transactions:
-              is_added = transaction_sheet.append_line(spreadsheet_id, [p])
-              if not is_added: log.error("Error adding transaction")
+            def add_transaction(pts:List[List[str]]) -> None:
+              for  p in pts:
+                time.sleep(0.3) # 300 ms
+                is_added = transaction_sheet.append(spreadsheet_id, [p])
+                if not is_added: log.error("Error adding transaction")
+
             # Add journal entry
-            journal_entries = journal_entry_sheet.generate(parsed_transactions)
-            if journal_entries is None: ValueError("Error creating journal entry")
-            assert journal_entries is not None
-            for j in journal_entries:
-              is_added_entry = journal_entry_sheet.append_line(spreadsheet_id, j)
-              if not is_added_entry: log.error("Error creating journal entry")
+            def add_journal_entry(pts:List[List[str]]) -> None:
+              journal_entries = journal_entry_sheet.generate(pts)
+              if journal_entries is None: ValueError("Error creating journal entry")
+              assert journal_entries is not None
+              for j in journal_entries:
+                time.sleep(0.3) # 300 ms
+                is_added_entry = journal_entry_sheet.append(spreadsheet_id, j)
+                if not is_added_entry: log.error("Error creating journal entry")
+
+            with ThreadPoolExecutor(max_workers=2) as executor:
+              executor.submit(add_transaction, parsed_transactions)
+              executor.submit(add_journal_entry, parsed_transactions)
+              executor.shutdown(wait=True)
+
   return None
 
 

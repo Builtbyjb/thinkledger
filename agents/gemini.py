@@ -4,6 +4,7 @@ from google import genai
 from typing import Any, List
 from utils.types import JournalEntry
 from utils.context import DEBUG
+from helpers.perf import perf
 
 
 def gemini_response(prompt: str) -> Any:
@@ -17,6 +18,7 @@ def gemini_response(prompt: str) -> Any:
   )
 
 
+@perf
 def sanitize_gemini_response(response: Any) -> List[JournalEntry]:
   results:List[JournalEntry] = []
   cleaned_response = response.text.strip().strip('`').strip()
