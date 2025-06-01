@@ -1,7 +1,7 @@
-from typing import Dict
+from typing import Dict, List
 
 
-def generate_prompt(t:Dict[str, str]) -> str:
+def generate_prompt(t:List[Dict[str, str]]) -> str:
   return f"""
   1. Predefined Account IDs:
   Use the following `account_ids` mapping. Account names in the transaction should be matched to
@@ -33,8 +33,9 @@ def generate_prompt(t:Dict[str, str]) -> str:
   }}
   ```
   2. Output Format:
-  Create a journal entry from this {t}, the journal entry should specify the accounts
-  debited or credited. Your response MUST be a single JSON object strictly following this format:
+  Create journal entries from this list of transactions {t}, the journal entries should specify the
+  accounts debited or credited. Your response MUST be a list JSON objects strictly following this
+  format:
   ```json
   {{
     "date": "YYYY-MM-DD",
@@ -58,7 +59,7 @@ def generate_prompt(t:Dict[str, str]) -> str:
   3. Field Descriptions and Rules:
   * Date: is the transaction date.
   * Description: A clear and concise description of the journal entry.  This should accurately
-    reflect the nature of the {t}.
+    reflect the nature of each transaction.
   * Debit: Is a list of all the accounts that are being debited.
   * Credit": Is a list of all the accounts that are being credited.
   * Name: The name of the account debited or credited.

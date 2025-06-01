@@ -10,7 +10,7 @@ import sys, time
 from concurrent.futures import ThreadPoolExecutor
 from google_core.google_sheet import GoogleSheet, TransactionSheet, JournalEntrySheet
 from utils.context import DEBUG
-from plaid_core.plaid import get_transactions, generate_transaction
+from plaid_core.plaid import get_transactions, parse_transactions
 import asyncio
 
 
@@ -61,16 +61,17 @@ def handle_high_priority_task(db:Session, redis:Redis, user_id:str) -> None:
         for ins in institutions:
           # Generate and append transactions for each institution
           for t in get_transactions(ins.access_token):
-            # TODO: Batch process journal entries but still yield them one by one
-            for g in generate_transaction(t, db):
-              # Add transaction
-              is_added_t = transaction_sheet.append_line(spreadsheet_id, [g])
-              if not is_added_t: log.error("Error creating transaction")
-              # Add journal entry
-              journal_entry = journal_entry_sheet.generate(g)
-              if journal_entry is None: ValueError("Error creating journal entry")
-              assert journal_entry is not None
-              is_added_entry = journal_entry_sheet.append_line(spreadsheet_id, journal_entry)
+            parsed_transactions = parse_transactions(t, db)
+            # Add transaction
+            for  p in parsed_transactions:
+              is_added = transaction_sheet.append_line(spreadsheet_id, [p])
+              if not is_added: log.error("Error adding transaction")
+            # Add journal entry
+            journal_entries = journal_entry_sheet.generate(parsed_transactions)
+            if journal_entries is None: ValueError("Error creating journal entry")
+            assert journal_entries is not None
+            for j in journal_entries:
+              is_added_entry = journal_entry_sheet.append_line(spreadsheet_id, j)
               if not is_added_entry: log.error("Error creating journal entry")
   return None
 

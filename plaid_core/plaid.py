@@ -34,9 +34,7 @@ def get_transactions(access_token:str) -> Generator[List[PlaidTransaction], None
     yield validated_response.added
 
 
-def generate_transaction(
-    transactions: List[PlaidTransaction], db:Session
-    ) -> Generator[List[str], None, None]:
+def parse_transactions(transactions: List[PlaidTransaction], db:Session) -> List[List[str]]:
   """
   Generates Transaction objects from the transactions gotten from plaid
   and yields a single transaction at a time
@@ -47,6 +45,7 @@ def generate_transaction(
   }
   """
   print("transaction length: ", len(transactions))
+  parsed_transactions: List[List[str]] = []
 
   for t in transactions:
     try: acc = db.get(Account, t.account_id)
@@ -77,7 +76,8 @@ def generate_transaction(
       str(t.transaction_id), date, amount, ins.name, acc.name, acc.subtype, category,
       str(t.payment_channel), merchant_name, t.iso_currency_code, str(t.pending), authorized_date
     ]
-    yield transaction
+    parsed_transactions.append(transaction)
+  return parsed_transactions
 
 
 def get_balance() -> None:
