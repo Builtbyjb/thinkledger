@@ -45,7 +45,7 @@ def parse_transactions(transactions: List[PlaidTransaction], db:Session) -> List
     Money coming into the account is negative converted to positive
   }
   """
-  if DEBUG >= 1: print("transaction length: ", len(transactions))
+  if DEBUG >= 1: log.info(f"transaction length: {len(transactions)}")
   parsed_transactions: List[List[str]] = []
   for t in transactions:
     try: acc = db.get(Account, t.account_id)

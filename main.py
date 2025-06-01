@@ -66,23 +66,22 @@ def handle_high_priority_task(db:Session, redis:Redis, user_id:str) -> None:
             # Add transaction
             def add_transaction(pts:List[List[str]]) -> None:
               for  p in pts:
-                time.sleep(0.3) # 300 ms
+                time.sleep(1)
                 is_added = transaction_sheet.append(spreadsheet_id, [p])
                 if not is_added: log.error("Error adding transaction")
 
             # Add journal entry
             def add_journal_entry(pts:List[List[str]]) -> None:
-              journal_entries = journal_entry_sheet.generate(pts)
-              if journal_entries is None: ValueError("Error creating journal entry")
-              assert journal_entries is not None
-              for j in journal_entries:
-                time.sleep(0.3) # 300 ms
-                is_added_entry = journal_entry_sheet.append(spreadsheet_id, j)
+              for p in pts:
+                time.sleep(1)
+                journal_entry = journal_entry_sheet.generate(p)
+                assert journal_entry is not None, "Error creating journal entry"
+                is_added_entry = journal_entry_sheet.append(spreadsheet_id, journal_entry)
                 if not is_added_entry: log.error("Error creating journal entry")
 
             with ThreadPoolExecutor(max_workers=2) as executor:
-              executor.submit(add_transaction, parsed_transactions)
               executor.submit(add_journal_entry, parsed_transactions)
+              executor.submit(add_transaction, parsed_transactions)
               executor.shutdown(wait=True)
 
   return None

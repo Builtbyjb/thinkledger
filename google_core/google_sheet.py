@@ -1,7 +1,7 @@
 from googleapiclient.discovery import build
 from google.oauth2.credentials import Credentials
 from redis import Redis
-from typing import Optional, Tuple, Any, List, Dict
+from typing import Optional, Tuple, Any, List
 import os
 from utils.constants import TOKEN_URL
 from utils.logger import log
@@ -286,32 +286,30 @@ class JournalEntrySheet(GoogleSheet):
     name:str = "Journal Entries"
     super().__init__(redis, user_id, name)
 
-  # TODO: improve performance
   @perf
-  def generate(self, transactions:List[List[str]]) -> Optional[List[List[List[str]]]]:
+  def generate(self, t:List[str]) -> Optional[List[List[str]]]:
     # Generate prompt
-    parsed_transactions: List[Dict[str, str]] = []
-    for t in transactions:
-      parsed_transactions.append({
-        "date":str(datetime.strptime(t[1], "%Y-%m-%d").date()),
-        "amount":str(float(t[2])),
-        "detail":str(t[6]),
-        "payment_channel":str(t[7]),
-        "merchant_name":str(t[8]),
-        "pending":str(t[10]),
-      })
-    prompt = generate_prompt(parsed_transactions)
+    prompt = generate_prompt({
+      "date":str(datetime.strptime(t[1], "%Y-%m-%d").date()),
+      "amount":str(float(t[2])),
+      "detail":str(t[6]),
+      "payment_channel":str(t[7]),
+      "merchant_name":str(t[8]),
+      "pending":str(t[10]),
+    })
     # Get gemini response
     try: response = gemini_response(prompt)
     except Exception as e:
       log.error(f"Error getting gemini response: {e}")
       return None
     # Sanitize gemini response
-    try: results = sanitize_gemini_response(response)
+    try: sanitized_response = sanitize_gemini_response(response)
     except Exception as e:
       log.error(f"Error sanitizing gemini response: {e}")
       return None
-    if DEBUG >= 1: print("results: ", len(results))
+
+    if DEBUG >= 2: log.info(f"sanitized_response: {sanitized_response}")
+
     def helper(r:JournalEntry) -> List[List[str]]:
       """
       Helps create a journal entry. Accounts for multiple debit and credit account values
@@ -327,8 +325,4 @@ class JournalEntrySheet(GoogleSheet):
       # Append credit values
       for c in r.credit: m_list.append(["", "", c.name, c.account_id, "", c.amount])
       return m_list
-
-    journal_entries:List[List[List[str]]] = []
-    for r in results:
-      journal_entries.append(helper(r))
-    return journal_entries
+    return helper(sanitized_response)
