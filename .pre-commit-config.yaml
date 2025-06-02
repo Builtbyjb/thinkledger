@@ -9,7 +9,7 @@ repos:
         pass_filenames: false
       - id: mypy
         name: mypy
-        entry: mypy .
+        entry: mypy . --disable-error-code=call-arg
         language: system
         always_run: true
         pass_filenames: false

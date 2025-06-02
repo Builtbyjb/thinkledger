@@ -7,6 +7,7 @@ from utils.util import invert_amount
 from typing import Generator, List
 from sqlmodel import Session
 from utils.types import PlaidTransaction, PlaidResponse
+from utils.context import DEBUG
 
 
 def get_transactions(access_token:str) -> Generator[List[PlaidTransaction], None, None]:
@@ -34,9 +35,7 @@ def get_transactions(access_token:str) -> Generator[List[PlaidTransaction], None
     yield validated_response.added
 
 
-def generate_transaction(
-    transactions: List[PlaidTransaction], db:Session
-    ) -> Generator[List[str], None, None]:
+def parse_transactions(transactions: List[PlaidTransaction], db:Session) -> List[List[str]]:
   """
   Generates Transaction objects from the transactions gotten from plaid
   and yields a single transaction at a time
@@ -46,8 +45,8 @@ def generate_transaction(
     Money coming into the account is negative converted to positive
   }
   """
-  print("transaction length: ", len(transactions))
-
+  if DEBUG >= 2: log.info(f"transaction length: {len(transactions)}")
+  parsed_transactions: List[List[str]] = []
   for t in transactions:
     try: acc = db.get(Account, t.account_id)
     except Exception as e:
@@ -77,7 +76,8 @@ def generate_transaction(
       str(t.transaction_id), date, amount, ins.name, acc.name, acc.subtype, category,
       str(t.payment_channel), merchant_name, t.iso_currency_code, str(t.pending), authorized_date
     ]
-    yield transaction
+    parsed_transactions.append(transaction)
+  return parsed_transactions
 
 
 def get_balance() -> None:
@@ -87,7 +87,7 @@ def get_balance() -> None:
   client =  create_plaid_client()
   # Make the request to get the account balance
   try:
-    response = client.Accounts.balance.get('your_access_token')
+    response = client.Accounts.balance.get('access_token')
     accounts = response['accounts']
     for account in accounts:
       print(f"Account ID: {account['account_id']}")

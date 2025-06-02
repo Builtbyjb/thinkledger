@@ -33,8 +33,9 @@ def generate_prompt(t:Dict[str, str]) -> str:
   }}
   ```
   2. Output Format:
-  Create a journal entry from this {t}, the journal entry should specify the accounts
-  debited or credited. Your response MUST be a single JSON object strictly following this format:
+  Create a journal entry from this transaction {t}, the journal entry should specify the
+  accounts debited or credited. Your response MUST be a JSON object strictly following this
+  format:
   ```json
   {{
     "date": "YYYY-MM-DD",
@@ -58,7 +59,7 @@ def generate_prompt(t:Dict[str, str]) -> str:
   3. Field Descriptions and Rules:
   * Date: is the transaction date.
   * Description: A clear and concise description of the journal entry.  This should accurately
-    reflect the nature of the {t}.
+    reflect the nature of the transaction.
   * Debit: Is a list of all the accounts that are being debited.
   * Credit": Is a list of all the accounts that are being credited.
   * Name: The name of the account debited or credited.
@@ -94,6 +95,6 @@ def generate_prompt(t:Dict[str, str]) -> str:
     standard accounting principles (e.g., an increase in an asset is a debit, an increase in a
     liability is a credit).
 
-  Your response should strictly follow the structure of example output, , with no additional
+  Your response should strictly follow the structure of the json object, , with no additional
   explanation or commentary.
   """

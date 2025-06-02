@@ -24,7 +24,7 @@ def add_task(value: str, user_id: str, priority: TaskPriority) -> bool:
   """
   redis = gen_redis()
   if redis is None:
-    print("Unable to get redis @add_task > core_utils.py")
+    print("Unable to get redis @add_task > tasks.py")
     return False
 
   # Add tasks to list head (LPUSH)

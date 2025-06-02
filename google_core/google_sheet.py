@@ -2,14 +2,16 @@ from googleapiclient.discovery import build
 from google.oauth2.credentials import Credentials
 from redis import Redis
 from typing import Optional, Tuple, Any, List
-import os, time
+import os
 from utils.constants import TOKEN_URL
 from utils.logger import log
 from utils.types import JournalEntry
+from utils.context import DEBUG
 from datetime import datetime
 from prompt.journal_entry import generate_prompt
 from agents.gemini import gemini_response, sanitize_gemini_response
 from helpers.parse_gs import google_script
+from helpers.perf import perf
 
 
 FONT_FAMILY = "Roboto"
@@ -20,9 +22,6 @@ class GoogleSheet:
     self._user_id = user_id
     self._name = name
     self._redis = redis
-    email = self._redis.get(f"email:{user_id}")
-    if email is None: raise ValueError("Enable to get user email address from redis")
-    self.email = str(email)
 
     self.sheet_service, self.drive_service, self.script_service = self._create_service()
     if self.sheet_service is None or self.drive_service is None or self.script_service is None:
@@ -107,7 +106,7 @@ class GoogleSheet:
 
     try: # Create folder if it doesn't exist
       folder = self.drive_service.files().create(body=metadata, fields='id').execute()
-      log.info(f"{name} folder created")
+      if DEBUG >= 1: log.info(f"{name} folder created")
       return str(folder.get('id'))
     except Exception as e:
       log.error("Error creating folder: ", e)
@@ -139,48 +138,6 @@ class GoogleSheet:
         "defaultFormat": {
           "textFormat": { "fontFamily": FONT_FAMILY, "fontSize": 11, }
         },
-        "spreadsheetTheme": {
-          "primaryFontFamily": FONT_FAMILY,
-          "themeColors": [
-            # {"colorType": "THEME_COLOR_TYPE_UNSPECIFIED", "color": {}},
-            {
-              "colorType": "TEXT",
-              "color": { "rgbColor": {"red":0.0, "green":0.0, "blue": 0.0} }, # Black
-            },
-            {
-              "colorType": "BACKGROUND",
-              "color": { "rgbColor": {"red":1.0, "green":1.0, "blue":1.0}}, # White
-            },
-            { # A shade of blue
-              "colorType": "ACCENT1",
-              "color": { "rgbColor": {"red":60/255, "green":120/255, "blue":216/255}},
-            },
-            { # A shade of orange/red
-              "colorType": "ACCENT2",
-              "color": { "rgbColor": {"red":221/255, "green":126/255, "blue":107/255}},
-            },
-            { # A shade of purple
-              "colorType": "ACCENT3",
-              "color": { "rgbColor": {"red":152/255, "green":118/255, "blue":170/255} },
-            },
-            { # A shade of teal
-              "colorType": "ACCENT4",
-              "color": { "rgbColor": {"red":109/255, "green":194/255, "blue":202/255} },
-            },
-            { # A shade of yellow
-              "colorType": "ACCENT5",
-              "color": { "rgbColor": {"red":241/255, "green":194/255, "blue":50/255} },
-            },
-            { # A shade of green
-              "colorType": "ACCENT6",
-              "color": { "rgbColor": {"red":127/255, "green":199/255, "blue":132/255} },
-            },
-            { # Standard link blue
-              "colorType": "LINK",
-              "color": { "rgbColor": {"red":17/255, "green":85/255, "blue":204/255} }
-            },
-          ]
-        },
       },
     }
 
@@ -198,8 +155,7 @@ class GoogleSheet:
         removeParents='root',
         fields='id, parents'
       ).execute()
-      # print(spreadsheet_id)
-      log.info("Spreadsheet file created")
+      if DEBUG >= 1: log.info("Spreadsheet file created")
       return str(spreadsheet_id)
     except Exception as e:
       log.error(f'Error moving spreadsheet to the right folder: {e}')
@@ -224,21 +180,10 @@ class GoogleSheet:
         "title": file_name,
         "parentId": spreadsheet_id  # Binds to the spreadsheet
       }).execute()
-      log.info("App script file created")
+      if DEBUG >= 1: log.info("App script file created")
     except Exception as e:
       log.error(f"Error creating app script project: {e}")
       return None
-
-    try: # Grant user permission to view the script???
-      permission = { 'type': 'user', 'role': 'reader', 'emailAddress': self.email }
-      self.drive_service.permissions().create(
-        fileId=spreadsheet_id,
-        body=permission,
-        fields='id'
-      ).execute()
-    except Exception as e:
-        log.error(f"Error granting user permission: {e}")
-        return None
 
     manifest = """
     {
@@ -263,13 +208,13 @@ class GoogleSheet:
           ]
         }
       ).execute()
-      log.info("Google script file updated")
+      if DEBUG >= 1: log.info("Google script file updated")
     except Exception as e:
       log.error(f"Error updating app script project: {e}")
       return None
     return True
 
-  def append_line(self, spreadsheet_id:str, values:List[List[str]]) -> bool:
+  def append(self, spreadsheet_id:str, values:List[List[str]]) -> bool:
     """
     Append values to a sheet line by line
     """
@@ -286,87 +231,6 @@ class GoogleSheet:
       log.error(f"Error appending line to {self._name} sheet: {e}")
       return False
 
-  def append_char(self, spreadsheet_id:str, values:List[List[str]]) -> bool:
-    """
-    Append values to a sheet character by character
-    """
-    try:
-      # Get last row number
-      result = self.sheet_service.spreadsheets().values().get(
-        spreadsheetId=spreadsheet_id,
-        range=f"{self._name}!A:A"
-      ).execute()
-      next_row = len(result.get('values', [])) + 1
-
-      for col_idx, value in enumerate(values):
-        str_value = str(value)
-        # Stream each character of the value
-        for i in range(len(str_value) + 1):
-          partial_value = str_value[:i]
-          request = {
-            'updateCells': {
-              'rows': [{
-                'values': [{
-                  'userEnteredValue': {'stringValue': partial_value },
-                  'userEnteredFormat': {
-                    'textFormat': {
-                      'fontFamily': 'Arial',
-                      'fontSize': 11,
-                      'foregroundColor': { 'red': 0.1, 'green': 0.1, 'blue': 0.1 }
-                    },
-                    'borders': {
-                      'bottom': {
-                        'style': 'SOLID',
-                        'width': 1,
-                        'color': {'red': 0.8, 'green': 0.8, 'blue': 0.8}
-                      },
-                      'right': {
-                        'style': 'SOLID',
-                        'width': 1,
-                        'color': {'red': 0.8, 'green': 0.8, 'blue': 0.8}
-                      }
-                    },
-                    'horizontalAlignment': 'LEFT' if col_idx in [1, 3, 4, 6, 8] else 'RIGHT',
-                    'verticalAlignment': 'MIDDLE',
-                    # Alternate row colors
-                    'backgroundColor': {
-                      'red': 1.0 if next_row % 2 == 0 else 0.95,
-                      'green': 1.0 if next_row % 2 == 0 else 0.95,
-                      'blue': 1.0 if next_row % 2 == 0 else 0.95
-                    }
-                  }
-                }]
-              }],
-              'fields': """
-                userEnteredValue,userEnteredFormat(backgroundColor,textFormat,borders,
-                horizontalAlignment,verticalAlignment)
-              """,
-              'range': {
-                # 'sheetId': self.trans_sheet_id,
-                'startRowIndex': next_row - 1,
-                'endRowIndex': next_row,
-                'startColumnIndex': col_idx,
-                'endColumnIndex': col_idx + 1
-              }
-            }
-          }
-
-          # Execute update for each character
-          self.sheet_service.spreadsheets().batchUpdate(
-            spreadsheetId=spreadsheet_id,
-            body={'requests': [request]}
-          ).execute()
-
-          # Add typing delay (adjust for desired speed)
-          time.sleep(0.05)  # 50ms between characters
-
-        # Add delay between cells
-        time.sleep(0.2)  # 200ms between cells
-      return True
-    except Exception as e:
-      log.error(f"Error appending to sheet: {e}")
-      return False
-
 
 class TransactionSheet(GoogleSheet):
   def __init__(self, redis:Redis, user_id:str) -> None:
@@ -379,29 +243,29 @@ class JournalEntrySheet(GoogleSheet):
     name:str = "Journal Entries"
     super().__init__(redis, user_id, name)
 
+  @perf
   def generate(self, t:List[str]) -> Optional[List[List[str]]]:
     # Generate prompt
     prompt = generate_prompt({
-      "date":str(datetime.strptime(t[1], "%Y-%m-%d").date()),
-      "amount":str(float(t[2])),
-      "detail":str(t[6]),
-      "payment_channel":str(t[7]),
-      "merchant_name":str(t[8]),
-      "pending":str(t[10]),
+      "date": t[1],
+      "amount": t[2],
+      "detail": t[6],
+      "payment_channel": t[7],
+      "merchant_name": t[8],
+      "pending": t[10],
     })
-
     # Get gemini response
     try: response = gemini_response(prompt)
     except Exception as e:
       log.error(f"Error getting gemini response: {e}")
       return None
-
     # Sanitize gemini response
-    try: r = sanitize_gemini_response(response)
-    except Exception:
-      log.error("Error sanitizing gemini response")
+    try: sanitized_response = sanitize_gemini_response(response)
+    except Exception as e:
+      log.error(f"Error sanitizing gemini response: {e}")
       return None
-    # print(f"Sanitized Response:\n{r}")
+
+    if DEBUG >= 2: log.info(f"sanitized_response: {sanitized_response}")
 
     def helper(r:JournalEntry) -> List[List[str]]:
       """
@@ -418,4 +282,4 @@ class JournalEntrySheet(GoogleSheet):
       # Append credit values
       for c in r.credit: m_list.append(["", "", c.name, c.account_id, "", c.amount])
       return m_list
-    return helper(r)
+    return helper(sanitized_response)
