@@ -95,6 +95,6 @@ def generate_prompt(t:Dict[str, str]) -> str:
     standard accounting principles (e.g., an increase in an asset is a debit, an increase in a
     liability is a credit).
 
-  Your response should strictly follow the structure of example output, , with no additional
+  Your response should strictly follow the structure of the json object, , with no additional
   explanation or commentary.
   """

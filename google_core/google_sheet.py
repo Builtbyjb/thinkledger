@@ -106,7 +106,7 @@ class GoogleSheet:
 
     try: # Create folder if it doesn't exist
       folder = self.drive_service.files().create(body=metadata, fields='id').execute()
-      log.info(f"{name} folder created")
+      if DEBUG >= 1: log.info(f"{name} folder created")
       return str(folder.get('id'))
     except Exception as e:
       log.error("Error creating folder: ", e)
@@ -197,8 +197,7 @@ class GoogleSheet:
         removeParents='root',
         fields='id, parents'
       ).execute()
-      # print(spreadsheet_id)
-      log.info("Spreadsheet file created")
+      if DEBUG >= 1: log.info("Spreadsheet file created")
       return str(spreadsheet_id)
     except Exception as e:
       log.error(f'Error moving spreadsheet to the right folder: {e}')
@@ -223,7 +222,7 @@ class GoogleSheet:
         "title": file_name,
         "parentId": spreadsheet_id  # Binds to the spreadsheet
       }).execute()
-      log.info("App script file created")
+      if DEBUG >= 1: log.info("App script file created")
     except Exception as e:
       log.error(f"Error creating app script project: {e}")
       return None
@@ -251,7 +250,7 @@ class GoogleSheet:
           ]
         }
       ).execute()
-      log.info("Google script file updated")
+      if DEBUG >= 1: log.info("Google script file updated")
     except Exception as e:
       log.error(f"Error updating app script project: {e}")
       return None
@@ -290,12 +289,12 @@ class JournalEntrySheet(GoogleSheet):
   def generate(self, t:List[str]) -> Optional[List[List[str]]]:
     # Generate prompt
     prompt = generate_prompt({
-      "date":str(datetime.strptime(t[1], "%Y-%m-%d").date()),
-      "amount":str(float(t[2])),
-      "detail":str(t[6]),
-      "payment_channel":str(t[7]),
-      "merchant_name":str(t[8]),
-      "pending":str(t[10]),
+      "date": t[1],
+      "amount": t[2],
+      "detail": t[6],
+      "payment_channel": t[7],
+      "merchant_name": t[8],
+      "pending": t[10],
     })
     # Get gemini response
     try: response = gemini_response(prompt)

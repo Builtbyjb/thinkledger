@@ -12,7 +12,6 @@ from google_core.google_sheet import GoogleSheet, TransactionSheet, JournalEntry
 from utils.context import DEBUG
 from plaid_core.plaid import get_transactions, parse_transactions
 import asyncio
-from typing import List
 
 
 def handle_high_priority_task(db:Session, redis:Redis, user_id:str) -> None:
@@ -63,26 +62,19 @@ def handle_high_priority_task(db:Session, redis:Redis, user_id:str) -> None:
           # Generate and append transactions for each institution
           for t in get_transactions(ins.access_token):
             parsed_transactions = parse_transactions(t, db)
-            # Add transaction
-            def add_transaction(pts:List[List[str]]) -> None:
-              for  p in pts:
-                time.sleep(1)
-                is_added = transaction_sheet.append(spreadsheet_id, [p])
-                if not is_added: log.error("Error adding transaction")
+            for  p in parsed_transactions:
+              # Add transaction
+              if DEBUG >= 2: print("transaction", p)
+              is_added = transaction_sheet.append(spreadsheet_id, [p])
+              if not is_added: log.error("Error adding transaction")
 
-            # Add journal entry
-            def add_journal_entry(pts:List[List[str]]) -> None:
-              for p in pts:
-                time.sleep(1)
-                journal_entry = journal_entry_sheet.generate(p)
-                assert journal_entry is not None, "Error creating journal entry"
-                is_added_entry = journal_entry_sheet.append(spreadsheet_id, journal_entry)
-                if not is_added_entry: log.error("Error creating journal entry")
-
-            with ThreadPoolExecutor(max_workers=2) as executor:
-              executor.submit(add_journal_entry, parsed_transactions)
-              executor.submit(add_transaction, parsed_transactions)
-              executor.shutdown(wait=True)
+              # Add journal entry
+              # time.sleep(1)
+              # NOTE: possible rate limit issue
+              journal_entry = journal_entry_sheet.generate(p)
+              assert journal_entry is not None, "Error creating journal entry"
+              is_added_entry = journal_entry_sheet.append(spreadsheet_id, journal_entry)
+              if not is_added_entry: log.error("Error creating journal entry")
 
   return None
 

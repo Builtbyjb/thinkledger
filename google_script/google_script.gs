@@ -130,7 +130,6 @@ function setupTransactionSheet(activeSpreadsheet) {
               .setHelpText("Please enter a valid date (YYYY-MM-DD)")
               .build();
             columnRange.setDataValidation(rule);
-            columnRange.setNumberFormat("yyyy-mm-dd");
             break;
 
           case "Amount":
@@ -255,7 +254,6 @@ function setupJournalEntrySheet(activeSpreadSheet) {
               .setHelpText("Please enter a valid date (YYYY-MM-DD)")
               .build();
             columnRange.setDataValidation(rule);
-            columnRange.setNumberFormat("yyyy-mm-dd");
             break;
 
           case "Debit":

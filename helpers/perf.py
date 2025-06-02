@@ -15,6 +15,6 @@ def perf(func:Callable[..., Any]) -> Callable[..., Any]:
     start = time.perf_counter()
     results = func(*args, **kwargs)
     end = time.perf_counter()
-    if DEBUG >= 1: log.info(f"def {func.__name__}() took {time_format(end - start)}")
+    if DEBUG >= 2: log.info(f"def {func.__name__}() took {time_format(end - start)}")
     return results
   return wrapper

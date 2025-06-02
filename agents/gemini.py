@@ -15,8 +15,7 @@ def gemini_response(prompt: str) -> Any:
     # model = "gemini-2.5-pro-preview-05-06",
     model = "gemini-2.5-flash-preview-05-20",
     # model = "gemini-2.0-flash",
-    contents=f"{prompt}"
-  )
+    contents=f"{prompt}")
 
 
 @perf
