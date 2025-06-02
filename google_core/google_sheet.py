@@ -138,48 +138,6 @@ class GoogleSheet:
         "defaultFormat": {
           "textFormat": { "fontFamily": FONT_FAMILY, "fontSize": 11, }
         },
-        "spreadsheetTheme": {
-          "primaryFontFamily": FONT_FAMILY,
-          "themeColors": [
-            # {"colorType": "THEME_COLOR_TYPE_UNSPECIFIED", "color": {}},
-            {
-              "colorType": "TEXT",
-              "color": { "rgbColor": {"red":0.0, "green":0.0, "blue": 0.0} }, # Black
-            },
-            {
-              "colorType": "BACKGROUND",
-              "color": { "rgbColor": {"red":1.0, "green":1.0, "blue":1.0}}, # White
-            },
-            { # A shade of blue
-              "colorType": "ACCENT1",
-              "color": { "rgbColor": {"red":60/255, "green":120/255, "blue":216/255}},
-            },
-            { # A shade of orange/red
-              "colorType": "ACCENT2",
-              "color": { "rgbColor": {"red":221/255, "green":126/255, "blue":107/255}},
-            },
-            { # A shade of purple
-              "colorType": "ACCENT3",
-              "color": { "rgbColor": {"red":152/255, "green":118/255, "blue":170/255} },
-            },
-            { # A shade of teal
-              "colorType": "ACCENT4",
-              "color": { "rgbColor": {"red":109/255, "green":194/255, "blue":202/255} },
-            },
-            { # A shade of yellow
-              "colorType": "ACCENT5",
-              "color": { "rgbColor": {"red":241/255, "green":194/255, "blue":50/255} },
-            },
-            { # A shade of green
-              "colorType": "ACCENT6",
-              "color": { "rgbColor": {"red":127/255, "green":199/255, "blue":132/255} },
-            },
-            { # Standard link blue
-              "colorType": "LINK",
-              "color": { "rgbColor": {"red":17/255, "green":85/255, "blue":204/255} }
-            },
-          ]
-        },
       },
     }
 
