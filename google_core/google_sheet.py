@@ -193,7 +193,8 @@ class GoogleSheet:
       "runtimeVersion": "V8",
       "oauthScopes": [
         "https://www.googleapis.com/auth/spreadsheets.currentonly",
-        "https://www.googleapis.com/auth/script.external_request"
+        "https://www.googleapis.com/auth/script.external_request",
+        "https://www.googleapis.com/auth/script.scriptapp"
       ]
     }
     """
@@ -219,13 +220,17 @@ class GoogleSheet:
     Append values to a sheet line by line
     """
     try:
-      self.sheet_service.spreadsheets().values().append(
+      # Keep track of range
+      cursor = self._redis.get(f"sheet_cursor:{self._name}:{self._user_id}")
+      if cursor is None: cursor = 5
+      self.sheet_service.spreadsheets().values().update(
         spreadsheetId=spreadsheet_id,
-        range=self._name,
+        range=f"{self._name}!A{cursor}",
         valueInputOption='USER_ENTERED',
-        insertDataOption='INSERT_ROWS',
         body={'values': values}
       ).execute()
+      new_range = int(str(cursor)) + 2 if self._name == "Journal Entries" else int(str(cursor)) + 1
+      self._redis.set(f"sheet_cursor:{self._name}:{self._user_id}", new_range)
       return True
     except Exception as e:
       log.error(f"Error appending line to {self._name} sheet: {e}")
@@ -243,6 +248,7 @@ class JournalEntrySheet(GoogleSheet):
     name:str = "Journal Entries"
     super().__init__(redis, user_id, name)
 
+  # TODO: Improve performance
   @perf
   def generate(self, t:List[str]) -> Optional[List[List[str]]]:
     # Generate prompt

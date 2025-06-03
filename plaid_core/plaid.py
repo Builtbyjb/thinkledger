@@ -73,8 +73,9 @@ def parse_transactions(transactions: List[PlaidTransaction], db:Session) -> List
     category = t.personal_finance_category.detailed or ""
 
     transaction: list[str] = [
-      str(t.transaction_id), date, amount, ins.name, acc.name, acc.subtype, category,
-      str(t.payment_channel), merchant_name, t.iso_currency_code, str(t.pending), authorized_date
+      str(t.transaction_id), date, amount, ins.name, acc.name, acc.subtype.title(), category,
+      str(t.payment_channel).title(), merchant_name, t.iso_currency_code, str(t.pending),
+      authorized_date
     ]
     parsed_transactions.append(transaction)
   return parsed_transactions

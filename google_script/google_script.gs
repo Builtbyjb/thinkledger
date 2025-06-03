@@ -32,9 +32,12 @@ function onOpen() {
   } catch (error) {
     if (DEBUG >= 1) SpreadsheetApp.getUi().alert(error);
   }
+
   // Check the if the spreadsheet has been set previous and display a message showing the user the user that a setup been completed previously
   // Only display this message if this the first time the user is opening the spreadsheet.
-  SpreadsheetApp.getUi().alert("Hi there! Complete the setup process by clicking on the 'Setup' button in the 'Thinkledger' menu");
+  if (DEBUG < 2) {
+    SpreadsheetApp.getUi().alert("Hi there! Complete the setup process by clicking on the 'Setup' button in the 'Thinkledger' menu");
+  }
 }
 
 function setupSheets() {
@@ -45,12 +48,19 @@ function setupSheets() {
     // setupSheets();
   // }
   const activeSpreadSheet = SpreadsheetApp.getActiveSpreadsheet();
+  // Add onChange Trigger
+  ScriptApp.newTrigger('onChange')
+    .forSpreadsheet(activeSpreadSheet)
+    .onChange()
+    .create();
   setupDashboardSheet(activeSpreadSheet);
   setupTransactionSheet(activeSpreadSheet);
   setupJournalEntrySheet(activeSpreadSheet);
-  SpreadsheetApp.getUi().alert('Just got done setting your spreadsheet, give me a moment to fetch your transactions');
-  notify('SpreadsheetSetupCompleted');
-  // SCRIPT_PROPERTIES.setProperty('initialSetupDone', 'true');
+  if (DEBUG < 2) {
+    SpreadsheetApp.getUi().alert('Just got done setting your spreadsheet, give me a moment to fetch your transactions');
+    notify('SpreadsheetSetupCompleted');
+    // SCRIPT_PROPERTIES.setProperty('initialSetupDone', 'true');
+  }
 }
 
 /* ----- Dashboard Sheet ---- */
@@ -73,7 +83,7 @@ function setupTransactionSheet(activeSpreadsheet) {
     try {
       setupMainHeader(transactionSheet, sheetName);
     } catch (error) {
-      if (DEBUG === 1) SpreadsheetApp.getUi().alert(error);
+      if (DEBUG >= 1) SpreadsheetApp.getUi().alert(error);
       Logger.log(error)
     }
 
@@ -134,9 +144,9 @@ function setupTransactionSheet(activeSpreadsheet) {
 
           case "Amount":
             rule = SpreadsheetApp.newDataValidation()
-              .requireNumberGreaterThan(-1)
+              .requireNumberBetween(-1e300, 1e300)
               .setAllowInvalid(false)
-              .setHelpText("Please enter a numerical amount.")
+              .setHelpText("Please enter  a numerical amount.")
               .build();
             columnRange.setDataValidation(rule);
             columnRange.setNumberFormat("$#,##0.00;$(#,##0.00)");
@@ -196,7 +206,7 @@ function setupTransactionSheet(activeSpreadsheet) {
             columnRange.setDataValidation(rule);
             break;
 
-          // TODO: Add require checks for For "ID", "Institution", "Institution Account Name", "Merchant Name"
+          // TODO: Add checks for For "ID", "Institution", "Institution Account Name", "Merchant Name"
         }
       });
       // Apply conditional format rules
@@ -207,7 +217,7 @@ function setupTransactionSheet(activeSpreadsheet) {
       setDynamicRow(transactionSheet, validationRowStart, headers.length);
 
     } catch (error) {
-      if (DEBUG === 1) SpreadsheetApp.getUi().alert(error);
+      if (DEBUG >= 1) SpreadsheetApp.getUi().alert(error);
       Logger.log(error)
     }
   }
@@ -224,7 +234,7 @@ function setupJournalEntrySheet(activeSpreadSheet) {
     try {
       setupMainHeader(journalEntrySheet, sheetName);
     } catch (error) {
-      if (DEBUG === 1) SpreadsheetApp.getUi().alert(error);
+      if (DEBUG >= 1) SpreadsheetApp.getUi().alert(error);
       Logger.log(error)
     }
     // Create table
@@ -258,7 +268,7 @@ function setupJournalEntrySheet(activeSpreadSheet) {
 
           case "Debit":
             rule = SpreadsheetApp.newDataValidation()
-              .requireNumberGreaterThan(-1)
+              .requireNumberBetween(-1e300, 1e300)
               .setAllowInvalid(false)
               .setHelpText("Please enter a numerical amount.")
               .build();
@@ -268,7 +278,7 @@ function setupJournalEntrySheet(activeSpreadSheet) {
           
           case "Credit":
             rule = SpreadsheetApp.newDataValidation()
-              .requireNumberGreaterThan(-1)
+              .requireNumberBetween(-1e300, 1e300)
               .setAllowInvalid(false)
               .setHelpText("Please enter a numerical amount.")
               .build();
@@ -287,7 +297,7 @@ function setupJournalEntrySheet(activeSpreadSheet) {
       setDynamicRow(journalEntrySheet, validationRowStart, headers.length);
 
     } catch (error) {
-      if (DEBUG === 1) SpreadsheetApp.getUi().alert(error);
+      if (DEBUG >= 1) SpreadsheetApp.getUi().alert(error);
       Logger.log(error)
     }
   }
@@ -298,15 +308,37 @@ function setupTAccounts(activeSpreadSheet) {
 
 }
 
+function onChange(e) {
+  try {
+    SpreadsheetApp.getUi().alert("change occurred")
+      SpreadsheetApp.getUi().alert(e.changeType)
+    const sheet = e.source.getActiveSheet();
+    const editedRange = e.range;
+    const changeType = e.changeType
+    if (changeType === "INSERT_ROW") {
+      SpreadsheetApp.getUi().alert("Row inserted")
+    } else if (changeType === "EDIT") {
+      SpreadsheetApp.getUi().alert("Cell edited")
+    }
+  } catch (error) {
+    if (DEBUG >= 1) SpreadsheetApp.getUi().alert(error);
+  }
+}
+
 function onEdit(e) {
-  const sheet = e.source.getActiveSheet();
-  const editedRange = e.range;
-  const editedColumn = editedRange.getColumn();
-  // Auto-resize the edited column
-  sheet.autoResizeColumn(editedColumn);
-  // Add padding
-  const currentWidth = sheet.getColumnWidth(editedColumn);
-  sheet.setColumnWidth(editedColumn, currentWidth + 20);
+  try {
+    const sheet = e.source.getActiveSheet();
+    const editedRange = e.range;
+    const editedColumn = editedRange.getColumn();
+    // Auto-resize the edited column
+    sheet.autoResizeColumn(editedColumn);
+    // Add padding
+    const currentWidth = sheet.getColumnWidth(editedColumn);
+    sheet.setColumnWidth(editedColumn, currentWidth + 20);
+  } catch (error) {
+    if (DEBUG >= 1) SpreadsheetApp.getUi().alert(error)
+  }
+
   // If the active sheet name is transactions and edited column == 1; pass
 
   // get t-account values
