@@ -1,7 +1,7 @@
 import secrets
 
 
-def generate_crypto_string(length:int=32) -> str:
+def generate_crypto_string(length: int=32) -> str:
     """
     Generates a unique URL-safe cryptographic string of the specified length.
     Args:
@@ -14,7 +14,7 @@ def generate_crypto_string(length:int=32) -> str:
     return token[:length]
 
 
-def time_format(time:float) -> str:
+def time_format(time: float) -> str:
   """
   Formats time in seconds to milliseconds(ms), microseconds(us), or seconds(s) to 2 decimals
   places

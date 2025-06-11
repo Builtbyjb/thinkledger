@@ -66,7 +66,7 @@ class GoogleSheet:
       log.error("Service access token not found in redis")
       return None, None, None
 
-    credentials:Credentials = Credentials(
+    credentials: Credentials = Credentials(
       token=str(access_token),
       token_uri=TOKEN_URL,
       refresh_token=str(refresh_token),
@@ -83,7 +83,7 @@ class GoogleSheet:
       log.error(f"Error creating Google Sheets service or Google Drive service: {e}")
       return None, None, None
 
-  def _create_folder(self, name:str, parent_id:str="root") -> Optional[str]:
+  def _create_folder(self, name: str, parent_id: str="root") -> Optional[str]:
     """
     Create a folder in the user's google drive. The parent_id specifies the parent folder id; if it
     is "root", the folder will be created in the root directory.
@@ -217,7 +217,7 @@ class GoogleSheet:
       return None
     return True
 
-  def append(self, spreadsheet_id:str, values:List[List[str]]) -> bool:
+  def append(self, spreadsheet_id: str, values: List[List[str]]) -> bool:
     """
     Append values to a sheet line by line
     """
@@ -240,19 +240,19 @@ class GoogleSheet:
 
 
 class TransactionSheet(GoogleSheet):
-  def __init__(self, redis:Redis, user_id:str) -> None:
-    name:str = "Transactions"
+  def __init__(self, redis: Redis, user_id: str) -> None:
+    name: str = "Transactions"
     super().__init__(redis, user_id, name)
 
 
 class JournalEntrySheet(GoogleSheet):
-  def __init__(self, redis:Redis, user_id:str) -> None:
-    name:str = "Journal Entries"
+  def __init__(self, redis: Redis, user_id: str) -> None:
+    name: str = "Journal Entries"
     super().__init__(redis, user_id, name)
 
   # TODO: Improve performance
   @perf
-  def generate(self, t:List[str]) -> Optional[List[List[str]]]:
+  def generate(self, t: List[str]) -> Optional[List[List[str]]]:
     # Generate prompt
     prompt = generate_prompt({
       "date": t[1],
@@ -275,11 +275,11 @@ class JournalEntrySheet(GoogleSheet):
 
     if DEBUG >= 2: log.info(f"sanitized_response: {sanitized_response}")
 
-    def helper(r:JournalEntry) -> List[List[str]]:
+    def helper(r: JournalEntry) -> List[List[str]]:
       """
       Helps create a journal entry. Accounts for multiple debit and credit account values
       """
-      m_list:List[List[str]] = []
+      m_list: List[List[str]] = []
       # Append first debit value, with date and description
       m_list.append([str(r.date), r.description, r.debit[0].name, r.debit[0].account_id,
                      r.debit[0].amount, ""])

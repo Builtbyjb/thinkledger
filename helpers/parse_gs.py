@@ -8,7 +8,7 @@ import uuid
 from redis import Redis
 
 
-def replace_str(line:str, user_id:str, redis:Redis) -> str:
+def replace_str(line: str, user_id: str, redis: Redis) -> str:
   url = f"{os.getenv('SERVER_URL')}/google/spreadsheet/signal"
 
   new_line = ""
@@ -26,16 +26,16 @@ def replace_str(line:str, user_id:str, redis:Redis) -> str:
     new_line = re.sub(tmp_user_id, '\"' + tmp_id +'\"', line)
 
   backend_url = re.escape("SET_BACKEND_URL__()")
-  if bool(re.search(backend_url, line)): new_line = re.sub(backend_url,'\"' + url + '\"', line)
+  if bool(re.search(backend_url, line)): new_line = re.sub(backend_url, '\"' + url + '\"', line)
 
   return new_line if len(new_line) > 0 else line
 
 
-def google_script(user_id:str, redis:Redis) -> str:
+def google_script(user_id: str, redis: Redis) -> str:
   root_dir = str(Path(__file__).parent.parent)
   file_path = os.path.join(f"{root_dir}/{GS_FILENAME}", f"{GS_FILENAME}.gs")
 
-  lines:List[str] = []
+  lines: List[str] = []
 
   with open(file_path, "r", encoding="utf-8") as f:
     for l in f:

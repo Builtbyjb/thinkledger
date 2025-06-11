@@ -106,29 +106,29 @@ class Account(BaseModel):
 
 
 class RemovedTransaction(BaseModel):
-  account_id:str
-  transaction_id:str
+  account_id: str
+  transaction_id: str
 
 
 class PlaidResponse(BaseModel):
-  accounts:List[Account]
-  added:List[PlaidTransaction]
-  has_more:bool
-  modified:List[PlaidTransaction]
-  next_cursor:str
-  removed:List[RemovedTransaction]
-  request_id:str
-  transactions_update_status:str
+  accounts: List[Account]
+  added: List[PlaidTransaction]
+  has_more: bool
+  modified: List[PlaidTransaction]
+  next_cursor: str
+  removed: List[RemovedTransaction]
+  request_id: str
+  transactions_update_status: str
 
 
 class JournalAccount(BaseModel):
-  name:str
-  account_id:str
-  amount:str
+  name: str
+  account_id: str
+  amount: str
 
 
 class JournalEntry(BaseModel):
-  date:dt
-  description:str
-  debit:List[JournalAccount]
-  credit:List[JournalAccount]
+  date: dt
+  description: str
+  debit: List[JournalAccount]
+  credit: List[JournalAccount]

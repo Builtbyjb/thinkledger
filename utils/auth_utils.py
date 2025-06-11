@@ -66,7 +66,7 @@ def service_auth_config(scopes: List[str]) -> Flow:
   return Flow.from_client_config(client_config, scopes=scopes, redirect_uri=redirect_url)
 
 
-def verify_access_token(access_token:str) -> bool:
+def verify_access_token(access_token: str) -> bool:
   """
     Verify google access token.
   """
@@ -81,15 +81,15 @@ def verify_access_token(access_token:str) -> bool:
   return True
 
 
-def refresh_access_token(refresh_token:str, client_id:str, client_secret:str) -> Optional[str]:
+def refresh_access_token(refresh_token: str, client_id: str, client_secret: str) -> Optional[str]:
   """
     Refresh google access token.
   """
   payload = {
-    'client_id':client_id,
-    'client_secret':client_secret,
-    'refresh_token':refresh_token,
-    'grant_type':'refresh_token'
+    'client_id': client_id,
+    'client_secret': client_secret,
+    'refresh_token': refresh_token,
+    'grant_type': 'refresh_token'
   }
 
   try:

@@ -10,12 +10,12 @@ from utils.types import PlaidTransaction, PlaidResponse
 from utils.context import DEBUG
 
 
-def get_transactions(access_token:str) -> Generator[List[PlaidTransaction], None, None]:
+def get_transactions(access_token: str) -> Generator[List[PlaidTransaction], None, None]:
   """
   Get transactions from Plaid API, and validates the response
   """
   client = create_plaid_client()
-  has_more:bool = True
+  has_more: bool = True
   cursor = ""
   # TODO: Save cursor to institutions table; since access token is associated with institution
   while has_more:
@@ -35,7 +35,7 @@ def get_transactions(access_token:str) -> Generator[List[PlaidTransaction], None
     yield validated_response.added
 
 
-def parse_transactions(transactions: List[PlaidTransaction], db:Session) -> List[List[str]]:
+def parse_transactions(transactions: List[PlaidTransaction], db: Session) -> List[List[str]]:
   """
   Generates Transaction objects from the transactions gotten from plaid
   and yields a single transaction at a time
