@@ -14,21 +14,21 @@ from plaid_core.plaid import get_transactions, parse_transactions
 import asyncio
 
 
-def handle_high_priority_task(db:Session, redis:Redis, user_id:str) -> None:
+def handle_high_priority_task(db: Session, redis: Redis, user_id: str) -> None:
   # Check for tasks of High level priority
   with redis as r:
-    try: l = r.llen(f"task:{TaskPriority.HIGH.value}:{user_id}")
+    try: task_len = r.llen(f"task:{TaskPriority.HIGH.value}:{user_id}")
     except Exception as e:
       log.error(f"Error getting high priority tasks length from redis: {e}")
       return None
-  if not isinstance(l, int): raise ValueError("Task length must be an integer")
+  if not isinstance(task_len, int): raise ValueError("Task length must be an integer")
 
-  if l == 0:
+  if task_len == 0:
     if DEBUG >= 1: log.info("No high priority tasks")
     return None
 
   with redis as r:
-    for _ in range(l):
+    for _ in range(task_len):
       try: value = r.rpop(f"task:{TaskPriority.HIGH.value}:{user_id}")
       except Exception as e:
         log.error(f"Error popping high priority task from redis: {e}")
@@ -46,7 +46,7 @@ def handle_high_priority_task(db:Session, redis:Redis, user_id:str) -> None:
         except Exception as e:
           # User email address is stored in redis
           # TODO: if GoogleSheet instantiation fails send an email to the developer
-          # and notify the user via email.
+          # and notify the user via email
           log.error(e)
       elif task == Tasks.sync_transaction.value:
         spreadsheet_id = get_task_args(value)[0]
@@ -62,7 +62,7 @@ def handle_high_priority_task(db:Session, redis:Redis, user_id:str) -> None:
           # Generate and append transactions for each institution
           for t in get_transactions(ins.access_token):
             parsed_transactions = parse_transactions(t, db)
-            for  p in parsed_transactions:
+            for p in parsed_transactions:
               # Add transaction
               if DEBUG >= 2: print("transaction", p)
               is_added = transaction_sheet.append(spreadsheet_id, [p])
@@ -79,25 +79,25 @@ def handle_high_priority_task(db:Session, redis:Redis, user_id:str) -> None:
   return None
 
 
-def handle_low_priority_task(redis:Redis, user_id:str) -> None:
+def handle_low_priority_task(redis: Redis, user_id: str) -> None:
   # Check for tasks of low level priority
-  try: l = redis.llen(f"tasks:{TaskPriority.LOW}:{user_id}")
+  try: task_len = redis.llen(f"tasks:{TaskPriority.LOW}:{user_id}")
   except Exception as e:
     log.error(f"Error getting low priority tasks from redis: {e}")
     return
 
-  if l != 0:
+  if task_len != 0:
     # Handle low task offload
     try: task = redis.rpop(f"tasks:{TaskPriority.LOW}:{user_id}")
     except Exception as e:
       log.error(e)
       return
-    assert isinstance(task, str) # TODO: lazy fix
+    assert isinstance(task, str)  # TODO: lazy fix
     print(task)
   return
 
 
-def check_requirements(db:Session, redis:Redis, user_id:str) -> bool:
+def check_requirements(db: Session, redis: Redis, user_id: str) -> bool:
   """
   For the requirements function to pass a user needs to connect at least one bank, and
   Grant access to google drive and google sheets.
@@ -122,8 +122,8 @@ def check_requirements(db:Session, redis:Redis, user_id:str) -> bool:
   return True
 
 
-async def handle_task(db:Session, redis:Redis, user_id:str) -> None:
-  is_passed =  check_requirements(db, redis, user_id)
+async def handle_task(db: Session, redis: Redis, user_id: str) -> None:
+  is_passed = check_requirements(db, redis, user_id)
   if is_passed:
     try: handle_high_priority_task(db, redis, user_id)
     except Exception as e: log.error(e)
@@ -135,11 +135,11 @@ async def handle_task(db:Session, redis:Redis, user_id:str) -> None:
 
 
 if __name__ == "__main__":
-  MAX_WORKERS:int = 5
-  INTERVAL:float = 0.1 # 100ms
+  MAX_WORKERS: int = 5
+  INTERVAL: float = 0.1  # 100ms
   try:
-   db = gen_db()
-   if db is None: raise Exception("Failed to get database connection")
+    db = gen_db()
+    if db is None: raise Exception("Failed to get database connection")
   except Exception as e:
     log.error(e)
     sys.exit(1)

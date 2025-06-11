@@ -18,7 +18,9 @@ FONT_FAMILY = "Roboto"
 
 
 class GoogleSheet:
-  def __init__(self, redis:Redis,  user_id:str, name:Optional[str]=None, init:bool=False) -> None:
+  def __init__(
+      self, redis: Redis,  user_id: str, name: Optional[str] = None, init: bool = False
+      ) -> None:
     self._user_id = user_id
     self._name = name
     self._redis = redis
@@ -112,7 +114,7 @@ class GoogleSheet:
       log.error("Error creating folder: ", e)
       return None
 
-  def _create_spreadsheet(self, file_name:str, folder_id:str) -> Optional[str]:
+  def _create_spreadsheet(self, file_name: str, folder_id: str) -> Optional[str]:
     """
     Create a spreadsheet file in a folder
     NOTE:
@@ -161,7 +163,7 @@ class GoogleSheet:
       log.error(f'Error moving spreadsheet to the right folder: {e}')
       return None
 
-  def _create_google_script(self, folder_id:str, spreadsheet_id:str) -> Optional[bool]:
+  def _create_google_script(self, folder_id: str, spreadsheet_id: str) -> Optional[bool]:
     file_name = "google_script"
     try: # Check if app script exists
       query = f"""

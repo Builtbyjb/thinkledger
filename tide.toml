@@ -9,13 +9,6 @@ prod = []
 test = []
 
 [exclude]
-dir = [
-  "./.git",
-  "./__pycache__",
-  "./.ruff_cache",
-  "./.mypy_cache",
-  "./.vscode",
-  "./.venv",
-]
+dir = [".git", "__pycache__", ".ruff_cache", ".mypy_cache", ".vscode", ".venv"]
 file = []
 ext = []
