@@ -1,6 +1,5 @@
-import os, sys, re
+import os, re
 from pathlib import Path
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from utils.constants import GS_FILENAME
 from typing import List
 from utils.context import DEBUG

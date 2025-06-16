@@ -5,8 +5,6 @@
 #########################################################################################
 
 import os, sys
-# Add project root to path
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from dotenv import load_dotenv
 from sqlmodel import create_engine
 

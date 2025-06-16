@@ -149,7 +149,7 @@ if __name__ == "__main__":
     log.error(e)
     sys.exit(1)
 
-  if DEBUG >= 1: log.info("Starting...")
+  log.info("Running...")
   while 1:
     try:
       users = db.exec(select(User)).all()
