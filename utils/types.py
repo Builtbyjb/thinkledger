@@ -95,7 +95,7 @@ class Balances(BaseModel):
   unofficial_currency_code: Optional[str]
 
 
-class Account(BaseModel):
+class PlaidAccount(BaseModel):
   account_id: str
   balances: Balances
   mask: str
@@ -111,7 +111,7 @@ class RemovedTransaction(BaseModel):
 
 
 class PlaidResponse(BaseModel):
-  accounts: List[Account]
+  accounts: List[PlaidAccount]
   added: List[PlaidTransaction]
   has_more: bool
   modified: List[PlaidTransaction]
