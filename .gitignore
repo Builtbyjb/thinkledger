@@ -11,3 +11,4 @@ __pycache__
 tide
 .DS_Store
 .pytest_cache
+.ropeproject

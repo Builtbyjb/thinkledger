@@ -50,8 +50,8 @@ class TestHandleHighPriorityTask(unittest.TestCase):
     self.mock_redis.llen.return_value = 1
     self.mock_redis.rpop.return_value = Tasks.setup_spreadsheet.value
     self.mock_google_sheet.spreadsheet_url = "http://test-sheet"
-    with patch('your_module.get_task', return_value=Tasks.setup_spreadsheet.value):
-      with patch('your_module.GoogleSheet', return_value=self.mock_google_sheet):
+    with patch('get_task', return_value=Tasks.setup_spreadsheet.value):
+      with patch('GoogleSheet', return_value=self.mock_google_sheet):
         result = handle_high_priority_task(self.mock_session, self.mock_redis, self.user_id)
         self.assertIsNone(result)
         self.mock_google_sheet.__init__.assert_called_once_with(
@@ -61,8 +61,8 @@ class TestHandleHighPriorityTask(unittest.TestCase):
   def test_setup_spreadsheet_task_failure(self) -> None:
     self.mock_redis.llen.return_value = 1
     self.mock_redis.rpop.return_value = Tasks.setup_spreadsheet.value
-    with patch('your_module.get_task', return_value=Tasks.setup_spreadsheet.value):
-      with patch('your_module.GoogleSheet', side_effect=Exception("Sheet error")):
+    with patch('get_task', return_value=Tasks.setup_spreadsheet.value):
+      with patch('GoogleSheet', side_effect=Exception("Sheet error")):
         result = handle_high_priority_task(self.mock_session, self.mock_redis, self.user_id)
         self.assertIsNone(result)
         log.error(Exception("Sheet error"))
@@ -75,11 +75,11 @@ class TestHandleHighPriorityTask(unittest.TestCase):
     self.mock_journal_entry_sheet.append.return_value = True
     self.mock_journal_entry_sheet.generate.return_value = ["journal_entry_data"]
 
-    with patch('your_module.get_task', return_value=Tasks.sync_transaction.value):
-      with patch('your_module.get_task_args', return_value=["spreadsheet_123"]):
-        with patch('your_module.get_transactions', return_value=["trans1"]):
-          with patch('your_module.parse_transactions', return_value=["parsed_trans"]):
-            with patch('your_module.TransactionSheet', return_value=self.mock_transaction_sheet):
+    with patch('get_task', return_value=Tasks.sync_transaction.value):
+      with patch('get_task_args', return_value=["spreadsheet_123"]):
+        with patch('get_transactions', return_value=["trans1"]):
+          with patch('parse_transactions', return_value=["parsed_trans"]):
+            with patch('TransactionSheet', return_value=self.mock_transaction_sheet):
               with patch(
                 'your_module.JournalEntrySheet', return_value=self.mock_journal_entry_sheet):
                   result = handle_high_priority_task(
@@ -95,8 +95,8 @@ class TestHandleHighPriorityTask(unittest.TestCase):
     self.mock_redis.llen.return_value = 1
     self.mock_redis.rpop.return_value = Tasks.sync_transaction.value
     self.mock_session.exec.return_value = None
-    with patch('your_module.get_task', return_value=Tasks.sync_transaction.value):
-      with patch('your_module.get_task_args', return_value=["spreadsheet_123"]):
+    with patch('get_task', return_value=Tasks.sync_transaction.value):
+      with patch('get_task_args', return_value=["spreadsheet_123"]):
         with self.assertRaises(ValueError) as context:
           handle_high_priority_task(self.mock_session, self.mock_redis, self.user_id)
         self.assertEqual(str(context.exception), "No institutions found")
@@ -105,8 +105,8 @@ class TestHandleHighPriorityTask(unittest.TestCase):
     self.mock_redis.llen.return_value = 1
     self.mock_redis.rpop.return_value = Tasks.sync_transaction.value
     self.mock_session.exec.side_effect = Exception("DB error")
-    with patch('your_module.get_task', return_value=Tasks.sync_transaction.value):
-      with patch('your_module.get_task_args', return_value=["spreadsheet_123"]):
+    with patch('get_task', return_value=Tasks.sync_transaction.value):
+      with patch('get_task_args', return_value=["spreadsheet_123"]):
         with self.assertRaises(Exception) as context:
           handle_high_priority_task(self.mock_session, self.mock_redis, self.user_id)
         self.assertEqual(str(context.exception), "Error getting institution: DB error")

@@ -183,4 +183,5 @@ class TestJournalEntrySheet(unittest.TestCase):
     log.error("Error getting gemini response")
 
 if __name__ == '__main__':
+  # load_dotenv()
   unittest.main()
