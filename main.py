@@ -23,7 +23,7 @@ def handle_high_priority_task(db: Session, redis: Redis, user_id: str) -> None:
   if not isinstance(task_len, int): raise ValueError("Task length must be an integer")
 
   if task_len == 0:
-    if DEBUG >= 1: log.info("No high priority tasks")
+    if DEBUG >= 1: log.info(f"No high priority tasks for user {user_id}")
     return None
 
   for _ in range(task_len):
@@ -158,7 +158,6 @@ if __name__ == "__main__":
         continue
       with ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
         _ = {executor.submit(asyncio.run, handle_task(db, redis, u.id)): u for u in users}
-
       time.sleep(INTERVAL)
     except KeyboardInterrupt:
       print("\nShutting down")

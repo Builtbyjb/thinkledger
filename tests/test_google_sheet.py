@@ -14,7 +14,6 @@ class TestGoogleSheet(unittest.TestCase):
     self.redis_mock = Mock(spec=Redis)
     self.user_id = "test_user"
     self.sheet = GoogleSheet(self.redis_mock, self.user_id, name="TestSheet")
-
     self.sheet.sheet_service = Mock()
     self.sheet.drive_service = Mock()
     self.sheet.script_service = Mock()
@@ -181,6 +180,7 @@ class TestJournalEntrySheet(unittest.TestCase):
 
     self.assertIsNone(result)
     log.error("Error getting gemini response")
+
 
 if __name__ == '__main__':
   # load_dotenv()

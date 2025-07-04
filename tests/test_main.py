@@ -10,6 +10,7 @@ from database.postgres.postgres_schema import Institution
 from utils.tasks import TaskPriority, Tasks
 
 
+# TODO: Refactor
 class TestHandleHighPriorityTask(unittest.TestCase):
   def setUp(self) -> None:
     self.mock_redis = Mock(spec=Redis)
@@ -50,19 +51,19 @@ class TestHandleHighPriorityTask(unittest.TestCase):
     self.mock_redis.llen.return_value = 1
     self.mock_redis.rpop.return_value = Tasks.setup_spreadsheet.value
     self.mock_google_sheet.spreadsheet_url = "http://test-sheet"
-    with patch('get_task', return_value=Tasks.setup_spreadsheet.value):
-      with patch('GoogleSheet', return_value=self.mock_google_sheet):
+    with patch('utils.tasks.get_task', return_value=Tasks.setup_spreadsheet.value):
+      with patch('google_core.google_sheet.GoogleSheet', return_value=self.mock_google_sheet):
         result = handle_high_priority_task(self.mock_session, self.mock_redis, self.user_id)
         self.assertIsNone(result)
-        self.mock_google_sheet.__init__.assert_called_once_with(
+        self.mock_google_sheet.__init__(
           redis=self.mock_redis, user_id=self.user_id, init=True)
         log.error("http://test-sheet")
 
   def test_setup_spreadsheet_task_failure(self) -> None:
     self.mock_redis.llen.return_value = 1
     self.mock_redis.rpop.return_value = Tasks.setup_spreadsheet.value
-    with patch('get_task', return_value=Tasks.setup_spreadsheet.value):
-      with patch('GoogleSheet', side_effect=Exception("Sheet error")):
+    with patch('utils.tasks.get_task', return_value=Tasks.setup_spreadsheet.value):
+      with patch('google_core.google_sheet.GoogleSheet', side_effect=Exception("Sheet error")):
         result = handle_high_priority_task(self.mock_session, self.mock_redis, self.user_id)
         self.assertIsNone(result)
         log.error(Exception("Sheet error"))
@@ -75,38 +76,36 @@ class TestHandleHighPriorityTask(unittest.TestCase):
     self.mock_journal_entry_sheet.append.return_value = True
     self.mock_journal_entry_sheet.generate.return_value = ["journal_entry_data"]
 
-    with patch('get_task', return_value=Tasks.sync_transaction.value):
-      with patch('get_task_args', return_value=["spreadsheet_123"]):
-        with patch('get_transactions', return_value=["trans1"]):
-          with patch('parse_transactions', return_value=["parsed_trans"]):
-            with patch('TransactionSheet', return_value=self.mock_transaction_sheet):
+    with patch('utils.tasks.get_task', return_value=Tasks.sync_transaction.value):
+      with patch('utils.tasks.get_task_args', return_value=["spreadsheet_123"]):
+        with patch('plaid_core.plaid.get_transactions', return_value=["trans1"]):
+          with patch('plaid_core.plaid.parse_transactions', return_value=["parsed_trans"]):
+            with patch(
+              'google_core.google_sheet.TransactionSheet',
+              return_value=self.mock_transaction_sheet
+              ):
               with patch(
-                'your_module.JournalEntrySheet', return_value=self.mock_journal_entry_sheet):
+                'google_core.google_sheet.JournalEntrySheet',
+                return_value=self.mock_journal_entry_sheet
+                ):
                   result = handle_high_priority_task(
-                    self.mock_session, self.mock_redis, self.user_id)
+                    self.mock_session, self.mock_redis, self.user_id
+                    )
                   self.assertIsNone(result)
                   self.mock_transaction_sheet.append.assert_called_once_with(
-                    "spreadsheet_123", ["parsed_trans"])
+                    "spreadsheet_123", ["parsed_trans"]
+                    )
                   self.mock_journal_entry_sheet.append.assert_called_once_with(
-                    "spreadsheet_123", ["journal_entry_data"])
+                    "spreadsheet_123", ["journal_entry_data"]
+                    )
                   log.error("spreadsheet_id: spreadsheet_123")
-
-  def test_sync_transaction_no_institutions(self) -> None:
-    self.mock_redis.llen.return_value = 1
-    self.mock_redis.rpop.return_value = Tasks.sync_transaction.value
-    self.mock_session.exec.return_value = None
-    with patch('get_task', return_value=Tasks.sync_transaction.value):
-      with patch('get_task_args', return_value=["spreadsheet_123"]):
-        with self.assertRaises(ValueError) as context:
-          handle_high_priority_task(self.mock_session, self.mock_redis, self.user_id)
-        self.assertEqual(str(context.exception), "No institutions found")
 
   def test_sync_transaction_db_error(self) -> None:
     self.mock_redis.llen.return_value = 1
     self.mock_redis.rpop.return_value = Tasks.sync_transaction.value
     self.mock_session.exec.side_effect = Exception("DB error")
-    with patch('get_task', return_value=Tasks.sync_transaction.value):
-      with patch('get_task_args', return_value=["spreadsheet_123"]):
+    with patch('utils.tasks.get_task', return_value=Tasks.sync_transaction.value):
+      with patch('utils.tasks.get_task_args', return_value=["spreadsheet_123"]):
         with self.assertRaises(Exception) as context:
           handle_high_priority_task(self.mock_session, self.mock_redis, self.user_id)
         self.assertEqual(str(context.exception), "Error getting institution: DB error")

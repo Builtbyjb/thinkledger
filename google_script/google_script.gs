@@ -331,7 +331,7 @@ function setupTAccounts(activeSpreadSheet) {
     }
  
     /* Start with an empty list, update the list with unique values as the new values are added to the journal entry sheet 
-    * Move this into a function that is called everytime the journal entries sheet changes. Will time based triggers work?
+    * Move this into a function that is called every time the journal entries sheet changes. Will time based triggers work?
     */
 
     // Create dropdown
