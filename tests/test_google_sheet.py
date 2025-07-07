@@ -7,9 +7,15 @@ from googleapiclient.errors import HttpError
 from google_core.google_sheet import GoogleSheet, JournalEntrySheet
 from utils.types import JournalEntry, JournalAccount
 from utils.logger import log
+import os
 
 
+# TODO: Refactor
 class TestGoogleSheet(unittest.TestCase):
+  @patch.dict(os.environ, {
+    "GOOGLE_SERVICE_CLIENT_ID": "client_id",
+    "GOOGLE_SERVICE_CLIENT_SECRET": "client_secret"
+  })
   def setUp(self) -> None:
     self.redis_mock = Mock(spec=Redis)
     self.user_id = "test_user"
@@ -18,14 +24,12 @@ class TestGoogleSheet(unittest.TestCase):
     self.sheet.drive_service = Mock()
     self.sheet.script_service = Mock()
 
-  @patch('GoogleSheet.build')
-  @patch('GoogleSheet.os.getenv')
-  def test_create_service_success(self, mock_getenv, mock_build) -> None:
-    mock_getenv.side_effect = lambda x: {
-      "GOOGLE_SERVICE_CLIENT_ID": "client_id",
-      "GOOGLE_SERVICE_CLIENT_SECRET": "client_secret"
-    }.get(x)
-
+  @patch.dict(os.environ, {
+    "GOOGLE_SERVICE_CLIENT_ID": "client_id",
+    "GOOGLE_SERVICE_CLIENT_SECRET": "client_secret"
+  })
+  @patch('googleapiclient.discovery.build')
+  def test_create_service_success(self, mock_build) -> None:
     self.redis_mock.get.side_effect = lambda x: {
       f"service_access_token:{self.user_id}": b"access_token",
       f"service_refresh_token:{self.user_id}": b"refresh_token"
@@ -46,6 +50,10 @@ class TestGoogleSheet(unittest.TestCase):
     mock_build.assert_any_call("drive", "v3", credentials=Mock(spec=Credentials))
     mock_build.assert_any_call("script", "v1", credentials=Mock(spec=Credentials))
 
+  @patch.dict(os.environ, {
+    "GOOGLE_SERVICE_CLIENT_ID": "client_id",
+    "GOOGLE_SERVICE_CLIENT_SECRET": "client_secret"
+  })
   def test_create_service_no_access_token(self) -> None:
     self.redis_mock.get.return_value = None
 
@@ -137,6 +145,10 @@ class TestGoogleSheet(unittest.TestCase):
 
 
 class TestJournalEntrySheet(unittest.TestCase):
+  @patch.dict(os.environ, {
+    "GOOGLE_SERVICE_CLIENT_ID": "client_id",
+    "GOOGLE_SERVICE_CLIENT_SECRET": "client_secret"
+  })
   def setUp(self) -> None:
     self.redis_mock = Mock(spec=Redis)
     self.user_id = "test_user"
@@ -145,8 +157,8 @@ class TestJournalEntrySheet(unittest.TestCase):
     self.journal_sheet.drive_service = Mock()
     self.journal_sheet.script_service = Mock()
 
-  @patch('GoogleSheet.gemini_response')
-  @patch('GoogleSheet.sanitize_gemini_response')
+  @patch('agents.gemini.gemini_response')
+  @patch('agents.gemini.sanitize_gemini_response')
   def test_generate_success(self, mock_sanitize, mock_gemini) -> None:
     transaction = [
       "", "2023-01-01", "100.00", "", "", "", "Purchase", "Credit Card", "Store", "", "False"
@@ -168,7 +180,7 @@ class TestJournalEntrySheet(unittest.TestCase):
     ]
     self.assertEqual(result, expected)
 
-  @patch('GoogleSheet.gemini_response')
+  @patch('agents.gemini.gemini_response')
   def test_generate_gemini_failure(self, mock_gemini) -> None:
     transaction = [
       "", "2023-01-01", "100.00", "", "", "", "Purchase", "Credit Card", "Store", "", "False"
@@ -183,5 +195,4 @@ class TestJournalEntrySheet(unittest.TestCase):
 
 
 if __name__ == '__main__':
-  # load_dotenv()
   unittest.main()
