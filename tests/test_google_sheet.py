@@ -1,12 +1,10 @@
 import unittest
-from unittest.mock import Mock, patch
-from google.oauth2.credentials import Credentials
+from unittest.mock import Mock, patch, ANY
 from redis import Redis
 from datetime import datetime
 from googleapiclient.errors import HttpError
 from google_core.google_sheet import GoogleSheet, JournalEntrySheet
 from utils.types import JournalEntry, JournalAccount
-from utils.logger import log
 import os
 
 
@@ -28,7 +26,7 @@ class TestGoogleSheet(unittest.TestCase):
     "GOOGLE_SERVICE_CLIENT_ID": "client_id",
     "GOOGLE_SERVICE_CLIENT_SECRET": "client_secret"
   })
-  @patch('googleapiclient.discovery.build')
+  @patch('google_core.google_sheet.build')
   def test_create_service_success(self, mock_build) -> None:
     self.redis_mock.get.side_effect = lambda x: {
       f"service_access_token:{self.user_id}": b"access_token",
@@ -46,9 +44,9 @@ class TestGoogleSheet(unittest.TestCase):
     self.assertIsNotNone(sheet_service)
     self.assertIsNotNone(drive_service)
     self.assertIsNotNone(script_service)
-    mock_build.assert_any_call("sheets", "v4", credentials=Mock(spec=Credentials))
-    mock_build.assert_any_call("drive", "v3", credentials=Mock(spec=Credentials))
-    mock_build.assert_any_call("script", "v1", credentials=Mock(spec=Credentials))
+    mock_build.assert_any_call("sheets", "v4", credentials=ANY)
+    mock_build.assert_any_call("drive", "v3", credentials=ANY)
+    mock_build.assert_any_call("script", "v1", credentials=ANY)
 
   @patch.dict(os.environ, {
     "GOOGLE_SERVICE_CLIENT_ID": "client_id",
@@ -117,23 +115,19 @@ class TestGoogleSheet(unittest.TestCase):
   def test_append_success(self) -> None:
     spreadsheet_id = "spreadsheet_id"
     values = [["test", "data"]]
-    cursor = b"5"
+    cursor = 5
 
     self.redis_mock.get.return_value = cursor
     self.sheet.sheet_service.spreadsheets().values().update.return_value.execute.return_value = {}
-
     result = self.sheet.append(spreadsheet_id, values)
-
     self.assertTrue(result)
-    self.redis_mock.set.assert_called_once_with(
-      f"sheet_cursor:TestSheet:{self.user_id}", 6
-    )
+    self.redis_mock.set.assert_called_once_with( f"sheet_cursor:TestSheet:{self.user_id}", 6)
 
   def test_append_failure(self) -> None:
     spreadsheet_id = "spreadsheet_id"
     values = [["test", "data"]]
 
-    self.redis_mock.get.return_value = b"5"
+    self.redis_mock.get.return_value = 5
     self.sheet.sheet_service.spreadsheets().values().update.side_effect = HttpError(
       Mock(status=400), b"error"
     )
@@ -141,7 +135,6 @@ class TestGoogleSheet(unittest.TestCase):
     result = self.sheet.append(spreadsheet_id, values)
 
     self.assertFalse(result)
-    log.error("Error appending to sheet")
 
 
 class TestJournalEntrySheet(unittest.TestCase):
@@ -157,8 +150,8 @@ class TestJournalEntrySheet(unittest.TestCase):
     self.journal_sheet.drive_service = Mock()
     self.journal_sheet.script_service = Mock()
 
-  @patch('agents.gemini.gemini_response')
-  @patch('agents.gemini.sanitize_gemini_response')
+  @patch('google_core.google_sheet.gemini_response')
+  @patch('google_core.google_sheet.sanitize_gemini_response')
   def test_generate_success(self, mock_sanitize, mock_gemini) -> None:
     transaction = [
       "", "2023-01-01", "100.00", "", "", "", "Purchase", "Credit Card", "Store", "", "False"
@@ -180,7 +173,7 @@ class TestJournalEntrySheet(unittest.TestCase):
     ]
     self.assertEqual(result, expected)
 
-  @patch('agents.gemini.gemini_response')
+  @patch('google_core.google_sheet.gemini_response')
   def test_generate_gemini_failure(self, mock_gemini) -> None:
     transaction = [
       "", "2023-01-01", "100.00", "", "", "", "Purchase", "Credit Card", "Store", "", "False"
@@ -191,7 +184,6 @@ class TestJournalEntrySheet(unittest.TestCase):
     result = self.journal_sheet.generate(transaction)
 
     self.assertIsNone(result)
-    log.error("Error getting gemini response")
 
 
 if __name__ == '__main__':
