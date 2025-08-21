@@ -200,6 +200,7 @@ class GoogleSheet:
       ]
     }
     """
+
     code_gs = google_script(self._user_id, self._redis)
     try: # Update app script file
       self.script_service.projects().updateContent(
