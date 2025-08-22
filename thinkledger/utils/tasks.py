@@ -36,7 +36,7 @@ def add_task(value: str, user_id: str, priority: TaskPriority) -> bool:
   return True
 
 
-def get_task(v:str) -> str: return v.split(":")[0]
+def get_task(v: str) -> str: return v.split(":")[0]
 
 
-def get_task_args(v:str) -> list[str]: return v.split(":")[1:]
+def get_task_args(v: str) -> list[str]: return v.split(":")[1:]

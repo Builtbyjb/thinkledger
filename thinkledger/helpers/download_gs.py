@@ -5,7 +5,6 @@
 ##################################
 
 import os, sys
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from dotenv import load_dotenv
 from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
@@ -22,13 +21,13 @@ def get_service_flow() -> Optional[InstalledAppFlow]:
   if client_secret is None: raise ValueError("Client secret not found")
 
   config = {
-    "installed":{
+    "installed": {
       "client_id": client_id,
-      "auth_uri":"https://accounts.google.com/o/oauth2/auth",
-      "token_uri":"https://oauth2.googleapis.com/token",
-      "auth_provider_x509_cert_url":"https://www.googleapis.com/oauth2/v1/certs",
+      "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+      "token_uri": "https://oauth2.googleapis.com/token",
+      "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
       "client_secret": client_secret,
-      "redirect_uris":["http://localhost"]
+      "redirect_uris": ["http://localhost"]
     }
   }
 
@@ -40,7 +39,7 @@ def get_service_flow() -> Optional[InstalledAppFlow]:
   return flow
 
 
-def download_gs(creds:Any) -> None:
+def download_gs(creds: Any) -> None:
   root_dir = str(Path(__file__).parent.parent)
   script_id = os.getenv("GOOGLE_SCRIPT_ID")
   if script_id is None: raise ValueError("Google script id not found")

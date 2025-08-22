@@ -1,7 +1,7 @@
 from typing import Dict
 
 
-def generate_prompt(t:Dict[str, str]) -> str:
+def generate_prompt(t: Dict[str, str]) -> str:
   return f"""
   1. Predefined Account IDs:
   Use the following `account_ids` mapping. Account names in the transaction should be matched to

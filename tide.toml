@@ -1,21 +1,16 @@
 root_dir = "."
 
-[command]
-dev = [
-  "DEBUG=1 python3 main.py",
-  # "celery -A helpers.celery worker --loglevel=info",
-]
+[os.unix]
+dev = ["DEBUG=2 python3 thinkledger/main.py"]
+prod = []
+test = []
+
+[os.windows]
+dev = []
 prod = []
 test = []
 
 [exclude]
-dir = [
-  "./.git",
-  "./__pycache__",
-  "./.ruff_cache",
-  "./.mypy_cache",
-  "./.vscode",
-  "./.venv",
-]
+dir = [".git", "__pycache__", "mypy_cache"]
 file = []
-ext = []
+ext = ["toml"]

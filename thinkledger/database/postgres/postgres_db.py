@@ -23,7 +23,7 @@ def get_db() -> Any:
 
 
 # Generate postgres db engine
-def gen_db(db_gen:Callable[..., Generator[Session, Any, None]] = get_db) -> Optional[Session]:
+def gen_db(db_gen: Callable[..., Generator[Session, Any, None]] = get_db) -> Optional[Session]:
   for l in db_gen():
     if isinstance(l, Session): return l
   return None

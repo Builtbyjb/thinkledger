@@ -1,8 +1,6 @@
 #!/usr/bin/env python3
 
-import sys, os
-# Add project root to path
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+import sys
 from utils.plaid_utils import create_plaid_client
 from plaid.model.item_remove_request import ItemRemoveRequest
 
