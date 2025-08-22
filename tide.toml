@@ -1,7 +1,7 @@
 root_dir = "."
 
 [os.unix]
-dev = ["DEBUG=2 python3 main.py"]
+dev = ["DEBUG=2 python3 thinkledger/main.py"]
 prod = []
 test = []
 

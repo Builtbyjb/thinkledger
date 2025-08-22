@@ -3,7 +3,7 @@ import unittest
 from unittest.mock import Mock, patch
 from redis import Redis
 from sqlalchemy.orm import Session
-from main import handle_high_priority_task
+from thinkledger.main import handle_high_priority_task
 from google_core.google_sheet import GoogleSheet, TransactionSheet, JournalEntrySheet
 from database.postgres.postgres_schema import Institution
 from utils.tasks import TaskPriority, Tasks
